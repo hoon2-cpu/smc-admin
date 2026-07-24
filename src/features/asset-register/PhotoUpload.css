@@ -1,0 +1,20 @@
+.photo-dropzone {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 26px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-primary);
+  background: #fafbff;
+}
+.photo-dropzone strong {
+  font-size: 14px;
+}
+.photo-dropzone span {
+  font-size: 12px;
+  color: var(--color-text-sub);
+}

@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LandingPage from '@/features/landing/LandingPage'
 import AdminDashboardPage from '@/features/dashboard/AdminDashboardPage'
+import EmployeeLayout from '@/components/layout/EmployeeLayout'
+import AssetRegisterPage from '@/features/asset-register/AssetRegisterPage'
 import ComingSoon from '@/components/feedback/ComingSoon'
 
 /**
@@ -16,8 +18,16 @@ export default function App() {
       {/* 메인 랜딩 페이지 */}
       <Route path="/" element={<LandingPage />} />
 
-      {/* 직원용 자산관리 화면 (자산등록/수리요청 등) — 다음 단계 구현 */}
-      <Route path="/asset" element={<ComingSoon title="자산관리" />} />
+      {/* 직원용 자산관리 화면 (모바일 레이아웃 + 하단 탭) */}
+      <Route path="/asset" element={<EmployeeLayout />}>
+        <Route index element={<Navigate to="register" replace />} />
+        <Route path="register" element={<AssetRegisterPage />} />
+        {/* 나머지 하단 탭은 다음 단계에서 구현 */}
+        <Route path="home" element={<ComingSoon title="대시보드" />} />
+        <Route path="list" element={<ComingSoon title="자산 목록" />} />
+        <Route path="requests" element={<ComingSoon title="요청 관리" />} />
+        <Route path="more" element={<ComingSoon title="더보기" />} />
+      </Route>
 
       {/* 관리자 대시보드 */}
       <Route path="/admin" element={<AdminDashboardPage />} />
