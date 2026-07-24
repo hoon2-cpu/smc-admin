@@ -1,0 +1,2 @@
+# 저장소에는 LF로 저장하도록 정규화 (Windows CRLF 경고 방지)
+* text=auto eol=lf
