@@ -10,4 +10,7 @@
  * '#'(기본값)이면 실제 통신 대신 mock 모드로 동작합니다(콘솔 출력).
  * 예: 'https://script.google.com/macros/s/AKfyc.../exec'
  */
-export const GAS_URL = 'https://script.google.com/macros/s/AKfycbwRq1qlbYa_kAwAkYG9_UrVzgjY7-hI2X3eJRXrL16O_zsqmvMpOeZtp5JTzGxcwl1nUA/exec'
+// `: string` 명시 이유: 값을 리터럴 타입으로 좁히지 않아야
+// gasClient의 `GAS_URL === '#'`(mock 판별) 비교가 타입 에러 없이 동작합니다.
+export const GAS_URL: string =
+  'https://script.google.com/macros/s/AKfycbwRq1qlbYa_kAwAkYG9_UrVzgjY7-hI2X3eJRXrL16O_zsqmvMpOeZtp5JTzGxcwl1nUA/exec'
