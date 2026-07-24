@@ -1,0 +1,53 @@
+import { GAS_URL } from '@/config/api'
+
+/** 백엔드로 보낼 수 있는 요청 종류. */
+export type GasRequestType = 'assetRegister' | 'repairRequest'
+
+/** 백엔드(GAS) 공통 응답 형식. */
+export interface GasResult {
+  /** 처리 성공 여부. */
+  ok: boolean
+  /** (수리요청) 서버가 부여한 접수번호. */
+  ticketNumber?: string
+  /** 실패 시 사유 등 메시지. */
+  message?: string
+}
+
+/** GAS_URL이 설정되지 않아 mock 모드로 동작하는지 여부. */
+export function isMockMode(): boolean {
+  return !GAS_URL || GAS_URL === '#'
+}
+
+/**
+ * Google Apps Script 웹앱으로 데이터를 전송합니다.
+ *
+ * @remarks
+ * `Content-Type`을 `text/plain`으로 보내는 이유: Apps Script 웹앱은 CORS
+ * 프리플라이트(OPTIONS) 요청을 처리하지 못합니다. `application/json`을 쓰면
+ * 브라우저가 프리플라이트를 보내 실패하므로, 프리플라이트가 없는 `text/plain`으로
+ * 전송하고 서버(Code.gs)에서 JSON.parse 합니다.
+ *
+ * @param type - 요청 종류
+ * @param payload - 전송할 데이터(폼 값 등)
+ * @returns 서버 응답 ({@link GasResult})
+ */
+export async function submitToGas(type: GasRequestType, payload: object): Promise<GasResult> {
+  // URL 미설정 시: 실제 통신 없이 콘솔 출력 후 성공으로 처리(개발/데모용).
+  if (isMockMode()) {
+    console.log('[GAS mock]', type, payload)
+    return { ok: true, message: 'mock 모드 (GAS_URL 미설정)' }
+  }
+
+  try {
+    const response = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ type, payload }),
+    })
+    return (await response.json()) as GasResult
+  } catch (error) {
+    // 네트워크/파싱 오류는 사용자에게 실패로 안내하고, 콘솔에 원인을 남깁니다.
+    console.error('[GAS 전송 실패]', error)
+    return { ok: false, message: '전송 중 오류가 발생했습니다.' }
+  }
+}

@@ -7,6 +7,7 @@ import PhotoUpload from './PhotoUpload'
 import BasicInfoSection from './sections/BasicInfoSection'
 import DetailInfoSection from './sections/DetailInfoSection'
 import { INITIAL_ASSET_FORM } from './formConfig'
+import { submitAssetRegister } from './submit'
 import './AssetRegisterPage.css'
 
 /**
@@ -21,16 +22,20 @@ export default function AssetRegisterPage() {
 
   /**
    * 등록 폼 제출 처리.
-   * 백엔드(GAS) 연동 전이므로 현재는 콘솔 출력으로 대체합니다.
-   * (5단계에서 이 부분을 실제 저장 API 호출로 교체)
+   * gasClient를 통해 백엔드로 전송합니다.
+   * (GAS_URL 미설정 시 mock 모드로 콘솔 출력 후 성공 처리)
    *
    * @param event - 폼 제출 이벤트
    */
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    console.log('[자산 등록] 제출 값:', values)
-    window.alert('자산이 등록되었습니다. (임시: 콘솔 출력)')
-    reset()
+    const result = await submitAssetRegister(values)
+    if (result.ok) {
+      window.alert('자산이 등록되었습니다.')
+      reset()
+    } else {
+      window.alert(`등록에 실패했습니다: ${result.message ?? '알 수 없는 오류'}`)
+    }
   }
 
   return (

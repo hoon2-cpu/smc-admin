@@ -6,6 +6,7 @@ import SymptomStep from './steps/SymptomStep'
 import DetailStep from './steps/DetailStep'
 import CompleteStep from './steps/CompleteStep'
 import { INITIAL_REPAIR_FORM } from './formConfig'
+import { submitRepairRequest } from './submit'
 import './RepairRequestPage.css'
 
 /** 진행 단계 라벨. */
@@ -23,17 +24,23 @@ export default function RepairRequestPage() {
   const { values, setField, reset } = useForm(INITIAL_REPAIR_FORM)
 
   /**
-   * 접수 처리. 접수번호를 발급하고 완료 단계로 이동합니다.
-   * 순번은 실제로는 서버가 부여하므로, 여기서는 접수 시각 기반의 데모 값을 씁니다.
-   * (GAS 연동 시 이 부분을 저장 API 호출로 교체)
+   * 접수 처리. 백엔드로 전송하고 완료 단계로 이동합니다.
+   * 서버가 접수번호를 부여하면 그 값을, 없으면(mock 모드) 접수 시각 기반의
+   * 로컬 생성값을 사용합니다.
    */
-  function handleSubmit() {
+  async function handleSubmit() {
+    const result = await submitRepairRequest(values)
+
+    // 로컬 폴백 접수번호: 서버 응답에 ticketNumber가 없을 때 사용
     const now = new Date()
     const secondsOfDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()
-    const sequence = (secondsOfDay % 9999) + 1
-    const ticket = formatTicketNumber(now, sequence)
-    setTicketNumber(ticket)
-    console.log('[수리 요청] 접수:', ticket, values)
+    const localTicket = formatTicketNumber(now, (secondsOfDay % 9999) + 1)
+
+    if (!result.ok) {
+      window.alert(`접수에 실패했습니다: ${result.message ?? '알 수 없는 오류'}`)
+      return
+    }
+    setTicketNumber(result.ticketNumber ?? localTicket)
     setStep(3)
   }
 
