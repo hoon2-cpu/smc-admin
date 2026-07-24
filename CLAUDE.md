@@ -95,9 +95,9 @@ src/
 - [x] **2단계** 관리자 대시보드 (이미지 ④)
 - [x] **3단계** 자산 등록 (이미지 ②, 모바일)
 - [x] **4단계** 수리 요청 (이미지 ③) — 3단계 폼 + 완료화면 + AI 봇 UI
-- [~] **5단계** 백엔드 연동 — 뼈대 준비 완료(gasClient/Code.gs/가이드), URL 입력 대기
+- [x] **5단계** 백엔드 연동 — GAS 웹앱 연결 완료 (GET/POST 검증됨, 시트 저장·접수번호 발급 정상)
   - 세팅 방법: [docs/BACKEND_SETUP.md](docs/BACKEND_SETUP.md)
-  - `src/config/api.ts`의 `GAS_URL`에 웹앱 URL을 넣으면 mock → 실제 연동으로 전환
+  - `src/config/api.ts`의 `GAS_URL`에 실제 웹앱 URL 반영됨
 
 ## 데이터 & 연동 메모
 

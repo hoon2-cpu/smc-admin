@@ -10,4 +10,4 @@
  * '#'(기본값)이면 실제 통신 대신 mock 모드로 동작합니다(콘솔 출력).
  * 예: 'https://script.google.com/macros/s/AKfyc.../exec'
  */
-export const GAS_URL = '#'
+export const GAS_URL = 'https://script.google.com/macros/s/AKfycbwRq1qlbYa_kAwAkYG9_UrVzgjY7-hI2X3eJRXrL16O_zsqmvMpOeZtp5JTzGxcwl1nUA/exec'
