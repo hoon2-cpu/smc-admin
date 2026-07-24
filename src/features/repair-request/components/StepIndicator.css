@@ -1,0 +1,43 @@
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+.step:not(:last-child)::after {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--color-border);
+  margin-left: 4px;
+}
+
+.step-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-border);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.step.active .step-circle,
+.step.done .step-circle {
+  background: var(--color-primary);
+}
+.step.active .step-label {
+  color: var(--color-primary);
+  font-weight: 700;
+}

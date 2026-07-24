@@ -1,0 +1,12 @@
+.support-app {
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--color-bg);
+  position: relative;
+}
+
+/* 하단 탭 바(64px)에 가리지 않도록 여백 확보 */
+.support-content {
+  padding: 20px 16px 84px;
+}

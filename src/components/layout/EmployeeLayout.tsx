@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import BottomNav from './BottomNav'
+import { ASSET_TABS } from './bottomTabs'
 import './EmployeeLayout.css'
 
 /**
@@ -16,7 +17,7 @@ export default function EmployeeLayout() {
       <div className="employee-content">
         <Outlet />
       </div>
-      <BottomNav />
+      <BottomNav tabs={ASSET_TABS} />
     </div>
   )
 }

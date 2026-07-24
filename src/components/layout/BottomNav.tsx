@@ -1,35 +1,25 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, List, ScanLine, ClipboardList, MoreHorizontal } from 'lucide-react'
+import type { BottomTab } from './bottomTabs'
 import './BottomNav.css'
 
-/** 하단 탭 하나의 정의. */
-interface TabDef {
-  label: string
-  to: string
-  Icon: typeof List
-  /** 가운데 강조(QR 스캔) 탭 여부. */
-  primary?: boolean
+/** {@link BottomNav} 컴포넌트 props. */
+interface BottomNavProps {
+  /** 렌더링할 탭 목록. (자산 앱/서포트 포털이 서로 다른 목록을 전달) */
+  tabs: BottomTab[]
 }
 
-/** 직원용 앱 하단 탭 목록. (이미지 ② 하단 네비게이션) */
-const TABS: TabDef[] = [
-  { label: '대시보드', to: '/asset/home', Icon: LayoutDashboard },
-  { label: '자산 목록', to: '/asset/list', Icon: List },
-  { label: 'QR 스캔', to: '/asset/register', Icon: ScanLine, primary: true },
-  { label: '요청 관리', to: '/asset/requests', Icon: ClipboardList },
-  { label: '더보기', to: '/asset/more', Icon: MoreHorizontal },
-]
-
 /**
- * 직원용 모바일 앱 하단 고정 탭 바.
- * 현재 경로에 해당하는 탭이 자동으로 활성화됩니다(NavLink).
+ * 하단 고정 탭 바 (표현용 공용 컴포넌트).
+ * 탭 목록을 props로 받아, 자산 앱과 IT Support 포털에서 재사용합니다.
+ * 현재 경로에 해당하는 탭은 NavLink가 자동으로 활성화합니다.
  *
+ * @param props - {@link BottomNavProps}
  * @returns 하단 탭 바 엘리먼트
  */
-export default function BottomNav() {
+export default function BottomNav({ tabs }: BottomNavProps) {
   return (
     <nav className="bottom-nav">
-      {TABS.map(({ label, to, Icon, primary }) => (
+      {tabs.map(({ label, to, Icon, primary }) => (
         <NavLink
           key={to}
           to={to}

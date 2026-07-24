@@ -3,6 +3,8 @@ import LandingPage from '@/features/landing/LandingPage'
 import AdminDashboardPage from '@/features/dashboard/AdminDashboardPage'
 import EmployeeLayout from '@/components/layout/EmployeeLayout'
 import AssetRegisterPage from '@/features/asset-register/AssetRegisterPage'
+import SupportLayout from '@/components/layout/SupportLayout'
+import RepairRequestPage from '@/features/repair-request/RepairRequestPage'
 import ComingSoon from '@/components/feedback/ComingSoon'
 
 /**
@@ -27,6 +29,17 @@ export default function App() {
         <Route path="list" element={<ComingSoon title="자산 목록" />} />
         <Route path="requests" element={<ComingSoon title="요청 관리" />} />
         <Route path="more" element={<ComingSoon title="더보기" />} />
+      </Route>
+
+      {/* IT Support 포털 (수리 요청 등) */}
+      <Route path="/support" element={<SupportLayout />}>
+        <Route index element={<Navigate to="repair" replace />} />
+        <Route path="repair" element={<RepairRequestPage />} />
+        {/* 나머지 하단 탭은 다음 단계에서 구현 */}
+        <Route path="home" element={<ComingSoon title="홈" />} />
+        <Route path="history" element={<ComingSoon title="요청 내역" />} />
+        <Route path="asset-info" element={<ComingSoon title="자산 정보" />} />
+        <Route path="faq" element={<ComingSoon title="FAQ" />} />
       </Route>
 
       {/* 관리자 대시보드 */}

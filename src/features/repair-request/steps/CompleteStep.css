@@ -1,0 +1,103 @@
+.complete-step {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.complete-hero {
+  text-align: center;
+  padding: 12px 0;
+}
+.complete-check {
+  color: var(--color-success);
+}
+.complete-hero h2 {
+  font-size: 20px;
+  margin: 10px 0 4px;
+}
+.complete-hero p {
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+.ticket-box {
+  text-align: center;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.ticket-box span {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-sub);
+  margin-bottom: 4px;
+}
+.ticket-box strong {
+  font-size: 22px;
+  color: var(--color-primary);
+  letter-spacing: 0.5px;
+}
+
+.response-note {
+  display: flex;
+  gap: 10px;
+  padding: 14px;
+  background: #eff6ff;
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--color-primary-dark);
+}
+.response-note small {
+  display: block;
+  color: var(--color-text-sub);
+  margin-top: 2px;
+}
+
+.summary {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+}
+.summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+.summary > div:last-child {
+  border-bottom: none;
+}
+.summary dt {
+  color: var(--color-text-sub);
+  flex-shrink: 0;
+}
+.summary dd {
+  text-align: right;
+}
+
+.slack-note {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  background: #f5f3ff;
+  border-radius: var(--radius);
+}
+.slack-note strong {
+  font-size: 14px;
+}
+.slack-note span {
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+
+.new-request-btn {
+  height: 48px;
+  border-radius: 10px;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
