@@ -1,0 +1,112 @@
+# CLAUDE.md
+
+이 파일은 이 저장소에서 작업할 때 따라야 할 규칙과 프로젝트 정보를 정리한 문서입니다.
+
+## 프로젝트 개요
+
+**IT 자산 신청 & 관리 대시보드** — 회사 IT 자산의 신청·등록·수리접수·현황 관리를 한 곳에서 처리하는 웹 시스템.
+
+- 👤 **직원용** (모바일 우선): 자산 등록(QR), 수리 요청
+- 🛠️ **관리자용** (데스크톱): 자산/신청/재고/폐기 통합 대시보드
+- 🗄️ **DB**: Google Sheets (Google Apps Script 연동)
+- 배포: **A 방식** — 한 사이트(GitHub Pages) + 경로 분리 (`#/asset`, `#/admin`)
+
+## 기술 스택
+
+- **React 18 + TypeScript + Vite**
+- 라우팅: `react-router-dom` (HashRouter — GitHub Pages 새로고침 404 방지)
+- 차트: `recharts` / 아이콘: `lucide-react`
+- 테스트: `Vitest` + `@testing-library/react`
+- 품질: `ESLint` + `Prettier` / 문서: `TypeDoc`
+- 백엔드: Google Apps Script (Sheets 저장 / Slack 알림 / Gmail 자동회신)
+
+## 명령어
+
+| 명령 | 설명 |
+| --- | --- |
+| `npm run dev` | 개발 서버 (http://localhost:5173) |
+| `npm run build` | 타입 검사 후 프로덕션 빌드 |
+| `npm run lint` | ESLint 검사 (경고 0 기준) |
+| `npm run format` | Prettier 포맷 정리 |
+| `npm run typecheck` | 타입만 검사 |
+| `npm run test` | 테스트 실행 |
+| `npm run docs:api` | JSDoc → API 문서 생성 (`docs/api/`) |
+
+> Windows 환경. 새 터미널에서 `node`/`npm`/`git`이 인식 안 되면 PATH 새로고침 또는 VSCode 재시작 필요.
+
+## 코딩 컨벤션 & 규칙 (필수 준수)
+
+1. **TypeScript** 사용, 타입을 명확하게 작성 (strict 모드).
+2. **모든 함수에 JSDoc 주석**을 단다. (`@param`, `@returns` 포함)
+3. **중요한 로직에는 "왜 이렇게 구현했는지" 설명하는 주석**을 단다.
+4. **컴포넌트는 하나의 역할만** 하도록 분리한다.
+5. **파일당 300줄을 넘지 않게** 작성한다.
+6. **중복 코드는 커스텀 훅(`hooks/`)이나 유틸 함수(`lib/`)로 분리**한다.
+7. **변수명·함수명은 의미 있게** 작성한다.
+8. **ESLint / Prettier 기준**에 맞게 작성한다. (커밋 전 `lint`·`format` 통과)
+9. **테스트 코드**를 함께 작성한다. (로직/컴포넌트 단위)
+10. **폴더 구조 일관성**을 유지한다. (아래 구조 참고)
+11. **변경 사항마다 Git 커밋 메시지를 추천**한다. (`feat:`, `fix:`, `chore:` 등 컨벤셔널 커밋)
+
+### 세부 관례
+
+- 선택 옵션·enum은 `constants/`에 `as const` 배열로 정의하고 **유니온 타입을 파생**시킨다. (옵션 추가 시 한 곳만 수정)
+- 상태값→UI 매핑 등은 `Record<Union, ...>`로 작성해 **누락을 컴파일 에러로** 잡는다.
+- 경로 import는 별칭 **`@/`** (= `src/`)를 사용한다.
+- CSS는 컴포넌트별 `.css` 파일로 두고, 색상·간격은 `styles/global.css`의 CSS 변수를 쓴다.
+- 폼 값은 문자열로 다루고, 저장 시점에 도메인 타입으로 변환한다.
+
+## 폴더 구조
+
+```
+src/
+├─ types/        도메인 타입 (Asset, RepairTicket, ChangeLog, AppUser, Consumable)
+├─ constants/    선택 옵션·enum (제조사/부서/상태/사옥 ...) — as const 파생
+├─ config/       백엔드 연동 설정 (GAS URL)
+├─ lib/          순수 유틸 함수 (+ *.test.ts) — 부수효과 없음
+├─ hooks/        공통 커스텀 훅 (useForm 등)
+├─ components/
+│  ├─ ui/        표현용 순수 UI (Card, Badge, StatCard)
+│  ├─ form/      재사용 폼 (FormSection, FormField, TextInput, SelectField)
+│  ├─ layout/    레이아웃 (AppShell/AdminSidebar/TopBar, EmployeeLayout/MobileHeader/BottomNav)
+│  └─ feedback/  안내 (ComingSoon)
+└─ features/     기능별 폴더 (한 기능 = 한 폴더)
+   ├─ landing/         메인 영상 랜딩
+   ├─ dashboard/       관리자 대시보드 (widgets/ + mock/ + types)
+   ├─ asset-register/  자산 등록 (sections/ + formConfig)
+   └─ repair-request/  수리 요청 (예정)
+```
+
+자세한 설계·데이터 모델은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고.
+
+## 라우트 맵
+
+| 경로 | 화면 |
+| --- | --- |
+| `/` | 메인(영상 랜딩) |
+| `/asset` → `/asset/register` | 직원용 자산 등록 (모바일) |
+| `/asset/{home,list,requests,more}` | 직원용 나머지 탭 (미구현 자리표시) |
+| `/admin` | 관리자 대시보드 |
+
+## 진행 현황 (단계별)
+
+- [x] **0단계** 기반 세팅 (TS 전환, ESLint/Prettier/Vitest/TypeDoc, 타입·상수, 문서)
+- [x] **1단계** 공통 UI (Card / Badge / StatCard)
+- [x] **2단계** 관리자 대시보드 (이미지 ④)
+- [x] **3단계** 자산 등록 (이미지 ②, 모바일)
+- [ ] **4단계** 수리 요청 (이미지 ③) — 3단계 폼 + 완료화면 + AI 봇 UI
+- [ ] **5단계** 백엔드 연동 (구글시트 / Slack / 메일 자동회신)
+
+## 데이터 & 연동 메모
+
+- 현재 각 화면은 **더미(mock) 데이터**로 동작. 실제 데이터는 5단계에서 구글시트로 연동.
+- Google Apps Script는 정적 호스팅(GitHub Pages)이 못 하는 서버 작업(시트 저장/Slack/메일)을 담당.
+- **API 키/URL(GAS, Slack)은 마무리 단계에 사용자가 직접 제공** 예정. `src/config/api.ts`의 `GAS_URL`에 설정.
+
+## 커밋 히스토리 컨벤션 예시
+
+```
+feat: 관리자 대시보드 화면 구현 (이미지 4)
+chore: TypeScript 전환 및 프로젝트 기반 세팅
+fix: useForm 제네릭 제약 완화
+```
