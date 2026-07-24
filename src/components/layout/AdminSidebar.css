@@ -1,0 +1,86 @@
+.admin-sidebar {
+  width: 256px;
+  flex-shrink: 0;
+  background: #0f172a;
+  color: #cbd5e1;
+  min-height: 100vh;
+  padding: 20px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 8px;
+}
+
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 단일 링크 / 그룹 헤더 공통 행 */
+.nav-item,
+.nav-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 20px;
+  color: #cbd5e1;
+  font-size: 14px;
+  text-align: left;
+}
+
+.nav-item:hover,
+.nav-group-head:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.nav-item.active {
+  background: rgba(37, 99, 235, 0.9);
+  color: #fff;
+  font-weight: 600;
+}
+
+.nav-label {
+  flex: 1;
+}
+
+.nav-chevron {
+  transition: transform 0.15s ease;
+}
+.nav-chevron.open {
+  transform: rotate(180deg);
+}
+
+.nav-sublist {
+  padding: 2px 0 6px;
+}
+
+.nav-subitem {
+  display: block;
+  padding: 8px 20px 8px 48px;
+  font-size: 13px;
+  color: #94a3b8;
+}
+.nav-subitem:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+}
+.nav-subitem.disabled {
+  color: #64748b;
+  cursor: default;
+}
+.nav-subitem.disabled:hover {
+  background: none;
+  color: #64748b;
+}
