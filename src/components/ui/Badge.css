@@ -1,0 +1,39 @@
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* 성공/정상 (예: 완료, 사용중) */
+.badge-success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* 경고/진행중 (예: 수리중, 승인 대기) */
+.badge-warning {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* 위험/부족 (예: 폐기, 재고 부족) */
+.badge-danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* 정보/접수 (예: 접수, 처리 중) */
+.badge-info {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* 중립/기본 */
+.badge-neutral {
+  background: #f1f5f9;
+  color: #475569;
+}

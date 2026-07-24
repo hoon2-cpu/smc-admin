@@ -1,0 +1,71 @@
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.stat-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+/* 아이콘 색상 테마 (연한 배경 + 진한 아이콘) */
+.stat-icon-blue {
+  background: #dbeafe;
+  color: #2563eb;
+}
+.stat-icon-green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.stat-icon-orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+.stat-icon-red {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.stat-icon-purple {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.stat-content {
+  min-width: 0;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.stat-unit {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  margin-left: 3px;
+}
+
+.stat-caption {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  margin-top: 6px;
+}
