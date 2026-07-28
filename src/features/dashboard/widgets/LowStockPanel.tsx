@@ -1,6 +1,12 @@
 import { Card, Badge } from '@/components/ui'
 import { isLowStock } from '@/lib/format'
-import { LOW_STOCK_ITEMS } from '../mock/dashboardMock'
+import type { Consumable } from '@/types'
+
+/** {@link LowStockPanel} 컴포넌트 props. */
+interface LowStockPanelProps {
+  /** 소모품 재고 목록. */
+  items: Consumable[]
+}
 
 /**
  * 소모품 재고 부족 현황 표. (이미지 ④ '소모품 재고 현황')
@@ -8,7 +14,7 @@ import { LOW_STOCK_ITEMS } from '../mock/dashboardMock'
  *
  * @returns 소모품 재고 부족 카드
  */
-export default function LowStockPanel() {
+export default function LowStockPanel({ items }: LowStockPanelProps) {
   return (
     <Card title="소모품 재고 현황 (부족 항목)">
       <table className="dash-table">
@@ -21,7 +27,7 @@ export default function LowStockPanel() {
           </tr>
         </thead>
         <tbody>
-          {LOW_STOCK_ITEMS.map((item) => {
+          {items.map((item) => {
             const low = isLowStock(item.currentStock, item.threshold)
             return (
               <tr key={item.name}>

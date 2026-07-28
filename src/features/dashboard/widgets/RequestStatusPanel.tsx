@@ -1,8 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Card, Badge, type BadgeVariant } from '@/components/ui'
-import { REQUEST_ITEMS } from '../mock/dashboardMock'
-import type { RequestStatus } from '../types'
+import type { RequestItem, RequestStatus } from '../types'
 import './RequestStatusPanel.css'
+
+/** {@link RequestStatusPanel} 컴포넌트 props. */
+interface RequestStatusPanelProps {
+  /** 신청 현황 목록. */
+  requests: RequestItem[]
+}
 
 /** 신청 진행 상태 → 뱃지 색상 매핑. (Record로 누락 방지) */
 const STATUS_VARIANT: Record<RequestStatus, BadgeVariant> = {
@@ -19,13 +24,13 @@ const TABS = ['전체', '자산 신청', '소모품 신청', '유지보수 신�
  *
  * @returns 신청 현황 카드
  */
-export default function RequestStatusPanel() {
+export default function RequestStatusPanel({ requests }: RequestStatusPanelProps) {
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>('전체')
 
-  // 탭이 바뀔 때만 재계산되도록 useMemo로 필터링 결과를 메모이즈합니다.
+  // 탭 또는 데이터가 바뀔 때만 재계산되도록 useMemo로 필터링 결과를 메모이즈합니다.
   const visibleItems = useMemo(
-    () => (activeTab === '전체' ? REQUEST_ITEMS : REQUEST_ITEMS.filter((r) => r.kind === activeTab)),
-    [activeTab],
+    () => (activeTab === '전체' ? requests : requests.filter((r) => r.kind === activeTab)),
+    [activeTab, requests],
   )
 
   return (

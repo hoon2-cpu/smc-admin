@@ -1,13 +1,19 @@
 import { Card, Badge } from '@/components/ui'
 import { getAssetStatusVariant } from '@/lib/badgeVariant'
-import { RECENT_ASSETS } from '../mock/dashboardMock'
+import type { RecentAssetItem } from '../types'
+
+/** {@link RecentAssetsTable} 컴포넌트 props. */
+interface RecentAssetsTableProps {
+  /** 최근 등록 자산 목록. */
+  assets: RecentAssetItem[]
+}
 
 /**
  * 최근 등록 자산 표. (이미지 ④ '최근 등록 자산')
  *
  * @returns 최근 등록 자산 카드
  */
-export default function RecentAssetsTable() {
+export default function RecentAssetsTable({ assets }: RecentAssetsTableProps) {
   return (
     <Card title="최근 등록 자산">
       <table className="dash-table">
@@ -22,7 +28,7 @@ export default function RecentAssetsTable() {
           </tr>
         </thead>
         <tbody>
-          {RECENT_ASSETS.map((asset) => (
+          {assets.map((asset) => (
             <tr key={asset.assetNumber}>
               <td>{asset.assetNumber}</td>
               <td>{asset.name}</td>

@@ -1,4 +1,5 @@
 import type { AssetStatus } from '@/constants/asset'
+import type { Consumable } from '@/types'
 
 /** 자산 구분별 집계 1건 (도넛 차트용). */
 export interface CategoryDatum {
@@ -56,4 +57,34 @@ export interface DisposalItem {
   disposalDate: string
   /** 폐기까지 남은 기준 일수(예: 30 → '30일 이내'). */
   withinDays: number
+}
+
+/** 상단 KPI 카드용 핵심 지표. */
+export interface DashboardStats {
+  /** 전체 자산 수. */
+  totalAssets: number
+  /** 사용 중 자산 수. */
+  inUseAssets: number
+  /** 수리 중 자산 수. */
+  repairingAssets: number
+  /** 폐기 예정 자산 수. */
+  disposalPlannedAssets: number
+  /** 재고 부족 소모품 종류 수. */
+  lowStockCount: number
+}
+
+/** 관리자 대시보드 전체 데이터 묶음. (mock 또는 GAS 응답) */
+export interface DashboardData {
+  /** 상단 통계. */
+  stats: DashboardStats
+  /** 자산 구분별 집계. */
+  categories: CategoryDatum[]
+  /** 신청 현황. */
+  requests: RequestItem[]
+  /** 소모품 재고 부족. */
+  lowStock: Consumable[]
+  /** 최근 등록 자산. */
+  recentAssets: RecentAssetItem[]
+  /** 폐기 예정 자산. */
+  disposals: DisposalItem[]
 }

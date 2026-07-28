@@ -1,5 +1,11 @@
 import { Card, Badge, type BadgeVariant } from '@/components/ui'
-import { DISPOSAL_ITEMS } from '../mock/dashboardMock'
+import type { DisposalItem } from '../types'
+
+/** {@link DisposalScheduleTable} 컴포넌트 props. */
+interface DisposalScheduleTableProps {
+  /** 폐기 예정 자산 목록. */
+  items: DisposalItem[]
+}
 
 /**
  * 폐기까지 남은 일수에 따라 뱃지 색상을 결정합니다.
@@ -19,7 +25,7 @@ function getDDayVariant(withinDays: number): BadgeVariant {
  *
  * @returns 폐기 예정 자산 카드
  */
-export default function DisposalScheduleTable() {
+export default function DisposalScheduleTable({ items }: DisposalScheduleTableProps) {
   return (
     <Card title="자산 폐기 예정">
       <table className="dash-table">
@@ -34,7 +40,7 @@ export default function DisposalScheduleTable() {
           </tr>
         </thead>
         <tbody>
-          {DISPOSAL_ITEMS.map((item) => (
+          {items.map((item) => (
             <tr key={item.assetNumber}>
               <td>{item.assetNumber}</td>
               <td>{item.name}</td>

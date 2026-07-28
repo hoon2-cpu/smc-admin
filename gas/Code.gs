@@ -56,17 +56,85 @@ function doPost(e) {
 }
 
 /**
- * 웹앱 상태 확인용 GET 핸들러.
- * 배포 반영 여부 확인을 위해 버전 태그와 토큰 활성화 상태를 함께 반환합니다.
- * @return {GoogleAppsScript.Content.TextOutput} 헬스체크 JSON
+ * GET 핸들러. `?action=dashboard`면 대시보드 집계를, 아니면 헬스체크를 반환합니다.
+ * @param {GoogleAppsScript.Events.DoGet} e - 요청 이벤트
+ * @return {GoogleAppsScript.Content.TextOutput} JSON 응답
  */
-function doGet() {
+function doGet(e) {
+  var params = (e && e.parameter) || {}
+
+  if (params.action === 'dashboard') {
+    // 대시보드 조회에도 동일 토큰 검증 적용
+    if (API_TOKEN && params.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+    return jsonOutput_({ ok: true, dashboard: buildDashboard_() })
+  }
+
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v2-token',
+    version: 'v3-dashboard',
     tokenEnabled: !!API_TOKEN,
   })
+}
+
+/**
+ * 자산등록 시트를 집계해 대시보드 데이터를 만듭니다.
+ * (신청현황/소모품/폐기 예정은 별도 시트가 생기기 전까지 빈 배열 → 프론트가 mock으로 채움)
+ * @return {Object} 대시보드 데이터
+ */
+function buildDashboard_() {
+  var rows = getSheet_(SHEET_ASSET).getDataRange().getValues()
+  var categoryMap = {}
+  var stats = { totalAssets: 0, inUseAssets: 0, repairingAssets: 0, disposalPlannedAssets: 0, lowStockCount: 0 }
+  var recent = []
+
+  // 열 순서: 0등록일시 1자산번호 2자산명 3자산구분 4제조사 ... 9사용자 10위치 11상태
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i]
+    if (!r[1] && !r[2]) continue // 빈 행 스킵
+    stats.totalAssets++
+    var category = r[3] || '기타'
+    categoryMap[category] = (categoryMap[category] || 0) + 1
+    var status = r[11]
+    if (status === '사용중') stats.inUseAssets++
+    else if (status === '수리중') stats.repairingAssets++
+    else if (status === '폐기예정') stats.disposalPlannedAssets++
+
+    recent.push({
+      assetNumber: r[1],
+      name: r[2],
+      category: category,
+      acquiredDate: formatDateCell_(r[7]),
+      user: r[9] || '-',
+      status: status || '사용중',
+    })
+  }
+
+  var categories = []
+  for (var key in categoryMap) categories.push({ category: key, count: categoryMap[key] })
+
+  return {
+    stats: stats,
+    categories: categories,
+    recentAssets: recent.slice(-5).reverse(), // 최근 5건
+    requests: [],
+    lowStock: [],
+    disposals: [],
+  }
+}
+
+/**
+ * 날짜 셀을 'YYYY-MM-DD' 문자열로 변환합니다.
+ * @param {*} value - 셀 값 (Date 또는 문자열)
+ * @return {string} 날짜 문자열
+ */
+function formatDateCell_(value) {
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+  }
+  return value ? String(value).slice(0, 10) : ''
 }
 
 // ===== 요청 처리 =====

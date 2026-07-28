@@ -1,5 +1,17 @@
 /* ===== 대시보드 레이아웃 ===== */
 
+/* 실데이터 상태 안내 배지 */
+.dash-notice {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  background: #eef2ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+}
+
+
 /* 상단 통계 카드 5개 (좁아지면 자동 줄바꿈) */
 .stat-row {
   display: grid;

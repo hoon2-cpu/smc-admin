@@ -1,7 +1,14 @@
 import { Laptop, BadgeCheck, Wrench, Trash2, Package } from 'lucide-react'
 import { StatCard, type StatTone } from '@/components/ui'
+import type { DashboardStats } from '../types'
 
-/** 통계 카드 한 장의 표시 데이터. */
+/** {@link StatCardRow} 컴포넌트 props. */
+interface StatCardRowProps {
+  /** 상단 KPI 지표. */
+  stats: DashboardStats
+}
+
+/** 통계 카드 한 장의 표시 정의. */
 interface StatDef {
   label: string
   value: string
@@ -12,25 +19,28 @@ interface StatDef {
 }
 
 /**
- * 상단 KPI 카드 정의. (이미지 ④ 상단 5개 카드)
- * 아이콘이 React 컴포넌트라 목 데이터가 아닌 위젯 내부에 둡니다.
+ * 대시보드 상단 KPI 카드 묶음. (이미지 ④ 상단 5개)
+ * 데이터는 props로 받아 mock/실데이터 어느 쪽이든 표시할 수 있습니다.
+ *
+ * @param props - {@link StatCardRowProps}
+ * @returns 통계 카드 그리드
  */
-const STATS: StatDef[] = [
-  { label: '전체 자산 수', value: '1,248', unit: '대', caption: '지난달 대비 +5.2%', tone: 'blue', Icon: Laptop },
-  { label: '사용 중 자산', value: '1,002', unit: '대', caption: '전체의 80.4%', tone: 'green', Icon: BadgeCheck },
-  { label: '수리 중 자산', value: '28', unit: '대', caption: '전체의 2.2%', tone: 'orange', Icon: Wrench },
-  { label: '폐기 예정 자산', value: '45', unit: '대', caption: '30일 이내', tone: 'red', Icon: Trash2 },
-  { label: '소모품 재고 부족', value: '16', unit: '개', caption: '즉시 확인 필요', tone: 'purple', Icon: Package },
-]
+export default function StatCardRow({ stats }: StatCardRowProps) {
+  /** 전체 대비 비율(%) 문자열. 전체가 0이면 '0'. */
+  const percentOfTotal = (count: number): string =>
+    stats.totalAssets ? ((count / stats.totalAssets) * 100).toFixed(1) : '0'
 
-/**
- * 대시보드 상단 통계 카드 묶음.
- * @returns 통계 카드 5개를 담은 그리드
- */
-export default function StatCardRow() {
+  const cards: StatDef[] = [
+    { label: '전체 자산 수', value: stats.totalAssets.toLocaleString('ko-KR'), unit: '대', caption: '전체 자산', tone: 'blue', Icon: Laptop },
+    { label: '사용 중 자산', value: stats.inUseAssets.toLocaleString('ko-KR'), unit: '대', caption: `전체의 ${percentOfTotal(stats.inUseAssets)}%`, tone: 'green', Icon: BadgeCheck },
+    { label: '수리 중 자산', value: stats.repairingAssets.toLocaleString('ko-KR'), unit: '대', caption: `전체의 ${percentOfTotal(stats.repairingAssets)}%`, tone: 'orange', Icon: Wrench },
+    { label: '폐기 예정 자산', value: stats.disposalPlannedAssets.toLocaleString('ko-KR'), unit: '대', caption: '30일 이내', tone: 'red', Icon: Trash2 },
+    { label: '소모품 재고 부족', value: stats.lowStockCount.toLocaleString('ko-KR'), unit: '개', caption: '즉시 확인 필요', tone: 'purple', Icon: Package },
+  ]
+
   return (
     <div className="stat-row">
-      {STATS.map(({ Icon, ...stat }) => (
+      {cards.map(({ Icon, ...stat }) => (
         <StatCard
           key={stat.label}
           label={stat.label}

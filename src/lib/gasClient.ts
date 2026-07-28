@@ -52,3 +52,17 @@ export async function submitToGas(type: GasRequestType, payload: object): Promis
     return { ok: false, message: '전송 중 오류가 발생했습니다.' }
   }
 }
+
+/**
+ * Google Apps Script 웹앱에서 데이터를 조회합니다(GET).
+ * 쿼리스트링에 공유 토큰을 함께 실어 보냅니다.
+ *
+ * @param params - 쿼리 파라미터 (예: `{ action: 'dashboard' }`)
+ * @returns 파싱된 JSON. mock 모드면 `null`.
+ */
+export async function getFromGas(params: Record<string, string>): Promise<unknown> {
+  if (isMockMode()) return null
+  const query = new URLSearchParams({ ...params, token: API_TOKEN }).toString()
+  const response = await fetch(`${GAS_URL}?${query}`)
+  return response.json()
+}
