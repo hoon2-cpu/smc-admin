@@ -13,7 +13,7 @@
 // `: string` 명시 이유: 값을 리터럴 타입으로 좁히지 않아야
 // gasClient의 `GAS_URL === '#'`(mock 판별) 비교가 타입 에러 없이 동작합니다.
 export const GAS_URL: string =
-  'https://script.google.com/macros/s/AKfycbwRq1qlbYa_kAwAkYG9_UrVzgjY7-hI2X3eJRXrL16O_zsqmvMpOeZtp5JTzGxcwl1nUA/exec'
+  'https://script.google.com/macros/s/AKfycbyTgr3EzXk-TZ32NgRLYT72j48AMgRZq7JeJBUgeJFebJ9uha0urxvzDW9S0nwLMPYGhA/exec'
 
 /**
  * 프론트엔드 → GAS 요청 검증용 공유 토큰. `.env`의 VITE_API_TOKEN에서 주입됩니다.
