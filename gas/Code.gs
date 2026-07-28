@@ -57,10 +57,16 @@ function doPost(e) {
 
 /**
  * 웹앱 상태 확인용 GET 핸들러.
+ * 배포 반영 여부 확인을 위해 버전 태그와 토큰 활성화 상태를 함께 반환합니다.
  * @return {GoogleAppsScript.Content.TextOutput} 헬스체크 JSON
  */
 function doGet() {
-  return jsonOutput_({ ok: true, message: 'IT 자산관리 백엔드 정상 동작 중' })
+  return jsonOutput_({
+    ok: true,
+    message: 'IT 자산관리 백엔드 정상 동작 중',
+    version: 'v2-token',
+    tokenEnabled: !!API_TOKEN,
+  })
 }
 
 // ===== 요청 처리 =====
