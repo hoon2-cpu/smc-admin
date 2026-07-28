@@ -14,3 +14,12 @@
 // gasClient의 `GAS_URL === '#'`(mock 판별) 비교가 타입 에러 없이 동작합니다.
 export const GAS_URL: string =
   'https://script.google.com/macros/s/AKfycbwRq1qlbYa_kAwAkYG9_UrVzgjY7-hI2X3eJRXrL16O_zsqmvMpOeZtp5JTzGxcwl1nUA/exec'
+
+/**
+ * 프론트엔드 → GAS 요청 검증용 공유 토큰. `.env`의 VITE_API_TOKEN에서 주입됩니다.
+ *
+ * 정적 사이트 특성상 빌드 결과에 포함되어 완전한 비밀은 아니지만,
+ * URL만 아는 무단 요청을 1차로 차단하고 토큰 교체로 무효화할 수 있습니다.
+ * Apps Script(Code.gs)의 `API_TOKEN`과 동일해야 요청이 허용됩니다.
+ */
+export const API_TOKEN: string = import.meta.env.VITE_API_TOKEN ?? ''

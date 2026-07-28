@@ -12,6 +12,13 @@
 
 // ===== 설정 (사용 환경에 맞게 수정) =====
 
+/**
+ * 요청 검증용 공유 토큰. 프론트엔드 .env의 VITE_API_TOKEN과 동일하게 설정하세요.
+ * 비워두면(''): 토큰 검증을 건너뜁니다(모든 요청 허용).
+ * 값을 넣으면: 동일 토큰이 없는 요청은 거부합니다.
+ */
+var API_TOKEN = ''
+
 /** Slack Incoming Webhook URL. 비우면 Slack 알림을 건너뜁니다. */
 var SLACK_WEBHOOK_URL = ''
 
@@ -31,6 +38,12 @@ var SHEET_USER = '5_사용자목록'
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents)
+
+    // 토큰이 설정된 경우, 일치하지 않는 요청은 거부합니다(무단 쓰기 차단).
+    if (API_TOKEN && body.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+
     var type = body.type
     var payload = body.payload || {}
 

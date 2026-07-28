@@ -1,4 +1,4 @@
-import { GAS_URL } from '@/config/api'
+import { GAS_URL, API_TOKEN } from '@/config/api'
 
 /** 백엔드로 보낼 수 있는 요청 종류. */
 export type GasRequestType = 'assetRegister' | 'repairRequest'
@@ -42,7 +42,8 @@ export async function submitToGas(type: GasRequestType, payload: object): Promis
     const response = await fetch(GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ type, payload }),
+      // token: 서버(Code.gs)가 이 값을 검증해 무단 요청을 차단합니다.
+      body: JSON.stringify({ type, payload, token: API_TOKEN }),
     })
     return (await response.json()) as GasResult
   } catch (error) {
