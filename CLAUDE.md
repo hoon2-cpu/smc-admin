@@ -98,6 +98,18 @@ src/
 - [x] **5단계** 백엔드 연동 — GAS 웹앱 연결 완료 (GET/POST 검증됨, 시트 저장·접수번호 발급 정상)
   - 세팅 방법: [docs/BACKEND_SETUP.md](docs/BACKEND_SETUP.md)
   - `src/config/api.ts`의 `GAS_URL`에 실제 웹앱 URL 반영됨
+- [x] **보안** 공유 토큰 검증 완료 — 잘못된/없는 토큰 요청 거부 확인
+  - 토큰은 `.env`의 `VITE_API_TOKEN`(git 미포함) + Apps Script `Code.gs`의 `API_TOKEN`이 일치해야 통과
+  - ⚠️ 실운영 전 토큰 재발급 권장(개발 중 값 노출됨). 교체 시 `.env`·Code.gs 양쪽 변경 후 GAS 재배포
+
+## 다음 진행 후보 (미완)
+
+- [ ] 자산등록 POST 실제 저장 검증 (`2_자산등록기록`)
+- [ ] 관리자 대시보드 실데이터 연동 (GAS `doGet` 확장 + `useDashboardData` 훅, 현재는 mock)
+- [ ] GitHub 저장소 push → Pages 공개 배포
+- [ ] 디자인/문구 다듬기
+
+> GAS 재배포 시 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
 
 ## 데이터 & 연동 메모
 
