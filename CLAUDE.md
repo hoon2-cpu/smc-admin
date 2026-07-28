@@ -98,24 +98,36 @@ src/
 - [x] **5단계** 백엔드 연동 — GAS 웹앱 연결 완료 (GET/POST 검증됨, 시트 저장·접수번호 발급 정상)
   - 세팅 방법: [docs/BACKEND_SETUP.md](docs/BACKEND_SETUP.md)
   - `src/config/api.ts`의 `GAS_URL`에 실제 웹앱 URL 반영됨
-- [x] **보안** 공유 토큰 검증 완료 — 잘못된/없는 토큰 요청 거부 확인
+- [x] **보안** 공유 토큰 검증 구현 — 잘못된/없는 토큰 요청 거부 확인
   - 토큰은 `.env`의 `VITE_API_TOKEN`(git 미포함) + Apps Script `Code.gs`의 `API_TOKEN`이 일치해야 통과
-  - ⚠️ 실운영 전 토큰 재발급 권장(개발 중 값 노출됨). 교체 시 `.env`·Code.gs 양쪽 변경 후 GAS 재배포
+- [x] **자산등록 POST 검증** — 실제 저장(`2_자산등록기록`) + 대시보드 집계 반영까지 엔드투엔드 확인
+- [x] **관리자 대시보드 실데이터 연동** — GAS `doGet ?action=dashboard`(v3) + `useDashboardData` 훅
+  - 위젯 6종 props 기반, 실데이터 없으면/부분이면 mock 폴백 병합
+  - 현재 배포: `v3-dashboard`, `GAS_URL`은 새 배포 URL로 반영됨
+
+## ⚠️ 미해결 (다음 세션 우선 처리)
+
+- **GAS 토큰이 현재 꺼짐(`tokenEnabled:false`)** — 코드 재붙여넣기 시 `API_TOKEN`이 `''`로 초기화됨.
+  복구: Apps Script `Code.gs`의 `var API_TOKEN`에 `.env`와 동일 값 입력 → 저장 → 새 버전 재배포.
+  (겸사겸사 `formatDateCell_` 날짜 포맷 수정본도 이때 함께 반영됨)
+- **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]` 행 삭제.
+- 실운영 전 **토큰 재발급** 권장(개발 중 값 노출됨).
 
 ## 다음 진행 후보 (미완)
 
-- [ ] 자산등록 POST 실제 저장 검증 (`2_자산등록기록`)
-- [ ] 관리자 대시보드 실데이터 연동 (GAS `doGet` 확장 + `useDashboardData` 훅, 현재는 mock)
 - [ ] GitHub 저장소 push → Pages 공개 배포
 - [ ] 디자인/문구 다듬기
+- [ ] (선택) 신청/소모품/폐기 전용 시트 추가 → 대시보드 나머지 섹션도 실데이터화
 
-> GAS 재배포 시 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
+> GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별(`v3-dashboard`가 최신).
 
 ## 데이터 & 연동 메모
 
-- 현재 각 화면은 **더미(mock) 데이터**로 동작. 실제 데이터는 5단계에서 구글시트로 연동.
+- 신청/등록 폼은 GAS로 **실제 저장**됨. 관리자 대시보드는 자산 시트를 **실집계**하고, 데이터 없는 섹션(신청/소모품/폐기)은 mock으로 폴백.
 - Google Apps Script는 정적 호스팅(GitHub Pages)이 못 하는 서버 작업(시트 저장/Slack/메일)을 담당.
-- **API 키/URL(GAS, Slack)은 마무리 단계에 사용자가 직접 제공** 예정. `src/config/api.ts`의 `GAS_URL`에 설정.
+- `GAS_URL`은 `src/config/api.ts`에 설정. `.env`의 `VITE_API_TOKEN`으로 요청 검증(서버 `API_TOKEN`과 일치 필요).
+- Slack Webhook URL / Gmail 발송은 `Code.gs` 내부 설정(프론트에 미노출).
 
 ## 커밋 히스토리 컨벤션 예시
 
