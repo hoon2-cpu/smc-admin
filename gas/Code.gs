@@ -131,7 +131,8 @@ function buildDashboard_() {
  * @return {string} 날짜 문자열
  */
 function formatDateCell_(value) {
-  if (value instanceof Date) {
+  // instanceof Date가 실행 컨텍스트에 따라 실패할 수 있어 getTime 유무로 판정.
+  if (value && typeof value.getTime === 'function') {
     return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd')
   }
   return value ? String(value).slice(0, 10) : ''
