@@ -15,16 +15,36 @@ export interface DashboardState {
 }
 
 /**
+ * 서버 응답에 실제 자산 데이터가 있는지 판정합니다.
+ * (자산이 0건이면 통계·집계가 모두 비어 mock을 유지하는 편이 화면상 일관적)
+ *
+ * @param real - 서버가 반환한 부분 데이터
+ * @returns 의미 있는 실데이터가 있으면 true
+ */
+function hasRealData(real: Partial<DashboardData>): boolean {
+  return (
+    (real.stats?.totalAssets ?? 0) > 0 ||
+    !!real.categories?.length ||
+    !!real.recentAssets?.length ||
+    !!real.requests?.length ||
+    !!real.lowStock?.length ||
+    !!real.disposals?.length
+  )
+}
+
+/**
  * 실데이터(Partial)를 mock 위에 병합합니다.
- * 서버가 채우지 못한(빈 배열) 섹션은 mock 값을 그대로 유지해
- * 재배포 전이나 데이터가 없을 때도 화면이 비지 않도록 합니다.
+ * 서버가 채우지 못한(빈) 섹션은 mock 값을 유지해, 재배포 전이나
+ * 데이터가 없을 때도 화면이 비지 않도록 합니다.
+ * (자산 0건이면 통계도 0이므로 mock 통계로 대체 → 도넛/통계 불일치 방지)
  *
  * @param real - 서버가 반환한 부분 데이터
  * @returns 완전한 {@link DashboardData}
  */
 function mergeWithMock(real: Partial<DashboardData>): DashboardData {
+  const statsHasData = (real.stats?.totalAssets ?? 0) > 0
   return {
-    stats: real.stats ?? DASHBOARD_MOCK.stats,
+    stats: statsHasData && real.stats ? real.stats : DASHBOARD_MOCK.stats,
     categories: real.categories?.length ? real.categories : DASHBOARD_MOCK.categories,
     requests: real.requests?.length ? real.requests : DASHBOARD_MOCK.requests,
     lowStock: real.lowStock?.length ? real.lowStock : DASHBOARD_MOCK.lowStock,
@@ -54,7 +74,8 @@ export function useDashboardData(): DashboardState {
       if (!alive) return
       if (real) {
         setData(mergeWithMock(real))
-        setUsingMock(false)
+        // 실제 데이터가 있을 때만 mock 배지를 내립니다(빈 시트면 mock 유지).
+        setUsingMock(!hasRealData(real))
       }
       setLoading(false)
     })
