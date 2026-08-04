@@ -14,6 +14,23 @@
 - 🗄️ **DB**: Google Sheets · **API**: Google Apps Script(REST 역할, 화면 없음) · 파일: Google Drive
 - 배포: 한 사이트(GitHub Pages), `BrowserRouter`로 `/admin/*` 경로 분리 (`#` 없음)
 
+## 🧭 핵심 아키텍처 원칙 (최우선 · 모든 데이터 설계의 기준)
+
+이 프로젝트는 **'월마감 자동화 시스템'이 아니다.**
+**'구매 데이터를 중심으로 총무 업무를 관리하는 플랫폼'**이다.
+
+- **Purchase DB = Single Source of Truth(SSOT)**. 모든 기능은 Purchase DB를 **참조**한다.
+- **월마감(Closing)은 하나의 Module**일 뿐이고, **정산은 하나의 Output(Export)**일 뿐이다.
+- Import / Export / Dashboard / Asset / Closing / Statistics 는 서로 **느슨하게 결합(Loose Coupling)**된다.
+  - 모듈은 서로의 DB에 직접 쓰지 않는다. **Purchase DB를 정해진 읽기 계약으로 참조**하고, 자산 등 이관은 **단방향**으로 넘긴다.
+- **변경 격리(Adaptation Layer)**: 회사 업무 프로세스·재무 양식이 바뀌어도
+  **DB 구조는 유지**하고 **Import · Export · Rule · Template만 수정**해서 대응한다.
+  → 변동성이 큰 부분(입력 매핑/출력 양식/규칙)을 DB 스키마와 분리해 격리한다.
+
+> ⏭️ **다음 세션 최우선**: 6~7단계(Master/Purchase) 진입 **전에 데이터 아키텍처(SSOT) 설계**부터 확정한다.
+> (Purchase DB 스키마 + Import→DB 매핑 + DB→Closing/Export 템플릿 + 모듈 간 읽기 계약)
+> 1~4단계(모듈 플랫폼 틀)는 이 원칙과 충돌하지 않으나, SSOT 데이터 설계는 아직 미착수 상태다.
+
 ## 기술 스택
 
 - **React 18 + TypeScript + Vite**
@@ -131,13 +148,16 @@ src/
   - AdminLayout에 Header(Breadcrumb·검색·사용자) + Footer + 반응형(모바일 드로어)
   - 공통 컴포넌트 보강: Button / Table / Modal / Breadcrumb (Notion·Linear·Material 톤)
   - 미사용 레이아웃 파일 정리(AppShell/AdminSidebar/Employee·Support/BottomNav/landing 등)
-- [ ] **6단계** Master(코드) 구조 설계
-- [ ] **7단계** Purchase(구매·정산) Module 설계
-  - 프로세스: 아마란스 구매품의 Import(엑셀) 또는 직접등록/정기지출 → 구매 → 영수증 Drive 저장 → Master 자동매핑 → 월마감(기존 월마감 시트 해당 월 탭 작성) → 아마란스 정산품의 등록 (※ 아마란스 API 미사용, Excel Import 기반)
+- [ ] **6단계** 데이터 아키텍처(SSOT) + Master(코드) 구조 설계 ← **Master/Purchase 진입 전 필수 선행**
+  - Purchase DB를 SSOT로 확정. Import→DB 매핑 규칙(Rule), DB→출력 템플릿(Template), 모듈 간 읽기 계약 정의
+  - 변경 격리: DB 스키마 고정, 변동성은 Import/Export/Rule/Template로 흡수
+- [ ] **7단계** Purchase(구매·정산) Module 설계 — **Purchase DB(SSOT) 중심**
+  - 프로세스: 아마란스 구매품의 Import(엑셀) 또는 직접등록/정기지출 → 구매 → 영수증 Drive 저장 → Master 자동매핑 → **Purchase DB 적재** → (Output) 월마감 시트 해당 월 탭 작성 → 아마란스 정산품의 등록 (※ 아마란스 API 미사용, Excel Import 기반)
+  - 월마감=Module, 정산=Output. 둘 다 Purchase DB를 참조하는 파생물일 뿐
 - [ ] **8단계** Dashboard 개선
 - [ ] **9단계** Asset Module 연계 (구매 완료 품목 중 자산 대상 → '자산 등록'으로 전달. 예: 노트북/모니터/프린터. Claude·ChatGPT·택배·렌탈료·전기/통신비 등은 구매·정산에서만 관리)
 - [ ] **10단계** GAS API 설계 (Main.gs 라우터 + module/action 디스패치 → 서비스별 .gs 분리)
-- [ ] **11단계** DB(Sheets) 설계 (Master들 + Purchase/Asset/Consumable/Repair/Receipt/Closing_DB)
+- [ ] **11단계** DB(Sheets) 설계 (Master들 + Purchase/Asset/Consumable/Repair/Receipt/Closing_DB) — **Purchase_DB = SSOT** 기준, 6단계 설계 확정본을 실제 시트로 구현
 - [ ] **12단계** 최종 리팩터링
 
 ## ⚠️ 미해결 (다음 세션 우선 처리)
