@@ -2,9 +2,9 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import LandingPage from '@/features/landing/LandingPage'
 import AdminDashboardPage from '@/features/dashboard/AdminDashboardPage'
 import EmployeeLayout from '@/components/layout/EmployeeLayout'
-import AssetRegisterPage from '@/features/asset-register/AssetRegisterPage'
+import AssetRegisterPage from '@/features/asset/AssetRegisterPage'
 import SupportLayout from '@/components/layout/SupportLayout'
-import RepairRequestPage from '@/features/repair-request/RepairRequestPage'
+import RepairRequestPage from '@/features/repair/RepairRequestPage'
 import ComingSoon from '@/components/feedback/ComingSoon'
 
 /**
