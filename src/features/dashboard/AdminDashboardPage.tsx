@@ -1,4 +1,3 @@
-import AppShell from '@/components/layout/AppShell'
 import StatCardRow from './widgets/StatCardRow'
 import AssetCategoryChart from './widgets/AssetCategoryChart'
 import RequestStatusPanel from './widgets/RequestStatusPanel'
@@ -11,7 +10,8 @@ import './AdminDashboardPage.css'
 
 /**
  * 관리자 대시보드 페이지. (이미지 ④)
- * useDashboardData 훅에서 데이터를 받아 위젯에 분배만 합니다.
+ * 공통 레이아웃(AdminLayout) 콘텐츠 영역에 렌더링되므로, 이 컴포넌트는
+ * 위젯 배치만 담당합니다. useDashboardData 훅에서 데이터를 받아 분배합니다.
  * (mock 모드/미배포/조회 실패 시 mock으로 자동 폴백)
  *
  * @returns 관리자 대시보드 페이지
@@ -20,7 +20,7 @@ export default function AdminDashboardPage() {
   const { data, loading, usingMock } = useDashboardData()
 
   return (
-    <AppShell title="대시보드" notificationCount={12}>
+    <>
       {/* 실데이터 조회 중/샘플 데이터 여부를 알리는 배지 */}
       {loading && <p className="dash-notice">실데이터 불러오는 중…</p>}
       {!loading && usingMock && (
@@ -43,6 +43,6 @@ export default function AdminDashboardPage() {
       </div>
 
       <QuickLinks />
-    </AppShell>
+    </>
   )
 }

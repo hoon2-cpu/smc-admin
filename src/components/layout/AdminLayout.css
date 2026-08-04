@@ -1,0 +1,21 @@
+.admin-layout {
+  min-height: 100vh;
+}
+
+/* 사이드바(256px)는 고정이므로 본문을 그만큼 밀어줍니다. */
+.admin-main {
+  margin-left: 256px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 28px;
+}
+
+.admin-loading {
+  padding: 40px;
+  color: var(--color-text-sub);
+}
