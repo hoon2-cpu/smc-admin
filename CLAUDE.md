@@ -4,17 +4,20 @@
 
 ## 프로젝트 개요
 
-**IT 자산 신청 & 관리 대시보드** — 회사 IT 자산의 신청·등록·수리접수·현황 관리를 한 곳에서 처리하는 웹 시스템.
+**The SMC Admin Platform** — The SMC 총무 업무를 위한 **모듈(Module) 기반 통합 관리 플랫폼**.
+(기존 "IT 자산관리 시스템"을 폐기하지 않고 확장 가능한 플랫폼으로 리팩터링 중)
 
-- 👤 **직원용** (모바일 우선): 자산 등록(QR), 수리 요청
-- 🛠️ **관리자용** (데스크톱): 자산/신청/재고/폐기 통합 대시보드
-- 🗄️ **DB**: Google Sheets (Google Apps Script 연동)
-- 배포: **A 방식** — 한 사이트(GitHub Pages) + 경로 분리 (`#/asset`, `#/admin`)
+- 하나의 웹사이트, 내부는 **Feature(Module) 단위로 완전 분리** (`features/<module>`)
+- **모듈 레지스트리**(`src/app/registry.ts`)에 등록하면 사이드바 메뉴 + 라우트가 **자동 생성** (확장 지점)
+- 현재 모듈: Dashboard / 구매·정산(purchase) / 자산(asset) / 소모품(consumable) / 수리(repair) / 코드-Master / 사용자(users) / 설정(settings)
+- 향후: 차량 / 계약 / 회의실 / 방문객 / 예산 관리
+- 🗄️ **DB**: Google Sheets · **API**: Google Apps Script(REST 역할, 화면 없음) · 파일: Google Drive
+- 배포: 한 사이트(GitHub Pages), `BrowserRouter`로 `/admin/*` 경로 분리 (`#` 없음)
 
 ## 기술 스택
 
 - **React 18 + TypeScript + Vite**
-- 라우팅: `react-router-dom` (HashRouter — GitHub Pages 새로고침 404 방지)
+- 라우팅: `react-router-dom` (BrowserRouter, `/admin/*`) — GitHub Pages 새로고침은 빌드시 생성되는 `dist/404.html` SPA 폴백으로 대응
 - 차트: `recharts` / 아이콘: `lucide-react`
 - 테스트: `Vitest` + `@testing-library/react`
 - 품질: `ESLint` + `Prettier` / 문서: `TypeDoc`
@@ -60,35 +63,45 @@
 
 ```
 src/
+├─ app/          플랫폼 코어
+│  ├─ types.ts       ModuleDef 타입
+│  ├─ registry.ts    MODULES 배열 (모듈 등록 = 메뉴·라우트 자동 생성)
+│  └─ router.tsx     MODULES → /admin/<path> 라우트 자동 생성
 ├─ types/        도메인 타입 (Asset, RepairTicket, ChangeLog, AppUser, Consumable)
-├─ constants/    선택 옵션·enum (제조사/부서/상태/사옥 ...) — as const 파생
-├─ config/       백엔드 연동 설정 (GAS URL)
-├─ lib/          순수 유틸 함수 (+ *.test.ts) — 부수효과 없음
+├─ constants/    선택 옵션·enum — as const 파생
+├─ config/       백엔드 연동 설정 (GAS URL, API 토큰)
+├─ lib/          순수 유틸/클라이언트 (gasClient 등, + *.test.ts)
 ├─ hooks/        공통 커스텀 훅 (useForm 등)
 ├─ components/
-│  ├─ ui/        표현용 순수 UI (Card, Badge, StatCard)
+│  ├─ ui/        표현용 순수 UI (Card, Badge, StatCard, + 예정: Button/Table/Modal/Breadcrumb)
 │  ├─ form/      재사용 폼 (FormSection, FormField, TextInput, SelectField)
-│  ├─ layout/    레이아웃 (AppShell/AdminSidebar/TopBar, EmployeeLayout/MobileHeader/BottomNav)
+│  ├─ layout/    AdminLayout · ModuleSidebar · TopBar (공통 레이아웃)
 │  └─ feedback/  안내 (ComingSoon)
-└─ features/     기능별 폴더 (한 기능 = 한 폴더)
-   ├─ landing/         메인 영상 랜딩
-   ├─ dashboard/       관리자 대시보드 (widgets/ + mock/ + types)
-   ├─ asset-register/  자산 등록 (sections/ + formConfig)
-   └─ repair-request/  수리 요청 (예정)
+└─ features/     모듈별 폴더 (한 모듈 = 한 폴더, index.ts에서 ModuleDef export)
+   ├─ dashboard/  asset/  repair/          (구현됨)
+   ├─ purchase/  consumable/  master/  users/  settings/   (뼈대·ComingSoon)
+   └─ landing/    (미사용 — 정리 예정)
 ```
+
+> ⚠️ **미사용/정리 예정 파일**(5단계 정리 대상): `layout/AppShell·AdminSidebar·sidebarConfig`, `layout/EmployeeLayout·SupportLayout·SupportHeader·BottomNav·bottomTabs`, `features/landing`. (라우팅 전환으로 미사용화됨, 빌드엔 영향 없음)
 
 자세한 설계·데이터 모델은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고.
 
-## 라우트 맵
+## 라우트 맵 (BrowserRouter)
 
 | 경로 | 화면 |
 | --- | --- |
-| `/` | 메인(영상 랜딩) |
-| `/asset` → `/asset/register` | 직원용 자산 등록 (모바일) |
-| `/asset/{home,list,requests,more}` | 직원용 나머지 탭 (미구현 자리표시) |
-| `/admin` | 관리자 대시보드 |
+| `/` | → `/admin/dashboard` 리다이렉트 |
+| `/admin/dashboard` | 대시보드 |
+| `/admin/purchase` | 구매·정산관리 (준비중) |
+| `/admin/assets` | 자산관리 (기존 자산등록) |
+| `/admin/consumables` | 소모품관리 (준비중) |
+| `/admin/repair` | 수리관리 (기존 수리요청) |
+| `/admin/master` | 코드(Master)관리 (준비중) |
+| `/admin/users` | 사용자관리 (준비중) |
+| `/admin/settings` | 설정 (준비중) |
 
-## 진행 현황 (단계별)
+## 진행 현황 — 1차(IT 자산 시스템) 완료분
 
 - [x] **0단계** 기반 세팅 (TS 전환, ESLint/Prettier/Vitest/TypeDoc, 타입·상수, 문서)
 - [x] **1단계** 공통 UI (Card / Badge / StatCard)
@@ -104,6 +117,28 @@ src/
 - [x] **관리자 대시보드 실데이터 연동** — GAS `doGet ?action=dashboard`(v3) + `useDashboardData` 훅
   - 위젯 6종 props 기반, 실데이터 없으면/부분이면 mock 폴백 병합
   - 현재 배포: `v3-dashboard`, `GAS_URL`은 새 배포 URL로 반영됨
+
+## 🏗️ 플랫폼 전환 (The SMC Admin Platform) — 12단계
+
+> 각 단계는 **사용자 승인 후** 다음 단계 진행. 기존 코드 최대한 재사용, 폐기 없음.
+
+- [x] **1단계** 현재 구조 분석
+- [x] **2단계** 새 플랫폼 구조 설계 (모듈 레지스트리 / 단일 Layout / `/admin/*` / GAS·Sheets 분리)
+  - 결정: BrowserRouter · 기존 직원/서포트 화면은 admin 모듈로 통합 · `/`→`/admin/dashboard` · 폴더명 `features/` 유지
+- [x] **3단계** 폴더 구조 리팩터링 (asset-register→asset, repair-request→repair, 신규 모듈 뼈대, 모듈 레지스트리 도입)
+- [x] **4단계** 라우팅 전환 (BrowserRouter + 레지스트리 자동 라우트 + AdminLayout/ModuleSidebar + 404.html + 모듈 lazy)
+- [ ] **5단계** 공통 Layout 완성 ← **다음 시작점**
+  - AdminLayout에 Header(Breadcrumb·검색·사용자) + Footer + 반응형(모바일 드로어)
+  - 공통 컴포넌트 보강: Button / Table / Modal / Breadcrumb (Notion·Linear·Material 톤)
+  - 미사용 레이아웃 파일 정리(AppShell/AdminSidebar/Employee·Support/BottomNav/landing 등)
+- [ ] **6단계** Master(코드) 구조 설계
+- [ ] **7단계** Purchase(구매·정산) Module 설계
+  - 프로세스: 아마란스 구매품의 Import(엑셀) 또는 직접등록/정기지출 → 구매 → 영수증 Drive 저장 → Master 자동매핑 → 월마감(기존 월마감 시트 해당 월 탭 작성) → 아마란스 정산품의 등록 (※ 아마란스 API 미사용, Excel Import 기반)
+- [ ] **8단계** Dashboard 개선
+- [ ] **9단계** Asset Module 연계 (구매 완료 품목 중 자산 대상 → '자산 등록'으로 전달. 예: 노트북/모니터/프린터. Claude·ChatGPT·택배·렌탈료·전기/통신비 등은 구매·정산에서만 관리)
+- [ ] **10단계** GAS API 설계 (Main.gs 라우터 + module/action 디스패치 → 서비스별 .gs 분리)
+- [ ] **11단계** DB(Sheets) 설계 (Master들 + Purchase/Asset/Consumable/Repair/Receipt/Closing_DB)
+- [ ] **12단계** 최종 리팩터링
 
 ## ⚠️ 미해결 (다음 세션 우선 처리)
 
