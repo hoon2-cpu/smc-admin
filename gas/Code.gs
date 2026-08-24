@@ -13,11 +13,15 @@
 // ===== 설정 (사용 환경에 맞게 수정) =====
 
 /**
- * 요청 검증용 공유 토큰. 프론트엔드 .env의 VITE_API_TOKEN과 동일하게 설정하세요.
- * 비워두면(''): 토큰 검증을 건너뜁니다(모든 요청 허용).
- * 값을 넣으면: 동일 토큰이 없는 요청은 거부합니다.
+ * 요청 검증용 공유 토큰.
+ * 코드에 직접 쓰지 않고 **스크립트 속성(Script Properties)** 에서 읽습니다.
+ * → 코드를 다시 붙여넣어도 토큰이 사라지지 않습니다(반복되던 문제 해결).
+ *
+ * 설정(최초 1회): [프로젝트 설정] → [스크립트 속성] → 속성 추가
+ *   속성: API_TOKEN / 값: 프론트엔드 .env의 VITE_API_TOKEN과 동일 값
+ * 비워두면 토큰 검증을 건너뜁니다(모든 요청 허용).
  */
-var API_TOKEN = ''
+var API_TOKEN = PropertiesService.getScriptProperties().getProperty('API_TOKEN') || ''
 
 /** Slack Incoming Webhook URL. 비우면 Slack 알림을 건너뜁니다. */
 var SLACK_WEBHOOK_URL = ''
