@@ -1,3 +1,19 @@
+.asset-notice {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  background: #eef2ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+}
+
+.asset-empty {
+  text-align: center;
+  color: var(--color-text-sub);
+  padding: 28px 8px;
+}
+
 .asset-stat-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

@@ -71,12 +71,48 @@ function doGet(e) {
     return jsonOutput_({ ok: true, dashboard: buildDashboard_() })
   }
 
+  if (params.action === 'assets') {
+    if (API_TOKEN && params.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+    return jsonOutput_({ ok: true, assets: buildAssets_() })
+  }
+
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v3-dashboard',
+    version: 'v4-assets',
     tokenEnabled: !!API_TOKEN,
   })
+}
+
+/**
+ * 자산등록 시트를 자산 목록(AssetRow[])으로 변환합니다. (최신 등록 먼저)
+ * @return {Object[]} 자산 목록
+ */
+function buildAssets_() {
+  var rows = getSheet_(SHEET_ASSET).getDataRange().getValues()
+  var out = []
+  // 열: 0등록일시 1자산번호 2자산명 3구분 4제조사 5모델 6시리얼 7취득일 8금액
+  //     9사용자 10위치 11상태 12비고 13관리번호 14키값 15취득구분 16렌탈사
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i]
+    if (!r[1] && !r[2]) continue
+    out.push({
+      assetNumber: r[1] || '',
+      name: r[2] || '',
+      category: r[3] || '기타',
+      manufacturer: r[4] || '',
+      acquisitionType: r[15] || '구매',
+      rentalCompany: r[16] || '',
+      managementNumber: r[13] || '',
+      user: r[9] || '-',
+      location: r[10] || '',
+      status: r[11] || '사용중',
+      acquiredDate: formatDateCell_(r[7]),
+    })
+  }
+  return out.reverse()
 }
 
 /**
@@ -142,29 +178,47 @@ function formatDateCell_(value) {
 
 /**
  * 자산 등록 데이터를 시트에 저장하고 Slack 알림을 보냅니다.
+ * 내부 자산번호를 자동 부여하고, 구매/렌탈 관련 필드까지 함께 적재합니다.
  * @param {Object} p - 자산 등록 폼 값
- * @return {Object} 처리 결과
+ * @return {Object} 처리 결과 (부여된 자산번호 포함)
  */
 function handleAssetRegister_(p) {
   var now = new Date()
+  var assetNumber = generateAssetNumber_()
   appendRow_(SHEET_ASSET, [
-    now,
-    '', // 자산번호(운영 규칙에 따라 부여)
-    p.name,
-    p.category,
-    p.manufacturer,
-    p.model,
-    p.serialNumber,
-    p.purchaseDate,
-    p.purchaseAmount,
-    p.user,
-    p.location,
-    p.status,
-    p.note,
+    now, //                0 등록일시
+    assetNumber, //        1 자산번호(내부 자동 부여)
+    p.name, //             2 자산명
+    p.category, //         3 구분
+    p.manufacturer, //     4 제조사
+    p.model, //            5 모델명
+    p.serialNumber, //     6 시리얼
+    p.purchaseDate, //     7 취득일(구매일/렌탈시작일)
+    p.purchaseAmount, //   8 구매금액
+    p.user, //             9 사용자
+    p.location, //         10 위치
+    p.status, //           11 상태
+    p.note, //             12 비고
+    p.managementNumber, // 13 관리번호(업체 부여)
+    p.keyValue, //         14 키값
+    p.acquisitionType, //  15 취득구분(구매/렌탈)
+    p.rentalCompany, //    16 렌탈사
   ])
 
-  notifySlack_('🖥️ *새 자산 등록*\n' + p.name + ' / ' + p.manufacturer + ' / ' + p.category)
-  return { ok: true }
+  notifySlack_('🖥️ *새 자산 등록* ' + assetNumber + '\n' + p.name + ' / ' + p.manufacturer + ' / ' + p.category)
+  return { ok: true, assetNumber: assetNumber }
+}
+
+/**
+ * 내부 자산번호를 생성합니다. 형식: `AST-YYYY-####` (시트 누적 순번).
+ * @return {string} 자산번호
+ */
+function generateAssetNumber_() {
+  var sheet = getSheet_(SHEET_ASSET)
+  var rowCount = sheet.getDataRange().getValues().length // 헤더 포함
+  var seq = ('000' + Math.max(1, rowCount)).slice(-4)
+  var year = new Date().getFullYear()
+  return 'AST-' + year + '-' + seq
 }
 
 /**

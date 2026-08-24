@@ -13,11 +13,16 @@ import './AssetListPage.css'
  * @returns 자산관리 페이지
  */
 export default function AssetListPage() {
-  const { assets, summary } = useAssets()
+  const { assets, summary, loading, usingMock } = useAssets()
   const [registerOpen, setRegisterOpen] = useState(false)
 
   return (
     <>
+      {loading && <p className="asset-notice">자산 목록 불러오는 중…</p>}
+      {!loading && usingMock && (
+        <p className="asset-notice">샘플(mock) 데이터 표시 중 — 구글시트 연동(재배포) 후 실제 자산이 표시됩니다.</p>
+      )}
+
       <div className="asset-stat-row">
         <StatCard label="전체 자산" value={summary.total} unit="대" tone="blue" icon={<Laptop size={22} />} />
         <StatCard label="사용 중" value={summary.inUse} unit="대" tone="green" icon={<BadgeCheck size={22} />} />
@@ -49,6 +54,13 @@ export default function AssetListPage() {
               </tr>
             </thead>
             <tbody>
+              {assets.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="asset-empty">
+                    등록된 자산이 없습니다. 우측 상단 &lsquo;자산 등록&rsquo;으로 추가하세요.
+                  </td>
+                </tr>
+              )}
               {assets.map((asset) => (
                 <tr key={asset.assetNumber}>
                   <td>{asset.assetNumber}</td>

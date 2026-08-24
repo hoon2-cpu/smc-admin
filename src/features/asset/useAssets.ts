@@ -1,4 +1,6 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { isMockMode } from '@/lib/gasClient'
+import { fetchAssets } from './api'
 import { ASSET_MOCK } from './mock/assetMock'
 import type { AssetRow, AssetSummary } from './types'
 
@@ -6,21 +8,43 @@ import type { AssetRow, AssetSummary } from './types'
 export interface UseAssetsReturn {
   /** 자산 목록. */
   assets: AssetRow[]
-  /** 상태별 요약. */
+  /** 상태별 요약(목록에서 파생). */
   summary: AssetSummary
+  /** 조회 진행 중 여부. */
+  loading: boolean
+  /** 실데이터 없이 mock을 쓰는 중인지(안내 배지용). */
+  usingMock: boolean
 }
 
 /**
- * 자산 목록과 요약 통계를 제공하는 훅.
- * 현재는 mock 기반이며, 요약은 목록에서 파생 계산합니다.
- * (추후 GAS `?action=assets` 조회로 교체 — useDashboardData와 동일 패턴)
+ * 자산 목록 + 요약 통계 훅.
+ * mock 모드면 즉시 mock을 쓰고, 실사용 모드면 GAS에서 조회합니다.
+ * 조회 실패/미배포(null)면 mock을 유지합니다. (useDashboardData와 동일 패턴)
  *
- * @returns 자산 목록 + 요약 ({@link UseAssetsReturn})
+ * @returns 자산 목록·요약·로딩 상태 ({@link UseAssetsReturn})
  */
 export function useAssets(): UseAssetsReturn {
-  const assets = ASSET_MOCK
+  const [assets, setAssets] = useState<AssetRow[]>(ASSET_MOCK)
+  const [loading, setLoading] = useState<boolean>(!isMockMode())
+  const [usingMock, setUsingMock] = useState<boolean>(true)
 
-  // 목록이 바뀔 때만 요약을 다시 계산
+  useEffect(() => {
+    if (isMockMode()) return
+    let alive = true
+    fetchAssets().then((real) => {
+      if (!alive) return
+      // 조회에 성공하면(빈 배열 포함) 실데이터로 교체 — 진짜 시트 상태를 보여줌
+      if (real) {
+        setAssets(real)
+        setUsingMock(false)
+      }
+      setLoading(false)
+    })
+    return () => {
+      alive = false
+    }
+  }, [])
+
   const summary = useMemo<AssetSummary>(
     () => ({
       total: assets.length,
@@ -31,5 +55,5 @@ export function useAssets(): UseAssetsReturn {
     [assets],
   )
 
-  return { assets, summary }
+  return { assets, summary, loading, usingMock }
 }
