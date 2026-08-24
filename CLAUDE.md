@@ -99,11 +99,12 @@ src/
 │  └─ feedback/  안내 (ComingSoon)
 └─ features/     모듈별 폴더 (한 모듈 = 한 폴더, index.ts에서 ModuleDef export)
    ├─ dashboard/  asset/  repair/          (구현됨)
-   ├─ purchase/  consumable/  master/  users/  settings/   (뼈대·ComingSoon)
-   └─ landing/    (미사용 — 정리 예정)
+   └─ purchase/  consumable/  master/  users/  settings/   (뼈대·ComingSoon)
 ```
 
-> ⚠️ **미사용/정리 예정 파일**(5단계 정리 대상): `layout/AppShell·AdminSidebar·sidebarConfig`, `layout/EmployeeLayout·SupportLayout·SupportHeader·BottomNav·bottomTabs`, `features/landing`. (라우팅 전환으로 미사용화됨, 빌드엔 영향 없음)
+> ✅ **미사용 레이아웃 정리 완료**: 피벗 잔재(AppShell·AdminSidebar·sidebarConfig·Employee/Support 레이아웃·BottomNav·bottomTabs·features/landing) 제거됨.
+> 현재 `layout/`은 `AdminLayout · ModuleSidebar · TopBar · MobileHeader`만 유지.
+> (참고: `public/videos/main_video.mp4`는 랜딩 제거로 미참조 상태 — 필요 없으면 삭제 가능)
 
 자세한 설계·데이터 모델은 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 참고.
 
