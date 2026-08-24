@@ -85,7 +85,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v4-assets',
+    version: 'v5-token-prop',
     tokenEnabled: !!API_TOKEN,
   })
 }
