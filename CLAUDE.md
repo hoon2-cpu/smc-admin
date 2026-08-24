@@ -165,11 +165,14 @@ src/
 - [ ] **11단계** DB(Sheets) 설계 (Master들 + Purchase/Asset/Consumable/Repair/Receipt/Closing_DB) — **Purchase_DB = SSOT** 기준, 6단계 설계 확정본을 실제 시트로 구현
 - [ ] **12단계** 최종 리팩터링
 
-## ⚠️ 미해결 (다음 세션 우선 처리)
+## ⚠️ 미해결 (다음 세션 / 비공개 배포 시 처리)
 
-- [x] ~~GAS 토큰 꺼짐~~ → **2026-08-24 복구 완료** (`tokenEnabled:true`, `v3-dashboard` 배포, 거부/통과 검증됨).
-- **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]`/`[토큰복구검증]` 행 삭제 (사용자 작업).
-- 실운영 전 **토큰 재발급(rotation)** 권장 — 개발 중 값이 노출됨. `.env`·`Code.gs` 동일 새 값 → 프론트 build + GAS 새 버전 재배포.
+- **GAS 토큰 현재 OFF (`tokenEnabled:false`)** — 사용자 결정으로 **비공개 배포 단계에서 한 번에 처리**하기로 보류.
+  켜는 법(최종): ① `gas/Code.gs` 최신본(버전 `v5-token-prop`) 재붙여넣기 → ② **[프로젝트 설정]→[스크립트 속성]** 에 `API_TOKEN` = `.env`의 `VITE_API_TOKEN` 값 추가 후 **저장** → ③ 새 버전 재배포.
+  (토큰을 스크립트 속성에서 읽도록 바꿔, 이후엔 코드 재붙여넣기해도 유실 안 됨)
+- 실운영 전 **토큰 재발급(rotation)** 권장 — 개발 중 값 노출됨. `.env` + 스크립트 속성 동일 새 값 → 프론트 build.
+- **비공개 접근 제어** 필요 — GitHub Pages는 공개라 사내툴 부적합. 로그인 게이트 or Apps Script 조직 호스팅 등 별도 설계.
+- **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]` 및 자산 `AST-2026-0002` 등 삭제.
 
 ## 다음 진행 후보 (미완) — 현재 방향: 자산관리 시스템 완성
 
@@ -187,6 +190,7 @@ src/
 ## 데이터 & 연동 메모
 
 - 신청/등록 폼은 GAS로 **실제 저장**됨. 관리자 대시보드는 자산 시트를 **실집계**하고, 데이터 없는 섹션(신청/소모품/폐기)은 mock으로 폴백.
+- **자산관리(`/admin/assets`)는 실데이터 연동 완료** — `?action=assets` 조회(useAssets, mock 폴백), 등록 시 자산번호 자동부여(`AST-YYYY-####`), 구매/렌탈 통합(취득구분·렌탈사·관리번호·키값) + 필터 탭. 배포 버전 `v5-token-prop`.
 - Google Apps Script는 정적 호스팅(GitHub Pages)이 못 하는 서버 작업(시트 저장/Slack/메일)을 담당.
 - `GAS_URL`은 `src/config/api.ts`에 설정. `.env`의 `VITE_API_TOKEN`으로 요청 검증(서버 `API_TOKEN`과 일치 필요).
 - Slack Webhook URL / Gmail 발송은 `Code.gs` 내부 설정(프론트에 미노출).
