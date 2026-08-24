@@ -16,7 +16,15 @@ export interface AssetRegisterFormValues {
   model: string
   /** 시리얼 번호 / S·N. */
   serialNumber: string
-  /** 구매일 (필수). */
+  /** 업체(렌탈사 등) 부여 관리번호. */
+  managementNumber: string
+  /** 키값(자산 식별용 추가 키). */
+  keyValue: string
+  /** 취득 구분(구매/렌탈, 필수). */
+  acquisitionType: string
+  /** 렌탈사 (취득구분이 렌탈일 때). */
+  rentalCompany: string
+  /** 구매일. */
   purchaseDate: string
   /** 구매 금액 (원). */
   purchaseAmount: string
@@ -54,6 +62,10 @@ export const INITIAL_ASSET_FORM: AssetRegisterFormValues = {
   manufacturer: '',
   model: '',
   serialNumber: '',
+  managementNumber: '',
+  keyValue: '',
+  acquisitionType: '',
+  rentalCompany: '',
   purchaseDate: '',
   purchaseAmount: '',
   vendor: '',

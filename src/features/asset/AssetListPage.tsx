@@ -40,6 +40,7 @@ export default function AssetListPage() {
                 <th>자산번호</th>
                 <th>자산명</th>
                 <th>구분</th>
+                <th>취득</th>
                 <th>제조사</th>
                 <th>사용자</th>
                 <th>위치</th>
@@ -53,6 +54,11 @@ export default function AssetListPage() {
                   <td>{asset.assetNumber}</td>
                   <td>{asset.name}</td>
                   <td>{asset.category}</td>
+                  <td>
+                    {asset.acquisitionType === '렌탈'
+                      ? `렌탈 (${asset.rentalCompany})`
+                      : '구매'}
+                  </td>
                   <td>{asset.manufacturer}</td>
                   <td>{asset.user}</td>
                   <td>{asset.location}</td>

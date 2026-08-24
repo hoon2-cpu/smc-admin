@@ -4,8 +4,9 @@ import { MANUFACTURERS } from '@/constants/manufacturers'
 import type { AssetFormControl } from '../formConfig'
 
 /**
- * 자산 등록 - 기본 정보 섹션. (이미지 ② '기본 정보')
- * 자산명/분류/제조사/모델/시리얼/구매일/금액/구매처/보증기간을 입력받습니다.
+ * 자산 등록 - 기본 정보 섹션.
+ * 자산명/분류/제조사/모델/시리얼/관리번호/키값 등 자산 식별 정보를 입력받습니다.
+ * (취득 구분·구매/렌탈 정보는 AcquisitionInfoSection에서 별도 입력)
  *
  * @param props - 폼 제어 객체 ({@link AssetFormControl})
  * @returns 기본 정보 폼 섹션
@@ -58,35 +59,20 @@ export default function BasicInfoSection({ values, setField }: AssetFormControl)
         />
       </FormField>
 
-      <FormField label="구매일" htmlFor="purchaseDate" required>
+      <FormField label="관리번호 (업체 부여)" htmlFor="managementNumber">
         <TextInput
-          id="purchaseDate"
-          type="date"
-          value={values.purchaseDate}
-          onChange={(v) => setField('purchaseDate', v)}
+          id="managementNumber"
+          value={values.managementNumber}
+          onChange={(v) => setField('managementNumber', v)}
+          placeholder="렌탈사 등 부여 번호"
         />
       </FormField>
 
-      <FormField label="구매 금액 (원)" htmlFor="purchaseAmount">
+      <FormField label="키값" htmlFor="keyValue">
         <TextInput
-          id="purchaseAmount"
-          type="number"
-          value={values.purchaseAmount}
-          onChange={(v) => setField('purchaseAmount', v)}
-          placeholder="예: 1690000"
-        />
-      </FormField>
-
-      <FormField label="구매처" htmlFor="vendor">
-        <TextInput id="vendor" value={values.vendor} onChange={(v) => setField('vendor', v)} />
-      </FormField>
-
-      <FormField label="보증기간" htmlFor="warrantyUntil">
-        <TextInput
-          id="warrantyUntil"
-          type="date"
-          value={values.warrantyUntil}
-          onChange={(v) => setField('warrantyUntil', v)}
+          id="keyValue"
+          value={values.keyValue}
+          onChange={(v) => setField('keyValue', v)}
         />
       </FormField>
     </FormSection>

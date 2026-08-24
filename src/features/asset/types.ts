@@ -1,8 +1,8 @@
-import type { AssetStatus } from '@/constants/asset'
+import type { AssetStatus, AcquisitionType } from '@/constants/asset'
 
 /** 자산 목록 표의 한 행. */
 export interface AssetRow {
-  /** 자산번호. */
+  /** 내부 자산번호. */
   assetNumber: string
   /** 자산명. */
   name: string
@@ -10,6 +10,12 @@ export interface AssetRow {
   category: string
   /** 제조사. */
   manufacturer: string
+  /** 취득 구분(구매/렌탈). */
+  acquisitionType: AcquisitionType
+  /** 렌탈사 (렌탈일 때). 구매면 빈 문자열. */
+  rentalCompany: string
+  /** 업체 부여 관리번호. */
+  managementNumber: string
   /** 사용자(부서 포함 표기 가능). */
   user: string
   /** 설치 위치(사옥 등). */

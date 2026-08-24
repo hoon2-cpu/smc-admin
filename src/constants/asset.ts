@@ -13,3 +13,20 @@ export const ASSET_STATUSES = ['사용중', '사용가능', '수리중', '폐기
 
 /** 자산 상태 유니온 타입. */
 export type AssetStatus = (typeof ASSET_STATUSES)[number]
+
+/**
+ * 취득 구분. 회사는 자산을 구매하기도 하지만 노트북 등은 주로 렌탈로 보유한다.
+ */
+export const ACQUISITION_TYPES = ['구매', '렌탈'] as const
+
+/** 취득 구분 유니온 타입. */
+export type AcquisitionType = (typeof ACQUISITION_TYPES)[number]
+
+/**
+ * 렌탈사 목록. 현재 롯데렌탈·AI네트웍스와 계약.
+ * (추후 시스템설정/Master에서 추가·수정 가능하게 이관 — 코드 수정 없이 확장)
+ */
+export const RENTAL_COMPANIES = ['롯데렌탈', 'AI네트웍스'] as const
+
+/** 렌탈사 유니온 타입. */
+export type RentalCompany = (typeof RENTAL_COMPANIES)[number]

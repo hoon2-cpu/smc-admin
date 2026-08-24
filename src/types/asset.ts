@@ -1,5 +1,5 @@
 import type { Manufacturer } from '@/constants/manufacturers'
-import type { AssetCategory, AssetStatus } from '@/constants/asset'
+import type { AssetCategory, AssetStatus, AcquisitionType, RentalCompany } from '@/constants/asset'
 import type { Building, Department } from '@/constants/organization'
 
 /**
@@ -19,6 +19,14 @@ export interface Asset {
   model: string
   /** 시리얼 번호 / S·N. */
   serialNumber: string
+  /** 취득 구분(구매/렌탈). */
+  acquisitionType: AcquisitionType
+  /** 렌탈사. 구매 자산이면 빈 문자열. */
+  rentalCompany: RentalCompany | ''
+  /** 업체(렌탈사 등) 부여 관리번호. 내부 자산번호와 별개. */
+  managementNumber: string
+  /** 키값(자산 식별용 추가 키). */
+  keyValue: string
   /** 구매일 (ISO 날짜, 'YYYY-MM-DD'). */
   purchaseDate: string
   /** 구매 금액 (원 단위 정수). */

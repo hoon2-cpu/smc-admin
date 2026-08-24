@@ -3,6 +3,7 @@ import { useForm } from '@/hooks/useForm'
 import QrScanBanner from './QrScanBanner'
 import PhotoUpload from './PhotoUpload'
 import BasicInfoSection from './sections/BasicInfoSection'
+import AcquisitionInfoSection from './sections/AcquisitionInfoSection'
 import DetailInfoSection from './sections/DetailInfoSection'
 import { INITIAL_ASSET_FORM } from './formConfig'
 import { submitAssetRegister } from './submit'
@@ -44,6 +45,7 @@ export default function AssetRegisterForm({ onSuccess }: AssetRegisterFormProps)
     <form className="asset-register-form" onSubmit={handleSubmit}>
       <QrScanBanner />
       <BasicInfoSection values={values} setField={setField} />
+      <AcquisitionInfoSection values={values} setField={setField} />
       <DetailInfoSection values={values} setField={setField} />
       <PhotoUpload />
       <button type="submit" className="register-submit">
