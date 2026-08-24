@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Laptop, BadgeCheck, Wrench, Trash2, Plus } from 'lucide-react'
 import { StatCard, Badge, Modal, Card } from '@/components/ui'
 import { getAssetStatusVariant } from '@/lib/badgeVariant'
 import { useAssets } from './useAssets'
 import AssetRegisterForm from './AssetRegisterForm'
 import './AssetListPage.css'
+
+/** 취득 구분 필터 탭. */
+const FILTERS = ['전체', '구매', '렌탈'] as const
+type AssetFilter = (typeof FILTERS)[number]
 
 /**
  * 자산관리 모듈 메인 페이지. (관리자 데스크톱)
@@ -15,6 +19,13 @@ import './AssetListPage.css'
 export default function AssetListPage() {
   const { assets, summary, loading, usingMock } = useAssets()
   const [registerOpen, setRegisterOpen] = useState(false)
+  const [filter, setFilter] = useState<AssetFilter>('전체')
+
+  // 취득 구분 필터. '전체'면 전부, 아니면 해당 구분만.
+  const visibleAssets = useMemo(
+    () => (filter === '전체' ? assets : assets.filter((a) => a.acquisitionType === filter)),
+    [assets, filter],
+  )
 
   return (
     <>
@@ -38,6 +49,24 @@ export default function AssetListPage() {
           </button>
         }
       >
+        <div className="asset-filter-tabs">
+          {FILTERS.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              className={tab === filter ? 'asset-filter-tab active' : 'asset-filter-tab'}
+              onClick={() => setFilter(tab)}
+            >
+              {tab}
+              {tab !== '전체' && (
+                <span className="asset-filter-count">
+                  {assets.filter((a) => a.acquisitionType === tab).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
         <div className="asset-table-scroll">
           <table className="asset-table">
             <thead>
@@ -54,14 +83,16 @@ export default function AssetListPage() {
               </tr>
             </thead>
             <tbody>
-              {assets.length === 0 && (
+              {visibleAssets.length === 0 && (
                 <tr>
                   <td colSpan={9} className="asset-empty">
-                    등록된 자산이 없습니다. 우측 상단 &lsquo;자산 등록&rsquo;으로 추가하세요.
+                    {filter === '전체'
+                      ? '등록된 자산이 없습니다. 우측 상단 ‘자산 등록’으로 추가하세요.'
+                      : `${filter} 자산이 없습니다.`}
                   </td>
                 </tr>
               )}
-              {assets.map((asset) => (
+              {visibleAssets.map((asset) => (
                 <tr key={asset.assetNumber}>
                   <td>{asset.assetNumber}</td>
                   <td>{asset.name}</td>

@@ -36,6 +36,41 @@
   background: var(--color-primary-dark);
 }
 
+/* 취득 구분 필터 탭 */
+.asset-filter-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.asset-filter-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+  background: var(--color-bg);
+}
+.asset-filter-tab:hover {
+  color: var(--color-text);
+}
+.asset-filter-tab.active {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+.asset-filter-count {
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  padding: 0 6px;
+  line-height: 1.6;
+}
+.asset-filter-tab.active .asset-filter-count {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 /* 좁은 화면에서 표가 가로 스크롤되도록 */
 .asset-table-scroll {
   overflow-x: auto;
