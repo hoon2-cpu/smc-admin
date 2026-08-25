@@ -36,11 +36,40 @@
   background: var(--color-primary-dark);
 }
 
+/* 툴바: 필터 탭 + 검색 (좁으면 줄바꿈) */
+.asset-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
 /* 취득 구분 필터 탭 */
 .asset-filter-tabs {
   display: flex;
   gap: 6px;
-  margin-bottom: 14px;
+}
+
+/* 검색 입력 */
+.asset-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text-sub);
+  min-width: 240px;
+}
+.asset-search input {
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 13px;
+  width: 100%;
+  color: var(--color-text);
 }
 .asset-filter-tab {
   display: inline-flex;
@@ -90,6 +119,26 @@
   color: var(--color-text-sub);
   font-weight: 600;
   font-size: 12px;
+}
+.asset-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.asset-table th.sortable .sort-icon {
+  opacity: 0.35;
+  vertical-align: -1px;
+  margin-left: 2px;
+}
+.asset-table th.sortable:hover {
+  color: var(--color-text);
+}
+.asset-table th.sortable.active {
+  color: var(--color-primary);
+}
+.asset-table th .sort-dir {
+  margin-left: 2px;
+  font-size: 10px;
 }
 .asset-table tbody tr:last-child td {
   border-bottom: none;
