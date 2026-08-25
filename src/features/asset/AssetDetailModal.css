@@ -55,9 +55,13 @@
   color: #fff;
   border-color: var(--color-primary);
 }
-/* 폐기 처리: 좌측 정렬 + 위험 색 */
-.detail-btn.danger {
+/* 반납/폐기 등 액션 버튼은 좌측 그룹으로 */
+.detail-actions-left {
   margin-right: auto;
+  display: flex;
+  gap: 8px;
+}
+.detail-btn.danger {
   color: var(--color-danger);
   border-color: var(--color-danger);
   background: #fff;

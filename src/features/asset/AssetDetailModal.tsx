@@ -74,6 +74,35 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
   }
 
   /**
+   * 반납 처리(원클릭). 사용자가 자산을 반납(예: 퇴사)했을 때 호출합니다.
+   * 상태를 '사용가능(재고)'로 바꾸고 사용자·부서 배정을 해제합니다.
+   */
+  async function handleReturn() {
+    if (!asset) return
+    if (!window.confirm('이 자산을 반납 처리할까요?\n상태가 "사용가능(재고)"로 바뀌고 사용자 배정이 해제됩니다.')) {
+      return
+    }
+    setSaving(true)
+    const result = await updateAsset({
+      assetNumber: asset.assetNumber,
+      user: '',
+      department: '',
+      location: asset.location,
+      status: '사용가능',
+      manager: asset.manager,
+      note: asset.note,
+      disposalDate: '',
+    })
+    setSaving(false)
+    if (result.ok) {
+      onSaved(asset.assetNumber, { status: '사용가능', user: '', department: '' })
+      onClose()
+    } else {
+      window.alert(`반납 처리 실패: ${result.message ?? '알 수 없는 오류'}`)
+    }
+  }
+
+  /**
    * 폐기 처리(원클릭). 상태를 '폐기'로, 폐기일을 오늘로 설정하고 저장합니다.
    * 기존 사용자/부서/위치/담당자/비고는 그대로 보존해 전송합니다(빈값 덮어쓰기 방지).
    */
@@ -114,11 +143,18 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
     </>
   ) : (
     <>
-      {asset.status !== '폐기' && (
-        <button type="button" className="detail-btn danger" onClick={handleDispose} disabled={saving}>
-          폐기 처리
-        </button>
-      )}
+      <div className="detail-actions-left">
+        {asset.status === '사용중' && (
+          <button type="button" className="detail-btn" onClick={handleReturn} disabled={saving}>
+            반납 처리
+          </button>
+        )}
+        {asset.status !== '폐기' && (
+          <button type="button" className="detail-btn danger" onClick={handleDispose} disabled={saving}>
+            폐기 처리
+          </button>
+        )}
+      </div>
       <button type="button" className="detail-btn" onClick={onClose}>
         닫기
       </button>
