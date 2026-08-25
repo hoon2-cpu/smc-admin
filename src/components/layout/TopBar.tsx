@@ -17,7 +17,7 @@ interface TopBarProps {
  * @returns 상단 바 엘리먼트
  */
 export default function TopBar({ title, notificationCount = 0 }: TopBarProps) {
-  const { user, signOut } = useAuth()
+  const { authed, signOut } = useAuth()
 
   return (
     <header className="topbar">
@@ -34,12 +34,12 @@ export default function TopBar({ title, notificationCount = 0 }: TopBarProps) {
             <User size={18} />
           </span>
           <span className="topbar-user-text">
-            <strong>{user ? user.name : '관리자'}</strong>
-            <small>{user ? user.email : 'IT관리팀'}</small>
+            <strong>관리자</strong>
+            <small>IT관리팀</small>
           </span>
         </div>
 
-        {user && (
+        {authed && (
           <button type="button" className="topbar-logout" onClick={signOut} aria-label="로그아웃">
             <LogOut size={18} />
           </button>

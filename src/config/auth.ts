@@ -1,21 +1,18 @@
-// ===== 구글 로그인(회사 계정 제한) 설정 =====
+// ===== 공용 비밀번호 로그인 설정 =====
+// 팀 공용 비밀번호로 접근을 제한합니다. 평문이 번들에 노출되지 않도록
+// SHA-256 해시만 저장하고, 입력값의 해시와 비교합니다.
+//
+// 현재 비밀번호: smc-admin-2026  (변경하려면 새 비밀번호의 SHA-256 해시로 아래 값 교체)
+//   생성: node -e "console.log(require('crypto').createHash('sha256').update('새비번').digest('hex'))"
+
+/** 접근 비밀번호의 SHA-256 해시. 비우면 로그인 게이트 비활성. */
+export const ACCESS_PASSWORD_SHA256 =
+  '9bbdfd2fb4c8d4c945e95231895e917365e003613a886737b9fde6b04a8fb737'
 
 /**
- * Google OAuth 웹 클라이언트 ID. (공개 값이라 코드에 두어도 안전)
- * `.env`의 VITE_GOOGLE_CLIENT_ID로 재정의 가능.
- */
-export const GOOGLE_CLIENT_ID: string =
-  import.meta.env.VITE_GOOGLE_CLIENT_ID ??
-  '224586262699-b4cq30ggma12dutm8jtg3e656e8iohae.apps.googleusercontent.com'
-
-/** 로그인 허용 이메일 도메인. 이 도메인 계정만 통과합니다. */
-export const ALLOWED_EMAIL_DOMAIN = 'thesmc.co.kr'
-
-/**
- * 로그인 게이트 활성화 여부. 클라이언트 ID가 있으면 활성.
- * (비우면 로컬 개발 시 게이트 없이 바로 접근)
+ * 로그인 게이트 활성 여부. 해시가 설정되어 있으면 활성.
  * @returns 게이트 활성 여부
  */
 export function isAuthEnabled(): boolean {
-  return Boolean(GOOGLE_CLIENT_ID)
+  return Boolean(ACCESS_PASSWORD_SHA256)
 }

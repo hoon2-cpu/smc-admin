@@ -1,42 +1,56 @@
-import type { ReactNode, RefObject } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { isAuthEnabled } from '@/config/auth'
-import { useGoogleAuth } from './useGoogleAuth'
+import { usePasswordAuth } from './usePasswordAuth'
 import { AuthContext } from './AuthContext'
 import './AuthGate.css'
 
-/** 로그인 화면(미로그인 시 표시). */
-function LoginScreen({ buttonRef, error }: { buttonRef: RefObject<HTMLDivElement>; error: string }) {
-  return (
-    <div className="auth-screen">
-      <div className="auth-card">
-        <div className="auth-brand">
-          The SMC <span>Admin Platform</span>
-        </div>
-        <p className="auth-desc">회사 Google 계정(@thesmc.co.kr)으로 로그인하세요.</p>
-        <div ref={buttonRef} className="auth-button" />
-        {error && <p className="auth-error">{error}</p>}
-      </div>
-    </div>
-  )
-}
-
 /**
- * 인증 게이트. 로그인 게이트가 활성이고 미로그인이면 로그인 화면을,
- * 아니면 자식(앱)을 렌더링하며 인증 컨텍스트를 제공합니다.
+ * 공용 비밀번호 로그인 게이트.
+ * 게이트가 활성이고 미인증이면 비밀번호 화면을, 아니면 앱을 렌더링합니다.
  *
  * @param props.children - 인증 후 렌더링할 앱
  * @returns 로그인 화면 또는 앱
  */
 export default function AuthGate({ children }: { children: ReactNode }) {
-  const auth = useGoogleAuth()
+  const { authed, error, signIn, signOut } = usePasswordAuth()
+  const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  if (isAuthEnabled() && !auth.user) {
-    return <LoginScreen buttonRef={auth.buttonRef} error={auth.error} />
+  /** 로그인 폼 제출. */
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setBusy(true)
+    await signIn(password)
+    setBusy(false)
+    setPassword('')
+  }
+
+  if (isAuthEnabled() && !authed) {
+    return (
+      <div className="auth-screen">
+        <form className="auth-card" onSubmit={handleSubmit}>
+          <div className="auth-brand">
+            The SMC <span>Admin Platform</span>
+          </div>
+          <p className="auth-desc">접근하려면 공용 비밀번호를 입력하세요.</p>
+          <input
+            type="password"
+            className="auth-input"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="비밀번호"
+            autoFocus
+          />
+          <button type="submit" className="auth-submit" disabled={busy || !password}>
+            {busy ? '확인 중…' : '로그인'}
+          </button>
+          {error && <p className="auth-error">{error}</p>}
+        </form>
+      </div>
+    )
   }
 
   return (
-    <AuthContext.Provider value={{ user: auth.user, signOut: auth.signOut }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ authed: true, signOut }}>{children}</AuthContext.Provider>
   )
 }
