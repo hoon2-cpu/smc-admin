@@ -83,12 +83,46 @@ function doGet(e) {
     return jsonOutput_({ ok: true, assets: buildAssets_() })
   }
 
+  if (params.action === 'repairs') {
+    if (API_TOKEN && params.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+    return jsonOutput_({ ok: true, repairs: buildRepairs_() })
+  }
+
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v6-asset-update',
+    version: 'v7-repairs',
     tokenEnabled: !!API_TOKEN,
   })
+}
+
+/**
+ * 수리접수 시트를 목록(RepairRow[])으로 변환합니다. (최신 접수 먼저)
+ * 열: 0접수일시 1접수번호 2접수자 3부서 4자산번호 5자산명 6증상 7우선순위 8첨부 9상태 10담당자 11완료일
+ * @return {Object[]} 수리 접수 목록
+ */
+function buildRepairs_() {
+  var rows = getSheet_(SHEET_REPAIR).getDataRange().getValues()
+  var out = []
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i]
+    if (!r[1] && !r[6]) continue
+    out.push({
+      ticketNumber: r[1] || '',
+      receivedAt: formatDateCell_(r[0]),
+      requester: r[2] || '',
+      department: r[3] || '',
+      assetNumber: r[4] || '',
+      assetName: r[5] || '',
+      symptom: r[6] || '',
+      priority: r[7] || '보통',
+      status: r[9] || '접수',
+      assignee: r[10] || '',
+    })
+  }
+  return out.reverse()
 }
 
 /**

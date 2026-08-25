@@ -1,0 +1,86 @@
+import { useState } from 'react'
+import { Inbox, Wrench, CheckCircle2, Plus } from 'lucide-react'
+import { StatCard, Badge, Card, Modal } from '@/components/ui'
+import { getRepairStatusVariant } from '@/lib/badgeVariant'
+import { useRepairs } from './useRepairs'
+import RepairRequestPage from './RepairRequestPage'
+import './RepairListPage.css'
+
+/**
+ * 수리관리 모듈 메인 페이지. (관리자 데스크톱)
+ * 요약 카드 + 수리 접수 목록 표를 보여주고, '수리 접수'는 모달로 처리합니다.
+ *
+ * @returns 수리관리 페이지
+ */
+export default function RepairListPage() {
+  const { repairs, summary, loading, usingMock } = useRepairs()
+  const [requestOpen, setRequestOpen] = useState(false)
+
+  return (
+    <>
+      {loading && <p className="repair-notice">수리 목록 불러오는 중…</p>}
+      {!loading && usingMock && (
+        <p className="repair-notice">샘플(mock) 데이터 표시 중 — 구글시트 연동(재배포) 후 실제 접수가 표시됩니다.</p>
+      )}
+
+      <div className="repair-stat-row">
+        <StatCard label="접수(대기)" value={summary.received} unit="건" tone="blue" icon={<Inbox size={22} />} />
+        <StatCard label="수리 중" value={summary.inProgress} unit="건" tone="orange" icon={<Wrench size={22} />} />
+        <StatCard label="완료" value={summary.done} unit="건" tone="green" icon={<CheckCircle2 size={22} />} />
+      </div>
+
+      <Card
+        title="수리 접수 목록"
+        action={
+          <button type="button" className="repair-add-btn" onClick={() => setRequestOpen(true)}>
+            <Plus size={16} /> 수리 접수
+          </button>
+        }
+      >
+        <div className="repair-table-scroll">
+          <table className="repair-table">
+            <thead>
+              <tr>
+                <th>접수번호</th>
+                <th>접수일</th>
+                <th>자산</th>
+                <th>증상</th>
+                <th>우선순위</th>
+                <th>담당자</th>
+                <th className="center">상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {repairs.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="repair-empty">
+                    접수된 수리 요청이 없습니다.
+                  </td>
+                </tr>
+              )}
+              {repairs.map((r) => (
+                <tr key={r.ticketNumber}>
+                  <td>{r.ticketNumber}</td>
+                  <td>{r.receivedAt}</td>
+                  <td>
+                    {r.assetNumber} {r.assetName && `· ${r.assetName}`}
+                  </td>
+                  <td className="repair-symptom">{r.symptom}</td>
+                  <td>{r.priority}</td>
+                  <td>{r.assignee || '-'}</td>
+                  <td className="center">
+                    <Badge variant={getRepairStatusVariant(r.status)}>{r.status}</Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Modal open={requestOpen} title="수리 접수" onClose={() => setRequestOpen(false)}>
+        <RepairRequestPage />
+      </Modal>
+    </>
+  )
+}

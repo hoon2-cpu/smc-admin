@@ -1,0 +1,67 @@
+.repair-notice {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  background: #eef2ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+}
+
+.repair-stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.repair-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.repair-add-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.repair-table-scroll {
+  overflow-x: auto;
+}
+.repair-table {
+  font-size: 13px;
+}
+.repair-table th,
+.repair-table td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.repair-table thead th {
+  color: var(--color-text-sub);
+  font-weight: 600;
+  font-size: 12px;
+}
+.repair-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.repair-table .center {
+  text-align: center;
+}
+/* 증상은 길 수 있으니 말줄임 */
+.repair-table .repair-symptom {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.repair-empty {
+  text-align: center;
+  color: var(--color-text-sub);
+  padding: 28px 8px;
+}
