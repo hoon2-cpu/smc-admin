@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isMockMode } from '@/lib/gasClient'
 import { fetchRepairs } from './api'
 import { REPAIR_MOCK } from './mock/repairMock'
@@ -14,6 +14,8 @@ export interface UseRepairsReturn {
   loading: boolean
   /** mock 사용 중 여부. */
   usingMock: boolean
+  /** 저장 성공 후 특정 접수를 로컬 목록에서 즉시 갱신. */
+  patchRepair: (ticketNumber: string, patch: Partial<RepairRow>) => void
 }
 
 /**
@@ -42,6 +44,12 @@ export function useRepairs(): UseRepairsReturn {
     }
   }, [])
 
+  const patchRepair = useCallback((ticketNumber: string, patch: Partial<RepairRow>) => {
+    setRepairs((prev) =>
+      prev.map((r) => (r.ticketNumber === ticketNumber ? { ...r, ...patch } : r)),
+    )
+  }, [])
+
   const summary = useMemo<RepairSummary>(
     () => ({
       received: repairs.filter((r) => r.status === '접수').length,
@@ -51,5 +59,5 @@ export function useRepairs(): UseRepairsReturn {
     [repairs],
   )
 
-  return { repairs, summary, loading, usingMock }
+  return { repairs, summary, loading, usingMock, patchRepair }
 }

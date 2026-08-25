@@ -51,6 +51,12 @@
 .repair-table tbody tr:last-child td {
   border-bottom: none;
 }
+.repair-row {
+  cursor: pointer;
+}
+.repair-row:hover td {
+  background: var(--color-bg);
+}
 .repair-table .center {
   text-align: center;
 }

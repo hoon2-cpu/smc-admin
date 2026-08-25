@@ -33,3 +33,10 @@ export interface RepairSummary {
   /** 완료. */
   done: number
 }
+
+/** 수리 접수 수정 시 전송하는 필드. */
+export interface RepairUpdatePayload {
+  ticketNumber: string
+  status: string
+  assignee: string
+}

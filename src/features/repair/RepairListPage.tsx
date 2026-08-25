@@ -4,6 +4,8 @@ import { StatCard, Badge, Card, Modal } from '@/components/ui'
 import { getRepairStatusVariant } from '@/lib/badgeVariant'
 import { useRepairs } from './useRepairs'
 import RepairRequestPage from './RepairRequestPage'
+import RepairDetailModal from './RepairDetailModal'
+import type { RepairRow } from './types'
 import './RepairListPage.css'
 
 /**
@@ -13,8 +15,9 @@ import './RepairListPage.css'
  * @returns 수리관리 페이지
  */
 export default function RepairListPage() {
-  const { repairs, summary, loading, usingMock } = useRepairs()
+  const { repairs, summary, loading, usingMock, patchRepair } = useRepairs()
   const [requestOpen, setRequestOpen] = useState(false)
+  const [selected, setSelected] = useState<RepairRow | null>(null)
 
   return (
     <>
@@ -59,7 +62,7 @@ export default function RepairListPage() {
                 </tr>
               )}
               {repairs.map((r) => (
-                <tr key={r.ticketNumber}>
+                <tr key={r.ticketNumber} className="repair-row" onClick={() => setSelected(r)}>
                   <td>{r.ticketNumber}</td>
                   <td>{r.receivedAt}</td>
                   <td>
@@ -81,6 +84,15 @@ export default function RepairListPage() {
       <Modal open={requestOpen} title="수리 접수" onClose={() => setRequestOpen(false)}>
         <RepairRequestPage />
       </Modal>
+
+      {selected && (
+        <RepairDetailModal
+          key={selected.ticketNumber}
+          repair={selected}
+          onClose={() => setSelected(null)}
+          onSaved={(ticketNumber, patch) => patchRepair(ticketNumber, patch)}
+        />
+      )}
     </>
   )
 }

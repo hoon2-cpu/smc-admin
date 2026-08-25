@@ -1,5 +1,5 @@
-import { getFromGas } from '@/lib/gasClient'
-import type { RepairRow } from './types'
+import { getFromGas, submitToGas, type GasResult } from '@/lib/gasClient'
+import type { RepairRow, RepairUpdatePayload } from './types'
 
 /** GAS `?action=repairs` 응답 형식. */
 interface RepairsResponse {
@@ -21,4 +21,14 @@ export async function fetchRepairs(): Promise<RepairRow[] | null> {
     console.error('[수리 목록 조회 실패]', error)
     return null
   }
+}
+
+/**
+ * 수리 접수의 상태/담당자를 수정합니다.
+ *
+ * @param payload - 수정할 필드
+ * @returns 서버 응답
+ */
+export function updateRepair(payload: RepairUpdatePayload): Promise<GasResult> {
+  return submitToGas('repairUpdate', payload)
 }

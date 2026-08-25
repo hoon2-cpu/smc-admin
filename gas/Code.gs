@@ -54,6 +54,7 @@ function doPost(e) {
     if (type === 'assetRegister') return jsonOutput_(handleAssetRegister_(payload))
     if (type === 'assetUpdate') return jsonOutput_(handleAssetUpdate_(payload))
     if (type === 'repairRequest') return jsonOutput_(handleRepairRequest_(payload))
+    if (type === 'repairUpdate') return jsonOutput_(handleRepairUpdate_(payload))
     return jsonOutput_({ ok: false, message: '알 수 없는 요청 유형: ' + type })
   } catch (err) {
     return jsonOutput_({ ok: false, message: String(err) })
@@ -93,7 +94,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v7-repairs',
+    version: 'v8-repair-update',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -314,6 +315,43 @@ function generateAssetNumber_() {
   var seq = ('000' + Math.max(1, rowCount)).slice(-4)
   var year = new Date().getFullYear()
   return 'AST-' + year + '-' + seq
+}
+
+/**
+ * 수리 접수의 진행 상태/담당자를 수정합니다. (접수번호로 행을 찾아 갱신)
+ * 상태가 '완료'로 바뀌면 처리완료일을 오늘로 기록하고, 상태 변경은 변경로그에 남깁니다.
+ * @param {Object} p - { ticketNumber, status, assignee }
+ * @return {Object} 처리 결과
+ */
+function handleRepairUpdate_(p) {
+  var sheet = getSheet_(SHEET_REPAIR)
+  var values = sheet.getDataRange().getValues()
+  for (var i = 1; i < values.length; i++) {
+    if (values[i][1] !== p.ticketNumber) continue
+    var row = i + 1
+    var beforeStatus = values[i][9] // 진행상태 (col9)
+
+    sheet.getRange(row, 10).setValue(p.status || '') //   9 진행상태
+    sheet.getRange(row, 11).setValue(p.assignee || '') // 10 담당자
+    if (p.status === '완료') {
+      sheet.getRange(row, 12).setValue(new Date()) //     11 처리완료일
+    }
+
+    if (beforeStatus !== p.status) {
+      appendRow_(SHEET_LOG, [
+        new Date(),
+        '수리접수',
+        p.assignee || '',
+        p.ticketNumber,
+        '진행상태',
+        beforeStatus,
+        p.status,
+        '',
+      ])
+    }
+    return { ok: true }
+  }
+  return { ok: false, message: '접수번호를 찾을 수 없습니다: ' + p.ticketNumber }
 }
 
 /**
