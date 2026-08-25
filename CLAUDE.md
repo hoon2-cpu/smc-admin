@@ -190,7 +190,10 @@ src/
 ## 데이터 & 연동 메모
 
 - 신청/등록 폼은 GAS로 **실제 저장**됨. 관리자 대시보드는 자산 시트를 **실집계**하고, 데이터 없는 섹션(신청/소모품/폐기)은 mock으로 폴백.
-- **자산관리(`/admin/assets`)는 실데이터 연동 완료** — `?action=assets` 조회(useAssets, mock 폴백), 등록 시 자산번호 자동부여(`AST-YYYY-####`), 구매/렌탈 통합(취득구분·렌탈사·관리번호·키값) + 필터 탭. 배포 버전 `v5-token-prop`.
+- **자산관리(`/admin/assets`)는 실데이터 연동 완료** — `?action=assets` 조회(useAssets, mock 폴백), 등록 시 자산번호 자동부여(`AST-YYYY-####`), 구매/렌탈 통합(취득구분·렌탈사·관리번호·키값) + 필터 탭 + **검색/정렬** + **행 클릭 상세보기·수정·상태변경·폐기 처리(assetUpdate)**.
+- **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
+- **GAS 최신 버전 `v7-repairs`** (자산 컬럼 완성: 부서/구매처/보증/관리담당자/폐기일, assetUpdate/repairs 엔드포인트 포함).
+  > ⚠️ 위 assetUpdate·repairs 실데이터는 **GAS를 v7로 재배포해야** 실제 동작(미배포 시 mock/로컬 반영). 재배포는 비공개 배포 단계에서 토큰 설정과 함께 진행 예정.
 - Google Apps Script는 정적 호스팅(GitHub Pages)이 못 하는 서버 작업(시트 저장/Slack/메일)을 담당.
 - `GAS_URL`은 `src/config/api.ts`에 설정. `.env`의 `VITE_API_TOKEN`으로 요청 검증(서버 `API_TOKEN`과 일치 필요).
 - Slack Webhook URL / Gmail 발송은 `Code.gs` 내부 설정(프론트에 미노출).
