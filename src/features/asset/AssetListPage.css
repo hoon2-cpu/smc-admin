@@ -143,6 +143,12 @@
 .asset-table tbody tr:last-child td {
   border-bottom: none;
 }
+.asset-row {
+  cursor: pointer;
+}
+.asset-row:hover td {
+  background: var(--color-bg);
+}
 .asset-table .center {
   text-align: center;
 }

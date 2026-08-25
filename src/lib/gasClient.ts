@@ -1,7 +1,7 @@
 import { GAS_URL, API_TOKEN } from '@/config/api'
 
 /** 백엔드로 보낼 수 있는 요청 종류. */
-export type GasRequestType = 'assetRegister' | 'repairRequest'
+export type GasRequestType = 'assetRegister' | 'assetUpdate' | 'repairRequest'
 
 /** 백엔드(GAS) 공통 응답 형식. */
 export interface GasResult {

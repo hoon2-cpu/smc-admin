@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isMockMode } from '@/lib/gasClient'
 import { fetchAssets } from './api'
 import { ASSET_MOCK } from './mock/assetMock'
@@ -14,6 +14,8 @@ export interface UseAssetsReturn {
   loading: boolean
   /** 실데이터 없이 mock을 쓰는 중인지(안내 배지용). */
   usingMock: boolean
+  /** 특정 자산을 로컬 목록에서 즉시 갱신(저장 성공 후 UI 반영). */
+  patchAsset: (assetNumber: string, patch: Partial<AssetRow>) => void
 }
 
 /**
@@ -45,6 +47,13 @@ export function useAssets(): UseAssetsReturn {
     }
   }, [])
 
+  // 저장 성공 후 서버 재조회 없이 해당 행만 즉시 반영 (mock/실데이터 공통)
+  const patchAsset = useCallback((assetNumber: string, patch: Partial<AssetRow>) => {
+    setAssets((prev) =>
+      prev.map((a) => (a.assetNumber === assetNumber ? { ...a, ...patch } : a)),
+    )
+  }, [])
+
   const summary = useMemo<AssetSummary>(
     () => ({
       total: assets.length,
@@ -55,5 +64,5 @@ export function useAssets(): UseAssetsReturn {
     [assets],
   )
 
-  return { assets, summary, loading, usingMock }
+  return { assets, summary, loading, usingMock, patchAsset }
 }

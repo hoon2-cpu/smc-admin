@@ -4,6 +4,7 @@ import { StatCard, Badge, Modal, Card } from '@/components/ui'
 import { getAssetStatusVariant } from '@/lib/badgeVariant'
 import { useAssets } from './useAssets'
 import AssetRegisterForm from './AssetRegisterForm'
+import AssetDetailModal from './AssetDetailModal'
 import type { AssetRow } from './types'
 import './AssetListPage.css'
 
@@ -22,8 +23,9 @@ type SortKey = 'assetNumber' | 'name' | 'category' | 'manufacturer' | 'user' | '
  * @returns 자산관리 페이지
  */
 export default function AssetListPage() {
-  const { assets, summary, loading, usingMock } = useAssets()
+  const { assets, summary, loading, usingMock, patchAsset } = useAssets()
   const [registerOpen, setRegisterOpen] = useState(false)
+  const [selected, setSelected] = useState<AssetRow | null>(null)
   const [filter, setFilter] = useState<AssetFilter>('전체')
   const [query, setQuery] = useState('')
   const [sortKey, setSortKey] = useState<SortKey | ''>('')
@@ -158,7 +160,11 @@ export default function AssetListPage() {
                 </tr>
               )}
               {visibleAssets.map((asset: AssetRow) => (
-                <tr key={asset.assetNumber || asset.name}>
+                <tr
+                  key={asset.assetNumber || asset.name}
+                  className="asset-row"
+                  onClick={() => setSelected(asset)}
+                >
                   <td>{asset.assetNumber}</td>
                   <td>{asset.name}</td>
                   <td>{asset.category}</td>
@@ -182,6 +188,16 @@ export default function AssetListPage() {
       <Modal open={registerOpen} title="자산 등록" onClose={() => setRegisterOpen(false)}>
         <AssetRegisterForm onSuccess={() => setRegisterOpen(false)} />
       </Modal>
+
+      {/* 선택 시에만 마운트 + key로 자산별 초기값을 새로 반영 */}
+      {selected && (
+        <AssetDetailModal
+          key={selected.assetNumber}
+          asset={selected}
+          onClose={() => setSelected(null)}
+          onSaved={(assetNumber, patch) => patchAsset(assetNumber, patch)}
+        />
+      )}
     </>
   )
 }

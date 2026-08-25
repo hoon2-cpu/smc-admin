@@ -1,0 +1,67 @@
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 20px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+.detail-grid:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.detail-item.detail-full {
+  grid-column: 1 / -1;
+}
+.detail-item dt {
+  font-size: 11px;
+  color: var(--color-text-sub);
+}
+.detail-item dd {
+  font-size: 14px;
+  word-break: break-word;
+}
+
+/* 편집 모드: 폼 필드 2열 그리드 */
+.detail-edit {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.detail-edit .form-field.full {
+  grid-column: 1 / -1;
+}
+
+.detail-btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  background: #fff;
+}
+.detail-btn.primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+.detail-btn:disabled {
+  opacity: 0.6;
+}
+
+@media (max-width: 480px) {
+  .detail-grid,
+  .detail-edit {
+    grid-template-columns: 1fr;
+  }
+}

@@ -52,6 +52,7 @@ function doPost(e) {
     var payload = body.payload || {}
 
     if (type === 'assetRegister') return jsonOutput_(handleAssetRegister_(payload))
+    if (type === 'assetUpdate') return jsonOutput_(handleAssetUpdate_(payload))
     if (type === 'repairRequest') return jsonOutput_(handleRepairRequest_(payload))
     return jsonOutput_({ ok: false, message: '알 수 없는 요청 유형: ' + type })
   } catch (err) {
@@ -85,7 +86,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v5-token-prop',
+    version: 'v6-asset-update',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -99,6 +100,7 @@ function buildAssets_() {
   var out = []
   // 열: 0등록일시 1자산번호 2자산명 3구분 4제조사 5모델 6시리얼 7취득일 8금액
   //     9사용자 10위치 11상태 12비고 13관리번호 14키값 15취득구분 16렌탈사
+  //     17부서 18구매처 19보증 20관리담당자 21폐기일
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i]
     if (!r[1] && !r[2]) continue
@@ -107,13 +109,23 @@ function buildAssets_() {
       name: r[2] || '',
       category: r[3] || '기타',
       manufacturer: r[4] || '',
-      acquisitionType: r[15] || '구매',
-      rentalCompany: r[16] || '',
-      managementNumber: r[13] || '',
-      user: r[9] || '-',
+      model: r[5] || '',
+      serialNumber: r[6] || '',
+      acquiredDate: formatDateCell_(r[7]),
+      purchaseAmount: r[8] === '' || r[8] == null ? '' : String(r[8]),
+      user: r[9] || '',
       location: r[10] || '',
       status: r[11] || '사용중',
-      acquiredDate: formatDateCell_(r[7]),
+      note: r[12] || '',
+      managementNumber: r[13] || '',
+      keyValue: r[14] || '',
+      acquisitionType: r[15] || '구매',
+      rentalCompany: r[16] || '',
+      department: r[17] || '',
+      vendor: r[18] || '',
+      warrantyUntil: formatDateCell_(r[19]),
+      manager: r[20] || '',
+      disposalDate: formatDateCell_(r[21]),
     })
   }
   return out.reverse()
@@ -207,10 +219,55 @@ function handleAssetRegister_(p) {
     p.keyValue, //         14 키값
     p.acquisitionType, //  15 취득구분(구매/렌탈)
     p.rentalCompany, //    16 렌탈사
+    p.department, //       17 부서
+    p.vendor, //           18 구매처
+    p.warrantyUntil, //    19 보증기간
+    p.manager, //          20 관리담당자
+    '', //                 21 폐기일(등록 시 공란)
   ])
 
   notifySlack_('🖥️ *새 자산 등록* ' + assetNumber + '\n' + p.name + ' / ' + p.manufacturer + ' / ' + p.category)
   return { ok: true, assetNumber: assetNumber }
+}
+
+/**
+ * 기존 자산의 운영 정보를 수정합니다. (자산번호로 행을 찾아 셀 갱신)
+ * 상태가 바뀌면 변경로그(3_변경로그)에 기록해 추적성을 확보합니다.
+ * @param {Object} p - { assetNumber, user, department, location, status, manager, note, disposalDate }
+ * @return {Object} 처리 결과
+ */
+function handleAssetUpdate_(p) {
+  var sheet = getSheet_(SHEET_ASSET)
+  var values = sheet.getDataRange().getValues()
+  for (var i = 1; i < values.length; i++) {
+    if (values[i][1] !== p.assetNumber) continue
+    var row = i + 1 // 시트는 1-based
+    var beforeStatus = values[i][11]
+
+    // 편집 가능한 셀만 갱신 (열 index + 1 = 1-based 위치)
+    sheet.getRange(row, 10).setValue(p.user || '') //        9 사용자
+    sheet.getRange(row, 11).setValue(p.location || '') //    10 위치
+    sheet.getRange(row, 12).setValue(p.status || '') //      11 상태
+    sheet.getRange(row, 13).setValue(p.note || '') //        12 비고
+    sheet.getRange(row, 18).setValue(p.department || '') //  17 부서
+    sheet.getRange(row, 21).setValue(p.manager || '') //     20 관리담당자
+    sheet.getRange(row, 22).setValue(p.disposalDate || '') //21 폐기일
+
+    if (beforeStatus !== p.status) {
+      appendRow_(SHEET_LOG, [
+        new Date(),
+        '자산변경',
+        p.manager || '',
+        p.assetNumber,
+        '상태',
+        beforeStatus,
+        p.status,
+        '',
+      ])
+    }
+    return { ok: true }
+  }
+  return { ok: false, message: '자산번호를 찾을 수 없습니다: ' + p.assetNumber }
 }
 
 /**
