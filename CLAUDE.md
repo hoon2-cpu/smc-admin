@@ -171,7 +171,9 @@ src/
   켜는 법(최종): ① `gas/Code.gs` 최신본(버전 `v5-token-prop`) 재붙여넣기 → ② **[프로젝트 설정]→[스크립트 속성]** 에 `API_TOKEN` = `.env`의 `VITE_API_TOKEN` 값 추가 후 **저장** → ③ 새 버전 재배포.
   (토큰을 스크립트 속성에서 읽도록 바꿔, 이후엔 코드 재붙여넣기해도 유실 안 됨)
 - 실운영 전 **토큰 재발급(rotation)** 권장 — 개발 중 값 노출됨. `.env` + 스크립트 속성 동일 새 값 → 프론트 build.
-- **비공개 접근 제어** 필요 — GitHub Pages는 공개라 사내툴 부적합. 로그인 게이트 or Apps Script 조직 호스팅 등 별도 설계.
+- **접근 제어 = 공용 비밀번호 게이트** 적용됨 (기본 `smc-admin-2026`, SHA-256 비교, `src/config/auth.ts`). Google OAuth는 조직 정책 이슈로 보류.
+  - 한계: 클라이언트 측 게이트(데이터는 GAS 토큰으로 별도 보호). 더 강한 보호는 GAS 비밀번호/토큰 검증으로 업그레이드 가능.
+- **배포 대상**: GitHub `hoon2-cpu/smc-admin` → Pages `https://hoon2-cpu.github.io/smc-admin/` (vite base `/smc-admin/`, 빌드시 적용). 남은 것: **git push + Pages 소스=GitHub Actions 설정**.
 - **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]` 및 자산 `AST-2026-0002` 등 삭제.
 
 ## 다음 진행 후보 (미완) — 현재 방향: 자산관리 시스템 완성
