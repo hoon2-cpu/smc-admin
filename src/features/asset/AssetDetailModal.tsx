@@ -73,6 +73,36 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
     }
   }
 
+  /**
+   * 폐기 처리(원클릭). 상태를 '폐기'로, 폐기일을 오늘로 설정하고 저장합니다.
+   * 기존 사용자/부서/위치/담당자/비고는 그대로 보존해 전송합니다(빈값 덮어쓰기 방지).
+   */
+  async function handleDispose() {
+    if (!asset) return
+    if (!window.confirm('이 자산을 폐기 처리할까요?\n상태가 "폐기"로 바뀌고 폐기일이 오늘로 기록됩니다.')) {
+      return
+    }
+    const today = new Date().toISOString().slice(0, 10)
+    setSaving(true)
+    const result = await updateAsset({
+      assetNumber: asset.assetNumber,
+      user: asset.user,
+      department: asset.department,
+      location: asset.location,
+      status: '폐기',
+      manager: asset.manager,
+      note: asset.note,
+      disposalDate: today,
+    })
+    setSaving(false)
+    if (result.ok) {
+      onSaved(asset.assetNumber, { status: '폐기', disposalDate: today })
+      onClose()
+    } else {
+      window.alert(`폐기 처리 실패: ${result.message ?? '알 수 없는 오류'}`)
+    }
+  }
+
   const footer = editing ? (
     <>
       <button type="button" className="detail-btn" onClick={() => setEditing(false)} disabled={saving}>
@@ -84,6 +114,11 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
     </>
   ) : (
     <>
+      {asset.status !== '폐기' && (
+        <button type="button" className="detail-btn danger" onClick={handleDispose} disabled={saving}>
+          폐기 처리
+        </button>
+      )}
       <button type="button" className="detail-btn" onClick={onClose}>
         닫기
       </button>
