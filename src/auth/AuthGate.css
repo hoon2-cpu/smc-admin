@@ -1,0 +1,47 @@
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a;
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--color-surface);
+  border-radius: 16px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.auth-brand {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+}
+.auth-brand span {
+  color: var(--color-text);
+}
+
+.auth-desc {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  margin-bottom: 24px;
+}
+
+/* 구글 버튼 중앙 정렬 */
+.auth-button {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.auth-error {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--color-danger);
+}

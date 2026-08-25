@@ -1,4 +1,5 @@
-import { Bell, User } from 'lucide-react'
+import { Bell, User, LogOut } from 'lucide-react'
+import { useAuth } from '@/auth/AuthContext'
 import './TopBar.css'
 
 /** {@link TopBar} 컴포넌트 props. */
@@ -16,6 +17,8 @@ interface TopBarProps {
  * @returns 상단 바 엘리먼트
  */
 export default function TopBar({ title, notificationCount = 0 }: TopBarProps) {
+  const { user, signOut } = useAuth()
+
   return (
     <header className="topbar">
       <h1 className="topbar-title">{title}</h1>
@@ -31,10 +34,16 @@ export default function TopBar({ title, notificationCount = 0 }: TopBarProps) {
             <User size={18} />
           </span>
           <span className="topbar-user-text">
-            <strong>관리자</strong>
-            <small>IT관리팀</small>
+            <strong>{user ? user.name : '관리자'}</strong>
+            <small>{user ? user.email : 'IT관리팀'}</small>
           </span>
         </div>
+
+        {user && (
+          <button type="button" className="topbar-logout" onClick={signOut} aria-label="로그아웃">
+            <LogOut size={18} />
+          </button>
+        )}
       </div>
     </header>
   )

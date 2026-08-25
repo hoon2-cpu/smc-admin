@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from '@/App'
+import AuthGate from '@/auth/AuthGate'
 import '@/styles/reset.css'
 import '@/styles/global.css'
 
@@ -18,7 +19,9 @@ if (!rootElement) {
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <BrowserRouter basename={routerBasename}>
-      <App />
+      <AuthGate>
+        <App />
+      </AuthGate>
     </BrowserRouter>
   </React.StrictMode>,
 )

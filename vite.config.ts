@@ -20,12 +20,11 @@ function spa404Fallback(): Plugin {
   }
 }
 
-// base: 로컬 개발과 루트 도메인 배포는 '/'.
-//   ⚠️ GitHub Pages 프로젝트 페이지(user.github.io/저장소/)에 배포할 때는
-//   base를 '/저장소이름/' 으로 바꿔야 에셋/라우팅 경로가 맞습니다.
-export default defineConfig({
+// base: 개발은 '/', 빌드는 GitHub Pages 프로젝트 경로 '/smc-admin/'.
+//   (저장소: hoon2-cpu/smc-admin → https://hoon2-cpu.github.io/smc-admin/)
+export default defineConfig(({ command }) => ({
   plugins: [react(), spa404Fallback()],
-  base: '/',
+  base: command === 'build' ? '/smc-admin/' : '/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -36,4 +35,4 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
   },
-})
+}))
