@@ -19,7 +19,7 @@ interface TopBarProps {
  * @returns 상단 바 엘리먼트
  */
 export default function TopBar({ title, notificationCount = 0, onMenuClick }: TopBarProps) {
-  const { authed, signOut } = useAuth()
+  const { role, signOut } = useAuth()
 
   return (
     <header className="topbar">
@@ -44,7 +44,7 @@ export default function TopBar({ title, notificationCount = 0, onMenuClick }: To
           </span>
         </div>
 
-        {authed && (
+        {role && (
           <button type="button" className="topbar-logout" onClick={signOut} aria-label="로그아웃">
             <LogOut size={18} />
           </button>

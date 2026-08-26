@@ -1,18 +1,18 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { isAuthEnabled } from '@/config/auth'
-import { usePasswordAuth } from './usePasswordAuth'
+import { useRoleAuth } from './useRoleAuth'
 import { AuthContext } from './AuthContext'
 import './AuthGate.css'
 
 /**
- * 공용 비밀번호 로그인 게이트.
- * 게이트가 활성이고 미인증이면 비밀번호 화면을, 아니면 앱을 렌더링합니다.
+ * 역할별 비밀번호 로그인 게이트.
+ * 미로그인이면 비밀번호 화면을, 로그인되면 역할을 컨텍스트로 제공하며 앱을 렌더링합니다.
+ * (입력한 비밀번호로 총무팀/직원/외부업체 역할이 자동 판별됩니다.)
  *
  * @param props.children - 인증 후 렌더링할 앱
  * @returns 로그인 화면 또는 앱
  */
 export default function AuthGate({ children }: { children: ReactNode }) {
-  const { authed, error, signIn, signOut } = usePasswordAuth()
+  const { role, error, signIn, signOut } = useRoleAuth()
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -25,14 +25,14 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     setPassword('')
   }
 
-  if (isAuthEnabled() && !authed) {
+  if (!role) {
     return (
       <div className="auth-screen">
         <form className="auth-card" onSubmit={handleSubmit}>
           <div className="auth-brand">
             The SMC <span>Admin Platform</span>
           </div>
-          <p className="auth-desc">접근하려면 공용 비밀번호를 입력하세요.</p>
+          <p className="auth-desc">비밀번호를 입력하세요. (권한에 따라 화면이 달라집니다)</p>
           <input
             type="password"
             className="auth-input"
@@ -50,7 +50,5 @@ export default function AuthGate({ children }: { children: ReactNode }) {
     )
   }
 
-  return (
-    <AuthContext.Provider value={{ authed: true, signOut }}>{children}</AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={{ role, signOut }}>{children}</AuthContext.Provider>
 }
