@@ -1,4 +1,4 @@
-import JsBarcode from 'jsbarcode'
+import QRCode from 'qrcode'
 import type { AssetRow } from './types'
 
 /** HTML 특수문자를 이스케이프합니다. (라벨 텍스트 안전 삽입) */
@@ -33,23 +33,13 @@ async function loadLogoDataUrl(): Promise<string | null> {
 }
 
 /**
- * 자산번호를 Code128 바코드 이미지(data URL)로 생성합니다. (회사 규격)
- * 회사 Word 규격 `CODE128 \h 1000 \s 120`에 대응하는 크기로 설정.
+ * 자산번호를 QR 코드 이미지(data URL)로 생성합니다.
  *
- * @param value - 바코드로 인코딩할 값(자산번호)
+ * @param value - QR로 인코딩할 값(자산번호)
  * @returns PNG data URL
  */
-function makeBarcodeDataUrl(value: string): string {
-  const canvas = document.createElement('canvas')
-  JsBarcode(canvas, value, {
-    format: 'CODE128',
-    height: 48, // 50x30mm 라벨에 로고와 함께 들어가도록 조정
-    width: 2, // 바 두께
-    displayValue: true, // 하단에 자산번호 텍스트 표시
-    fontSize: 14,
-    margin: 4,
-  })
-  return canvas.toDataURL('image/png')
+function makeQrDataUrl(value: string): Promise<string> {
+  return QRCode.toDataURL(value, { margin: 1, width: 200 })
 }
 
 /**
@@ -68,7 +58,7 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
 
   try {
     const value = asset.assetNumber || asset.name
-    const barcode = makeBarcodeDataUrl(value)
+    const qr = await makeQrDataUrl(value)
     const logo = await loadLogoDataUrl()
     // 로고 파일(public/logo.png)이 있으면 이미지, 없으면 텍스트 자리표시
     const logoHtml = logo
@@ -86,8 +76,9 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
     align-items: center; justify-content: center; gap: 1mm; }
   .logo { font-size: 11pt; letter-spacing: 0.5px; }
   .logo b { font-weight: 800; }
-  .logo-img { height: 6mm; width: auto; object-fit: contain; }
-  .barcode { max-width: 100%; height: auto; }
+  .logo-img { height: 5mm; width: auto; object-fit: contain; }
+  .qr { width: 17mm; height: 17mm; }
+  .num { font-size: 8pt; font-weight: 700; letter-spacing: 0.3px; }
   @media screen {
     body { background: #f1f5f9; padding: 24px; text-align: center; }
     .label { background: #fff; border: 1px solid #ddd; margin: 0 auto; }
@@ -99,7 +90,8 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
 </style></head><body>
   <div class="label">
     ${logoHtml}
-    <img class="barcode" src="${barcode}" alt="barcode" />
+    <img class="qr" src="${qr}" alt="QR" />
+    <div class="num">${escapeHtml(asset.assetNumber) || '-'}</div>
   </div>
   <div class="actions"><button onclick="window.print()">인쇄</button></div>
   <script>window.onload = function () { setTimeout(function () { window.print() }, 300) }</script>
@@ -111,6 +103,6 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
   } catch (error) {
     console.error('[라벨 생성 실패]', error)
     win.document.body.innerHTML =
-      '<p style="font-family:sans-serif;padding:24px;color:#b91c1c">바코드 생성에 실패했습니다. 자산번호를 확인해주세요.</p>'
+      '<p style="font-family:sans-serif;padding:24px;color:#b91c1c">QR 생성에 실패했습니다. 자산번호를 확인해주세요.</p>'
   }
 }

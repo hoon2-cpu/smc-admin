@@ -195,7 +195,7 @@ src/
 
 - 신청/등록 폼은 GAS로 **실제 저장**됨. 관리자 대시보드는 자산 시트를 **실집계**하고, 데이터 없는 섹션(신청/소모품/폐기)은 mock으로 폴백.
 - **자산관리(`/admin/assets`)는 실데이터 연동 완료** — `?action=assets` 조회(useAssets, mock 폴백), 등록 시 자산번호 자동부여(`AST-YYYY-####`), 구매/렌탈 통합(취득구분·렌탈사·관리번호·키값) + 필터 탭 + **검색/정렬** + **행 클릭 상세보기·수정·상태변경·폐기 처리(assetUpdate)**.
-- **자산 라벨 인쇄(회사 규격)** — 자산 상세 모달 '라벨 인쇄' → 새 창에 **the SMC 로고(`public/logo.png`) + Code128 바코드(자산번호)** 라벨(**50×30mm**) 생성 후 인쇄. `jsbarcode`, `features/asset/labelPrint.ts`. 로고는 data URL 임베드(없으면 텍스트 폴백). 회사 Word 규격 `DISPLAYBARCODE … CODE128 \h1000 \s120` 대응. 클라이언트 전용.
+- **자산 라벨 인쇄** — 자산 상세 모달 '라벨 인쇄' → 새 창에 **the SMC 로고(`public/logo.png`) + QR(자산번호) + 자산번호 텍스트** 라벨(**50×30mm**) 생성 후 인쇄. `qrcode`, `features/asset/labelPrint.ts`. 로고 data URL 임베드(없으면 텍스트 폴백). 클라이언트 전용. (사용자 최종 선택: QR)
 - **자산 코드 스캔 조회** — 자산 목록 '스캔'(카메라) → **Code128/QR 디코드** → 자산번호로 상세 모달 오픈. `html5-qrcode`(formatsToSupport: CODE_128+QR), `components/ui/QrScannerModal.tsx`. 카메라는 https/localhost에서만. (라벨 인쇄↔스캔 왕복 완성)
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
