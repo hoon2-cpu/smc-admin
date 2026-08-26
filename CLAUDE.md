@@ -173,29 +173,29 @@ src/
 - 실운영 전 **토큰 재발급(rotation)** 권장 — 개발 중 값 노출됨. `.env` + 스크립트 속성 동일 새 값 → 프론트 build.
 - **접근 제어 = 공용 비밀번호 게이트** 적용됨 (기본 `smc-admin-2026`, SHA-256 비교, `src/config/auth.ts`). Google OAuth는 조직 정책 이슈로 보류.
   - 한계: 클라이언트 측 게이트(데이터는 GAS 토큰으로 별도 보호). 더 강한 보호는 GAS 비밀번호/토큰 검증으로 업그레이드 가능.
-- **배포 대상**: GitHub `hoon2-cpu/smc-admin` → Pages `https://hoon2-cpu.github.io/smc-admin/` (vite base `/smc-admin/`, 빌드시 적용). 남은 것: **git push + Pages 소스=GitHub Actions 설정**.
+- **배포 완료**: GitHub `hoon2-cpu/smc-admin` → Pages `https://hoon2-cpu.github.io/smc-admin/` (GitHub Actions 자동배포, vite base `/smc-admin/`). 공용 비밀번호 게이트로 접근 제한 중.
 - **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]` 및 자산 `AST-2026-0002` 등 삭제.
 
 ## 다음 진행 후보 (미완) — 현재 방향: 자산관리 시스템 완성
 
 - [ ] **GAS 토큰 복구**(미해결, 위 참고) + 시트 테스트 행 정리
-- [ ] 자산관리 모듈 기능 확장 (자산 목록/현황/폐기 등 — 필요 시)
-- [ ] (선택) 5단계 공통 Layout 다듬기 (Header/Breadcrumb/Footer·반응형) + 미사용 레이아웃 파일 정리
-- [ ] GitHub 저장소 push → Pages 공개 배포
+- [x] GitHub push → Pages 배포 완료 (`https://hoon2-cpu.github.io/smc-admin/`)
+- [ ] 자산관리 모듈 기능 확장 (자산 이력/폐기목록 등 — 필요 시)
+- [ ] 사용자/설정/Master 등 '준비중' 모듈 실제 구현
+- [ ] (선택) 공통 Layout 다듬기 (Header/Breadcrumb/Footer·반응형)
 - [ ] 디자인/문구 다듬기
 
 > 구매·정산(6~11단계)은 보류 상태. 재개하려면 [docs/PURCHASE_DOMAIN.md](docs/PURCHASE_DOMAIN.md)부터 검토.
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별(`v3-dashboard`가 최신).
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별(`v8-repair-update`가 최신).
 
 ## 데이터 & 연동 메모
 
 - 신청/등록 폼은 GAS로 **실제 저장**됨. 관리자 대시보드는 자산 시트를 **실집계**하고, 데이터 없는 섹션(신청/소모품/폐기)은 mock으로 폴백.
 - **자산관리(`/admin/assets`)는 실데이터 연동 완료** — `?action=assets` 조회(useAssets, mock 폴백), 등록 시 자산번호 자동부여(`AST-YYYY-####`), 구매/렌탈 통합(취득구분·렌탈사·관리번호·키값) + 필터 탭 + **검색/정렬** + **행 클릭 상세보기·수정·상태변경·폐기 처리(assetUpdate)**.
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
-- **GAS 최신 버전 `v7-repairs`** (자산 컬럼 완성: 부서/구매처/보증/관리담당자/폐기일, assetUpdate/repairs 엔드포인트 포함).
-  > ⚠️ 위 assetUpdate·repairs 실데이터는 **GAS를 v7로 재배포해야** 실제 동작(미배포 시 mock/로컬 반영). 재배포는 비공개 배포 단계에서 토큰 설정과 함께 진행 예정.
+- **GAS 최신 버전 `v8-repair-update`** (배포됨) — 자산 컬럼 완성(부서/구매처/보증/관리담당자/폐기일) + `assetUpdate`/`assets`/`repairs`/`repairUpdate` 엔드포인트. 실데이터 동작 검증 완료.
 - Google Apps Script는 정적 호스팅(GitHub Pages)이 못 하는 서버 작업(시트 저장/Slack/메일)을 담당.
 - `GAS_URL`은 `src/config/api.ts`에 설정. `.env`의 `VITE_API_TOKEN`으로 요청 검증(서버 `API_TOKEN`과 일치 필요).
 - Slack Webhook URL / Gmail 발송은 `Code.gs` 내부 설정(프론트에 미노출).
