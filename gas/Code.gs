@@ -55,6 +55,8 @@ function doPost(e) {
     if (type === 'assetUpdate') return jsonOutput_(handleAssetUpdate_(payload))
     if (type === 'repairRequest') return jsonOutput_(handleRepairRequest_(payload))
     if (type === 'repairUpdate') return jsonOutput_(handleRepairUpdate_(payload))
+    if (type === 'userRegister') return jsonOutput_(handleUserRegister_(payload))
+    if (type === 'userUpdate') return jsonOutput_(handleUserUpdate_(payload))
     return jsonOutput_({ ok: false, message: '알 수 없는 요청 유형: ' + type })
   } catch (err) {
     return jsonOutput_({ ok: false, message: String(err) })
@@ -91,12 +93,78 @@ function doGet(e) {
     return jsonOutput_({ ok: true, repairs: buildRepairs_() })
   }
 
+  if (params.action === 'users') {
+    if (API_TOKEN && params.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+    return jsonOutput_({ ok: true, users: buildUsers_() })
+  }
+
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v8-repair-update',
+    version: 'v9-users',
     tokenEnabled: !!API_TOKEN,
   })
+}
+
+/**
+ * 사용자목록 시트를 목록(UserRow[])으로 변환합니다.
+ * 열: 0사번 1이름 2부서 3직급 4이메일
+ * @return {Object[]} 사용자 목록
+ */
+function buildUsers_() {
+  var rows = getSheet_(SHEET_USER).getDataRange().getValues()
+  var out = []
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i]
+    if (!r[0] && !r[1]) continue
+    out.push({
+      id: String(r[0] || ''),
+      name: r[1] || '',
+      department: r[2] || '',
+      position: r[3] || '',
+      email: r[4] || '',
+    })
+  }
+  return out
+}
+
+/**
+ * 사용자를 시트에 추가합니다. (사번 중복 시 거부)
+ * @param {Object} p - { id, name, department, position, email }
+ * @return {Object} 처리 결과
+ */
+function handleUserRegister_(p) {
+  var sheet = getSheet_(SHEET_USER)
+  var values = sheet.getDataRange().getValues()
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === String(p.id) && p.id) {
+      return { ok: false, message: '이미 존재하는 사번입니다: ' + p.id }
+    }
+  }
+  appendRow_(SHEET_USER, [p.id, p.name, p.department, p.position, p.email])
+  return { ok: true }
+}
+
+/**
+ * 사용자 정보를 수정합니다. (사번으로 행을 찾아 이름/부서/직급/이메일 갱신)
+ * @param {Object} p - { id, name, department, position, email }
+ * @return {Object} 처리 결과
+ */
+function handleUserUpdate_(p) {
+  var sheet = getSheet_(SHEET_USER)
+  var values = sheet.getDataRange().getValues()
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) !== String(p.id)) continue
+    var row = i + 1
+    sheet.getRange(row, 2).setValue(p.name || '') //       1 이름
+    sheet.getRange(row, 3).setValue(p.department || '') // 2 부서
+    sheet.getRange(row, 4).setValue(p.position || '') //   3 직급
+    sheet.getRange(row, 5).setValue(p.email || '') //      4 이메일
+    return { ok: true }
+  }
+  return { ok: false, message: '사번을 찾을 수 없습니다: ' + p.id }
 }
 
 /**

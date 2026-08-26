@@ -8,6 +8,6 @@ export const usersModule: ModuleDef = {
   title: '사용자관리',
   path: 'users',
   icon: Users,
-  element: lazy(() => import('./UsersPage')),
+  element: lazy(() => import('./UsersListPage')),
   order: 7,
 }

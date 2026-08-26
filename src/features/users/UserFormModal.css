@@ -1,0 +1,51 @@
+.uf-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.uf-grid .form-field.full {
+  grid-column: 1 / -1;
+}
+
+.uf-readonly {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--color-text-sub);
+}
+
+.uf-hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+
+.uf-btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  background: #fff;
+}
+.uf-btn.primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+.uf-btn:disabled {
+  opacity: 0.6;
+}
+
+@media (max-width: 480px) {
+  .uf-grid {
+    grid-template-columns: 1fr;
+  }
+}
