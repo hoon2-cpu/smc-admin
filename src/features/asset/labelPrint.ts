@@ -11,6 +11,28 @@ function escapeHtml(text: string): string {
 }
 
 /**
+ * 회사 로고(public/logo.png)를 data URL로 불러옵니다.
+ * 새 인쇄 창은 앱 base 경로를 모르므로, 이미지를 data URL로 임베드합니다.
+ *
+ * @returns 로고 data URL, 파일이 없으면 null
+ */
+async function loadLogoDataUrl(): Promise<string | null> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}logo.png`)
+    if (!res.ok) return null
+    const blob = await res.blob()
+    return await new Promise<string | null>((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
+}
+
+/**
  * 자산번호를 Code128 바코드 이미지(data URL)로 생성합니다. (회사 규격)
  * 회사 Word 규격 `CODE128 \h 1000 \s 120`에 대응하는 크기로 설정.
  *
@@ -47,8 +69,12 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
   try {
     const value = asset.assetNumber || asset.name
     const barcode = makeBarcodeDataUrl(value)
+    const logo = await loadLogoDataUrl()
+    // 로고 파일(public/logo.png)이 있으면 이미지, 없으면 텍스트 자리표시
+    const logoHtml = logo
+      ? `<img class="logo-img" src="${logo}" alt="the SMC" />`
+      : `<div class="logo">the <b>SMC</b></div>`
 
-    // 로고: 현재는 텍스트 자리표시. 회사 로고 이미지 받으면 <img>로 교체 예정.
     const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8" />
 <title>자산 라벨 ${escapeHtml(asset.assetNumber)}</title>
 <style>
@@ -60,6 +86,7 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
     align-items: center; justify-content: center; gap: 1mm; }
   .logo { font-size: 11pt; letter-spacing: 0.5px; }
   .logo b { font-weight: 800; }
+  .logo-img { height: 7mm; width: auto; object-fit: contain; }
   .barcode { max-width: 100%; height: auto; }
   @media screen {
     body { background: #f1f5f9; padding: 24px; text-align: center; }
@@ -71,7 +98,7 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
   @media print { .actions { display: none; } }
 </style></head><body>
   <div class="label">
-    <div class="logo">the <b>SMC</b></div>
+    ${logoHtml}
     <img class="barcode" src="${barcode}" alt="barcode" />
   </div>
   <div class="actions"><button onclick="window.print()">인쇄</button></div>
