@@ -1,6 +1,16 @@
 import { getFromGas, submitToGas, type GasResult } from '@/lib/gasClient'
 import type { RepairRow, RepairUpdatePayload } from './types'
 
+/**
+ * 수리 건을 외부 수리업체로 전달 표시합니다. (총무팀 전용)
+ *
+ * @param ticketNumber - 접수번호
+ * @returns 서버 응답
+ */
+export function dispatchRepair(ticketNumber: string): Promise<GasResult> {
+  return submitToGas('repairDispatch', { ticketNumber })
+}
+
 /** GAS `?action=repairs` 응답 형식. */
 interface RepairsResponse {
   ok?: boolean

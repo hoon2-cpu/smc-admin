@@ -73,6 +73,7 @@ export default function RepairListPage() {
                   <td>{r.assignee || '-'}</td>
                   <td className="center">
                     <Badge variant={getRepairStatusVariant(r.status)}>{r.status}</Badge>
+                    {r.dispatched && <span className="repair-dispatched">외부</span>}
                   </td>
                 </tr>
               ))}

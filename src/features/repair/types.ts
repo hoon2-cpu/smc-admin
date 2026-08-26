@@ -22,6 +22,8 @@ export interface RepairRow {
   status: RepairStatus
   /** 담당자. */
   assignee: string
+  /** 외부 수리업체 전달 여부(총무팀만 설정). */
+  dispatched: boolean
 }
 
 /** 수리 상태별 요약. */
@@ -39,4 +41,9 @@ export interface RepairUpdatePayload {
   ticketNumber: string
   status: string
   assignee: string
+}
+
+/** 외부업체 전달 요청 필드. */
+export interface RepairDispatchPayload {
+  ticketNumber: string
 }

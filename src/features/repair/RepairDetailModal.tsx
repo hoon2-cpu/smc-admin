@@ -4,7 +4,7 @@ import { FormField, TextInput, SelectField } from '@/components/form'
 import { useForm } from '@/hooks/useForm'
 import { getRepairStatusVariant } from '@/lib/badgeVariant'
 import { REPAIR_STATUSES, type RepairStatus } from '@/constants/repair'
-import { updateRepair } from './api'
+import { updateRepair, dispatchRepair } from './api'
 import type { RepairRow } from './types'
 import './RepairDetailModal.css'
 
@@ -52,8 +52,39 @@ export default function RepairDetailModal({ repair, onClose, onSaved }: RepairDe
     }
   }
 
+  /**
+   * 외부업체 전달 처리. 총무팀이 자체 해결 불가한 건만 전달합니다.
+   * 확인 후 GAS에 전달 표시 → /vendor 목록에 노출됩니다.
+   */
+  async function handleDispatch() {
+    if (!repair) return
+    if (!window.confirm('이 수리 건을 외부 수리업체로 전달할까요?\n전달하면 외부업체 화면에 표시됩니다.')) {
+      return
+    }
+    setSaving(true)
+    const result = await dispatchRepair(repair.ticketNumber)
+    setSaving(false)
+    if (result.ok) {
+      onSaved(repair.ticketNumber, { dispatched: true })
+      onClose()
+    } else {
+      window.alert(`전달 실패: ${result.message ?? '알 수 없는 오류'}`)
+    }
+  }
+
   const footer = (
     <>
+      {/* 외부 전달: 아직 전달 안 된 건에만 노출 (총무팀 판단 후 전달) */}
+      {!repair.dispatched && (
+        <button
+          type="button"
+          className="rd-btn dispatch"
+          onClick={handleDispatch}
+          disabled={saving}
+        >
+          외부업체 전달
+        </button>
+      )}
       <button type="button" className="rd-btn" onClick={onClose} disabled={saving}>
         닫기
       </button>
@@ -96,6 +127,14 @@ export default function RepairDetailModal({ repair, onClose, onSaved }: RepairDe
             <Badge variant={getRepairStatusVariant(repair.status)}>{repair.status}</Badge>
           </dd>
         </div>
+        {repair.dispatched && (
+          <div>
+            <dt>외부 전달</dt>
+            <dd>
+              <Badge variant="info">외부업체 전달됨</Badge>
+            </dd>
+          </div>
+        )}
       </dl>
 
       <div className="rd-edit">

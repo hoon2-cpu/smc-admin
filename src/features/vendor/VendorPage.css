@@ -1,0 +1,59 @@
+.vendor-notice {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  background: #eef2ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.vendor-desc {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  margin-bottom: 14px;
+}
+
+.vendor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 카드형(모바일 친화) */
+.vendor-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.vendor-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.vendor-card-head strong {
+  font-size: 14px;
+}
+.vendor-card-asset {
+  font-size: 13px;
+  font-weight: 600;
+}
+.vendor-card-symptom {
+  font-size: 13px;
+  color: var(--color-text);
+  margin-top: 4px;
+  word-break: break-word;
+}
+.vendor-card-meta {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  margin-top: 8px;
+}
+
+.vendor-empty {
+  text-align: center;
+  color: var(--color-text-sub);
+  padding: 28px 8px;
+}

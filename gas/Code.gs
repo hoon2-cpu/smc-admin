@@ -56,6 +56,7 @@ function doPost(e) {
     if (type === 'assetUpdate') return jsonOutput_(handleAssetUpdate_(payload))
     if (type === 'repairRequest') return jsonOutput_(handleRepairRequest_(payload))
     if (type === 'repairUpdate') return jsonOutput_(handleRepairUpdate_(payload))
+    if (type === 'repairDispatch') return jsonOutput_(handleRepairDispatch_(payload))
     if (type === 'userRegister') return jsonOutput_(handleUserRegister_(payload))
     if (type === 'userUpdate') return jsonOutput_(handleUserUpdate_(payload))
     if (type === 'assetRequest') return jsonOutput_(handleAssetRequest_(payload))
@@ -103,10 +104,18 @@ function doGet(e) {
     return jsonOutput_({ ok: true, users: buildUsers_() })
   }
 
+  if (params.action === 'vendorRepairs') {
+    if (API_TOKEN && params.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+    // 외부업체는 '전달된' 수리 건만 조회 가능
+    return jsonOutput_({ ok: true, repairs: buildRepairs_().filter(function (r) { return r.dispatched }) })
+  }
+
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v10-requests',
+    version: 'v11-vendor',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -239,6 +248,7 @@ function buildRepairs_() {
       priority: r[7] || '보통',
       status: r[9] || '접수',
       assignee: r[10] || '',
+      dispatched: !!r[12], // 12: 외부업체 전달 여부(총무팀만 설정)
     })
   }
   return out.reverse()
@@ -467,6 +477,34 @@ function handleRepairUpdate_(p) {
         '',
       ])
     }
+    return { ok: true }
+  }
+  return { ok: false, message: '접수번호를 찾을 수 없습니다: ' + p.ticketNumber }
+}
+
+/**
+ * 수리 건을 외부 수리업체로 '전달' 표시합니다. (총무팀만 호출)
+ * 자체 해결이 안 되는 건만 총무팀이 선택해 전달하며, /vendor는 전달된 건만 봅니다.
+ * @param {Object} p - { ticketNumber }
+ * @return {Object} 처리 결과
+ */
+function handleRepairDispatch_(p) {
+  var sheet = getSheet_(SHEET_REPAIR)
+  var values = sheet.getDataRange().getValues()
+  for (var i = 1; i < values.length; i++) {
+    if (values[i][1] !== p.ticketNumber) continue
+    var row = i + 1
+    sheet.getRange(row, 13).setValue('Y') // 13번째 열(0-based 12): 외부전달
+    appendRow_(SHEET_LOG, [
+      new Date(),
+      '수리접수',
+      '총무팀',
+      p.ticketNumber,
+      '외부업체 전달',
+      '',
+      'Y',
+      '',
+    ])
     return { ok: true }
   }
   return { ok: false, message: '접수번호를 찾을 수 없습니다: ' + p.ticketNumber }

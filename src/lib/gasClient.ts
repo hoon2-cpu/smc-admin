@@ -6,6 +6,7 @@ export type GasRequestType =
   | 'assetUpdate'
   | 'repairRequest'
   | 'repairUpdate'
+  | 'repairDispatch'
   | 'userRegister'
   | 'userUpdate'
   | 'assetRequest'

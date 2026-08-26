@@ -51,6 +51,18 @@
 .repair-table tbody tr:last-child td {
   border-bottom: none;
 }
+.repair-dispatched {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #7c3aed;
+  background: #f5f3ff;
+  border-radius: 6px;
+  padding: 1px 5px;
+  vertical-align: middle;
+}
+
 .repair-row {
   cursor: pointer;
 }

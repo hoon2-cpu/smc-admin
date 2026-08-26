@@ -202,7 +202,7 @@ src/
 - [x] **2) 역할/라우팅 분리** — `/admin`(총무팀) · `/request`(직원) · `/vendor`(외부업체) + 역할별 비밀번호 게이트(`useRoleAuth`). 직원/외부업체는 `RoleShell` 골격만(내용은 ③④).
   - 비밀번호(기본): admin=`smc-admin-2026`, employee=`smc-staff-2026`, vendor=`smc-vendor-2026` (`src/config/auth.ts` 해시)
 - [x] **3) 직원 신청 폼** — `/request`에 자산신청·수리신청(기존 재사용)·반납신청 탭. 자산/반납신청은 GAS `6_신청기록` 저장(assetRequest/returnRequest), 수리신청은 기존 repairRequest. GAS `v10-requests`.
-- [ ] **4) 외부업체 페이지** — 총무팀 수리 상세의 **'외부업체 전달'** 클릭 → GAS에 외부전달 표시 → `/vendor`에서 해당 건만 조회. (A/S 외부 직원 공유용)
+- [x] **4) 외부업체 페이지** — 총무팀 수리 상세의 **'외부업체 전달'** 버튼(총무팀 전용) → GAS `repairDispatch`로 외부전달 표시(12열) → `/vendor`는 `vendorRepairs`(전달된 건만) 조회·표시. 일반 사용자는 전달 불가(총무팀 검토 후만). GAS `v11-vendor`.
 
 > 총무팀 전체관리 필수 항목: 자산 접수확인 · 자산 등록 · 자산 폐기 · 재고자산 · 사용중 자산 확인.
 
