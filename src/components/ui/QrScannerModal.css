@@ -1,0 +1,24 @@
+.qr-reader {
+  width: 100%;
+  min-height: 240px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+}
+.qr-reader video {
+  width: 100% !important;
+  border-radius: 10px;
+}
+
+.qr-hint {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+  text-align: center;
+}
+.qr-error {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--color-danger);
+  text-align: center;
+}

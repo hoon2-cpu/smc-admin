@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Laptop, BadgeCheck, Wrench, Trash2, Plus, Search, ArrowUpDown } from 'lucide-react'
-import { StatCard, Badge, Modal, Card } from '@/components/ui'
+import { Laptop, BadgeCheck, Wrench, Trash2, Plus, Search, ArrowUpDown, ScanLine } from 'lucide-react'
+import { StatCard, Badge, Modal, Card, QrScannerModal } from '@/components/ui'
 import { getAssetStatusVariant } from '@/lib/badgeVariant'
 import { useAssets } from './useAssets'
 import AssetRegisterForm from './AssetRegisterForm'
@@ -25,6 +25,7 @@ type SortKey = 'assetNumber' | 'name' | 'category' | 'manufacturer' | 'user' | '
 export default function AssetListPage() {
   const { assets, summary, loading, usingMock, patchAsset } = useAssets()
   const [registerOpen, setRegisterOpen] = useState(false)
+  const [scanOpen, setScanOpen] = useState(false)
   const [selected, setSelected] = useState<AssetRow | null>(null)
   const [filter, setFilter] = useState<AssetFilter>('전체')
   const [query, setQuery] = useState('')
@@ -54,6 +55,21 @@ export default function AssetListPage() {
     }
     return list
   }, [assets, filter, query, sortKey, sortAsc])
+
+  /**
+   * QR 스캔 결과 처리. 디코드된 자산번호로 목록에서 자산을 찾아 상세를 엽니다.
+   * @param text - 스캔된 문자열(자산번호)
+   */
+  function handleScanned(text: string) {
+    setScanOpen(false)
+    const code = text.trim()
+    const found = assets.find((a) => a.assetNumber === code)
+    if (found) {
+      setSelected(found)
+    } else {
+      window.alert(`해당 자산을 찾을 수 없습니다: ${code}`)
+    }
+  }
 
   /**
    * 정렬 헤더 클릭 처리. 같은 열이면 방향 토글, 다른 열이면 오름차순으로 시작.
@@ -100,9 +116,14 @@ export default function AssetListPage() {
       <Card
         title="자산 목록"
         action={
-          <button type="button" className="asset-add-btn" onClick={() => setRegisterOpen(true)}>
-            <Plus size={16} /> 자산 등록
-          </button>
+          <div className="asset-actions">
+            <button type="button" className="asset-scan-btn" onClick={() => setScanOpen(true)}>
+              <ScanLine size={16} /> QR 스캔
+            </button>
+            <button type="button" className="asset-add-btn" onClick={() => setRegisterOpen(true)}>
+              <Plus size={16} /> 자산 등록
+            </button>
+          </div>
         }
       >
         <div className="asset-toolbar">
@@ -188,6 +209,8 @@ export default function AssetListPage() {
       <Modal open={registerOpen} title="자산 등록" onClose={() => setRegisterOpen(false)}>
         <AssetRegisterForm onSuccess={() => setRegisterOpen(false)} />
       </Modal>
+
+      {scanOpen && <QrScannerModal onClose={() => setScanOpen(false)} onDetected={handleScanned} />}
 
       {/* 선택 시에만 마운트 + key로 자산별 초기값을 새로 반영 */}
       {selected && (
