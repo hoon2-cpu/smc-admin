@@ -195,6 +195,7 @@ src/
 
 - 신청/등록 폼은 GAS로 **실제 저장**됨. 관리자 대시보드는 자산 시트를 **실집계**하고, 데이터 없는 섹션(신청/소모품/폐기)은 mock으로 폴백.
 - **자산관리(`/admin/assets`)는 실데이터 연동 완료** — `?action=assets` 조회(useAssets, mock 폴백), 등록 시 자산번호 자동부여(`AST-YYYY-####`), 구매/렌탈 통합(취득구분·렌탈사·관리번호·키값) + 필터 탭 + **검색/정렬** + **행 클릭 상세보기·수정·상태변경·폐기 처리(assetUpdate)**.
+- **자산 QR 라벨 인쇄** — 자산 상세 모달 '라벨 인쇄' → 새 창에 QR(자산번호 인코딩)+자산정보 라벨(60x40mm) 생성 후 인쇄. `qrcode` 라이브러리, `features/asset/labelPrint.ts`. 클라이언트 전용(GAS 불필요).
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
 - **GAS 최신 버전 `v9-users`** (저장소 기준) — 자산/수리/사용자 엔드포인트 포함.
