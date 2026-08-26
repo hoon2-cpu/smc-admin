@@ -43,11 +43,11 @@ function makeBarcodeDataUrl(value: string): string {
   const canvas = document.createElement('canvas')
   JsBarcode(canvas, value, {
     format: 'CODE128',
-    height: 66, // \h 1000 twips ≈ 17.6mm
+    height: 48, // 50x30mm 라벨에 로고와 함께 들어가도록 조정
     width: 2, // 바 두께
     displayValue: true, // 하단에 자산번호 텍스트 표시
-    fontSize: 16,
-    margin: 6,
+    fontSize: 14,
+    margin: 4,
   })
   return canvas.toDataURL('image/png')
 }
@@ -86,7 +86,7 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
     align-items: center; justify-content: center; gap: 1mm; }
   .logo { font-size: 11pt; letter-spacing: 0.5px; }
   .logo b { font-weight: 800; }
-  .logo-img { height: 7mm; width: auto; object-fit: contain; }
+  .logo-img { height: 6mm; width: auto; object-fit: contain; }
   .barcode { max-width: 100%; height: auto; }
   @media screen {
     body { background: #f1f5f9; padding: 24px; text-align: center; }
