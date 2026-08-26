@@ -6,6 +6,7 @@ import { getAssetStatusVariant } from '@/lib/badgeVariant'
 import { ASSET_STATUSES, type AssetStatus } from '@/constants/asset'
 import { DEPARTMENTS, BUILDINGS } from '@/constants/organization'
 import { updateAsset } from './api'
+import { printAssetLabel } from './labelPrint'
 import type { AssetRow } from './types'
 import './AssetDetailModal.css'
 
@@ -144,6 +145,9 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
   ) : (
     <>
       <div className="detail-actions-left">
+        <button type="button" className="detail-btn" onClick={() => printAssetLabel(asset)}>
+          라벨 인쇄
+        </button>
         {asset.status === '사용중' && (
           <button type="button" className="detail-btn" onClick={handleReturn} disabled={saving}>
             반납 처리
