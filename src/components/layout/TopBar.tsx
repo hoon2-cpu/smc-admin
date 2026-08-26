@@ -1,4 +1,4 @@
-import { Bell, User, LogOut } from 'lucide-react'
+import { Bell, User, LogOut, Menu } from 'lucide-react'
 import { useAuth } from '@/auth/AuthContext'
 import './TopBar.css'
 
@@ -8,19 +8,24 @@ interface TopBarProps {
   title: string
   /** 읽지 않은 알림 개수. 0이면 뱃지를 숨깁니다. */
   notificationCount?: number
+  /** 모바일 햄버거 클릭 콜백(사이드바 드로어 토글). */
+  onMenuClick?: () => void
 }
 
 /**
- * 관리자 화면 상단 바. 페이지 제목 + 알림 + 사용자 정보를 표시합니다.
+ * 관리자 화면 상단 바. (모바일) 햄버거 + 제목 + 알림 + 사용자 정보.
  *
  * @param props - {@link TopBarProps}
  * @returns 상단 바 엘리먼트
  */
-export default function TopBar({ title, notificationCount = 0 }: TopBarProps) {
+export default function TopBar({ title, notificationCount = 0, onMenuClick }: TopBarProps) {
   const { authed, signOut } = useAuth()
 
   return (
     <header className="topbar">
+      <button type="button" className="topbar-menu" aria-label="메뉴" onClick={onMenuClick}>
+        <Menu size={22} />
+      </button>
       <h1 className="topbar-title">{title}</h1>
 
       <div className="topbar-right">

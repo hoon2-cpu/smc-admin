@@ -19,3 +19,25 @@
   padding: 40px;
   color: var(--color-text-sub);
 }
+
+/* 모바일 드로어 배경(기본 숨김) */
+.admin-overlay {
+  display: none;
+}
+
+/* ===== 모바일: 사이드바를 드로어로 ===== */
+@media (max-width: 768px) {
+  .admin-main {
+    margin-left: 0;
+  }
+  .admin-content {
+    padding: 16px;
+  }
+  .admin-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 20;
+  }
+}

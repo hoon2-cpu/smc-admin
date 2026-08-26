@@ -11,9 +11,17 @@
   z-index: 10;
 }
 
+/* 햄버거: 데스크톱 숨김, 모바일 표시 */
+.topbar-menu {
+  display: none;
+  color: var(--color-text);
+  margin-right: 12px;
+}
+
 .topbar-title {
   font-size: 20px;
   font-weight: 700;
+  flex: 1;
 }
 
 .topbar-right {
@@ -84,4 +92,23 @@
 .topbar-logout:hover {
   color: var(--color-danger);
   background: var(--color-bg);
+}
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 14px;
+  }
+  .topbar-menu {
+    display: flex;
+  }
+  .topbar-title {
+    font-size: 17px;
+  }
+  .topbar-right {
+    gap: 12px;
+  }
+  /* 좁은 화면에선 사용자 텍스트 숨기고 아이콘만 */
+  .topbar-user-text {
+    display: none;
+  }
 }
