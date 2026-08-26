@@ -119,7 +119,7 @@ src/
 | `/admin/consumables` | 소모품관리 (준비중) |
 | `/admin/repair` | 수리관리 (기존 수리요청) |
 | `/admin/master` | 코드(Master)관리 (준비중) |
-| `/admin/users` | 사용자관리 (준비중) |
+| `/admin/users` | 사용자관리 (목록/등록/수정) |
 | `/admin/settings` | 설정 (준비중) |
 
 ## 진행 현황 — 1차(IT 자산 시스템) 완료분
@@ -181,7 +181,8 @@ src/
 - [ ] **GAS 토큰 복구**(미해결, 위 참고) + 시트 테스트 행 정리
 - [x] GitHub push → Pages 배포 완료 (`https://hoon2-cpu.github.io/smc-admin/`)
 - [ ] 자산관리 모듈 기능 확장 (자산 이력/폐기목록 등 — 필요 시)
-- [ ] 사용자/설정/Master 등 '준비중' 모듈 실제 구현
+- [x] 사용자관리 모듈 구현 (목록/등록/수정)
+- [ ] 설정/Master 등 남은 '준비중' 모듈 구현
 - [ ] (선택) 공통 Layout 다듬기 (Header/Breadcrumb/Footer·반응형)
 - [ ] 디자인/문구 다듬기
 
@@ -195,7 +196,9 @@ src/
 - 신청/등록 폼은 GAS로 **실제 저장**됨. 관리자 대시보드는 자산 시트를 **실집계**하고, 데이터 없는 섹션(신청/소모품/폐기)은 mock으로 폴백.
 - **자산관리(`/admin/assets`)는 실데이터 연동 완료** — `?action=assets` 조회(useAssets, mock 폴백), 등록 시 자산번호 자동부여(`AST-YYYY-####`), 구매/렌탈 통합(취득구분·렌탈사·관리번호·키값) + 필터 탭 + **검색/정렬** + **행 클릭 상세보기·수정·상태변경·폐기 처리(assetUpdate)**.
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
-- **GAS 최신 버전 `v8-repair-update`** (배포됨) — 자산 컬럼 완성(부서/구매처/보증/관리담당자/폐기일) + `assetUpdate`/`assets`/`repairs`/`repairUpdate` 엔드포인트. 실데이터 동작 검증 완료.
+- **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
+- **GAS 최신 버전 `v9-users`** (저장소 기준) — 자산/수리/사용자 엔드포인트 포함.
+  > ⚠️ 배포된 GAS는 `v8`. **사용자 실데이터는 GAS를 v9로 재배포해야** 동작(미배포 시 mock). 재배포는 토큰 설정과 함께 진행 예정.
 - Google Apps Script는 정적 호스팅(GitHub Pages)이 못 하는 서버 작업(시트 저장/Slack/메일)을 담당.
 - `GAS_URL`은 `src/config/api.ts`에 설정. `.env`의 `VITE_API_TOKEN`으로 요청 검증(서버 `API_TOKEN`과 일치 필요).
 - Slack Webhook URL / Gmail 발송은 `Code.gs` 내부 설정(프론트에 미노출).
