@@ -118,7 +118,7 @@ export default function AssetListPage() {
         action={
           <div className="asset-actions">
             <button type="button" className="asset-scan-btn" onClick={() => setScanOpen(true)}>
-              <ScanLine size={16} /> QR 스캔
+              <ScanLine size={16} /> 스캔
             </button>
             <button type="button" className="asset-add-btn" onClick={() => setRegisterOpen(true)}>
               <Plus size={16} /> 자산 등록

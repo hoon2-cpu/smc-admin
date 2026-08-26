@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Html5Qrcode } from 'html5-qrcode'
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import Modal from './Modal'
 import './QrScannerModal.css'
 
@@ -28,7 +28,14 @@ export default function QrScannerModal({ onClose, onDetected }: QrScannerModalPr
   onDetectedRef.current = onDetected
 
   useEffect(() => {
-    const scanner = new Html5Qrcode(READER_ID)
+    // QR + Code128(회사 자산 라벨) 모두 인식
+    const scanner = new Html5Qrcode(READER_ID, {
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.CODE_128,
+      ],
+      verbose: false,
+    })
     let detected = false
 
     scanner
@@ -58,12 +65,12 @@ export default function QrScannerModal({ onClose, onDetected }: QrScannerModalPr
   }, [])
 
   return (
-    <Modal open title="QR 스캔" onClose={onClose}>
+    <Modal open title="코드 스캔" onClose={onClose}>
       <div id={READER_ID} className="qr-reader" />
       {error ? (
         <p className="qr-error">{error}</p>
       ) : (
-        <p className="qr-hint">자산 라벨의 QR을 카메라에 비춰주세요.</p>
+        <p className="qr-hint">자산 라벨의 바코드/QR을 카메라에 비춰주세요.</p>
       )}
     </Modal>
   )
