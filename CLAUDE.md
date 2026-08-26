@@ -176,7 +176,7 @@ src/
 - **접근 제어 = 역할별 비밀번호 게이트** (admin/employee/vendor, SHA-256, `src/config/auth.ts` + `auth/useRoleAuth`). 입력 비번으로 역할 판별 → 역할별 화면. Google OAuth는 조직 정책 이슈로 보류.
   - 한계: 클라이언트 측 게이트(데이터는 GAS 토큰으로 별도 보호). 더 강한 보호는 GAS 비밀번호/토큰 검증으로 업그레이드 가능.
 - **배포 완료**: GitHub `hoon2-cpu/smc-admin` → Pages `https://hoon2-cpu.github.io/smc-admin/` (GitHub Actions 자동배포, vite base `/smc-admin/`). 공용 비밀번호 게이트로 접근 제한 중.
-- **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]` 및 자산 `AST-2026-0002` 등 삭제.
+- **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]`/`[검증]`/`[v11검증]` 및 자산 `AST-2026-0002` 등 삭제. (실운영 데이터 넣기 전)
 
 ## 다음 진행 후보 (미완) — 현재 방향: 자산관리 시스템 완성
 
@@ -214,8 +214,10 @@ src/
 - **자산 코드 스캔 조회** — 자산 목록 '스캔'(카메라) → **Code128/QR 디코드** → 자산번호로 상세 모달 오픈. `html5-qrcode`(formatsToSupport: CODE_128+QR), `components/ui/QrScannerModal.tsx`. 카메라는 https/localhost에서만. (라벨 인쇄↔스캔 왕복 완성)
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
-- **GAS 최신 버전 `v9-users`** (저장소 기준) — 자산/수리/사용자 엔드포인트 포함.
-  > ⚠️ 배포된 GAS는 `v8`. **사용자 실데이터는 GAS를 v9로 재배포해야** 동작(미배포 시 mock). 재배포는 토큰 설정과 함께 진행 예정.
+- **GAS 최신 버전 `v11-vendor` (배포·검증 완료)** — 자산/수리/사용자/신청/외부업체 엔드포인트 전부 포함.
+  - 엔드포인트: assets·assetRegister·assetUpdate / repairs·repairRequest·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest
+  - 시트: 1_수리접수기록 · 2_자산등록기록 · 3_변경로그 · 5_사용자목록 · 6_신청기록(직원 자산/반납 신청, 자동생성)
+  - 직원 자산/반납 신청 저장, 외부업체 전달→vendorRepairs 필터까지 실데이터 검증됨.
 - Google Apps Script는 정적 호스팅(GitHub Pages)이 못 하는 서버 작업(시트 저장/Slack/메일)을 담당.
 - `GAS_URL`은 `src/config/api.ts`에 설정. `.env`의 `VITE_API_TOKEN`으로 요청 검증(서버 `API_TOKEN`과 일치 필요).
 - Slack Webhook URL / Gmail 발송은 `Code.gs` 내부 설정(프론트에 미노출).
