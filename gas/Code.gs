@@ -31,6 +31,7 @@ var SHEET_REPAIR = '1_수리접수기록'
 var SHEET_ASSET = '2_자산등록기록'
 var SHEET_LOG = '3_변경로그'
 var SHEET_USER = '5_사용자목록'
+var SHEET_REQUEST = '6_신청기록'
 
 // ===== 진입점 =====
 
@@ -57,6 +58,8 @@ function doPost(e) {
     if (type === 'repairUpdate') return jsonOutput_(handleRepairUpdate_(payload))
     if (type === 'userRegister') return jsonOutput_(handleUserRegister_(payload))
     if (type === 'userUpdate') return jsonOutput_(handleUserUpdate_(payload))
+    if (type === 'assetRequest') return jsonOutput_(handleAssetRequest_(payload))
+    if (type === 'returnRequest') return jsonOutput_(handleReturnRequest_(payload))
     return jsonOutput_({ ok: false, message: '알 수 없는 요청 유형: ' + type })
   } catch (err) {
     return jsonOutput_({ ok: false, message: String(err) })
@@ -103,7 +106,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v9-users',
+    version: 'v10-requests',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -165,6 +168,53 @@ function handleUserUpdate_(p) {
     return { ok: true }
   }
   return { ok: false, message: '사번을 찾을 수 없습니다: ' + p.id }
+}
+
+/**
+ * 자산 신청(직원)을 신청기록 시트에 저장합니다.
+ * 열: 신청일시 / 종류 / 신청자 / 부서 / 자산번호 / 자산명(대상) / 사유 / 상세 / 상태
+ * @param {Object} p - { requester, department, category, spec, reason, wantDate }
+ * @return {Object} 처리 결과
+ */
+function handleAssetRequest_(p) {
+  var now = new Date()
+  var detail = p.spec || ''
+  if (p.wantDate) detail += (detail ? ' / ' : '') + '희망일 ' + p.wantDate
+  appendRow_(SHEET_REQUEST, [
+    now,
+    '자산신청',
+    p.requester,
+    p.department,
+    '',
+    p.category,
+    p.reason,
+    detail,
+    '접수',
+  ])
+  notifySlack_('📝 *자산 신청* ' + (p.requester || '') + ' / ' + (p.category || ''))
+  return { ok: true }
+}
+
+/**
+ * 반납 신청(직원)을 신청기록 시트에 저장합니다.
+ * @param {Object} p - { requester, department, assetNumber, assetName, reason, note }
+ * @return {Object} 처리 결과
+ */
+function handleReturnRequest_(p) {
+  var now = new Date()
+  appendRow_(SHEET_REQUEST, [
+    now,
+    '반납신청',
+    p.requester,
+    p.department,
+    p.assetNumber,
+    p.assetName,
+    p.reason,
+    p.note,
+    '접수',
+  ])
+  notifySlack_('📦 *반납 신청* ' + (p.requester || '') + ' / ' + (p.assetNumber || ''))
+  return { ok: true }
 }
 
 /**

@@ -1,0 +1,21 @@
+/* 신청 탭 (모바일: 3등분 세그먼트) */
+.req-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.req-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+.req-tab.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}

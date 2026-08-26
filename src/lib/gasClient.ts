@@ -8,6 +8,8 @@ export type GasRequestType =
   | 'repairUpdate'
   | 'userRegister'
   | 'userUpdate'
+  | 'assetRequest'
+  | 'returnRequest'
 
 /** 백엔드(GAS) 공통 응답 형식. */
 export interface GasResult {
