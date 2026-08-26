@@ -112,7 +112,9 @@ src/
 
 | 경로 | 화면 |
 | --- | --- |
-| `/` | → `/admin/dashboard` 리다이렉트 |
+| `/` | → 로그인 역할의 홈으로 리다이렉트 |
+| `/request` | 직원 신청 폼 (employee 역할) |
+| `/vendor` | 외부업체 수리 목록 (vendor 역할) |
 | `/admin/dashboard` | 대시보드 |
 | `/admin/purchase` | 구매·정산관리 (준비중) |
 | `/admin/assets` | 자산관리 (기존 자산등록) |
@@ -171,7 +173,7 @@ src/
   켜는 법(최종): ① `gas/Code.gs` 최신본(버전 `v5-token-prop`) 재붙여넣기 → ② **[프로젝트 설정]→[스크립트 속성]** 에 `API_TOKEN` = `.env`의 `VITE_API_TOKEN` 값 추가 후 **저장** → ③ 새 버전 재배포.
   (토큰을 스크립트 속성에서 읽도록 바꿔, 이후엔 코드 재붙여넣기해도 유실 안 됨)
 - 실운영 전 **토큰 재발급(rotation)** 권장 — 개발 중 값 노출됨. `.env` + 스크립트 속성 동일 새 값 → 프론트 build.
-- **접근 제어 = 공용 비밀번호 게이트** 적용됨 (기본 `smc-admin-2026`, SHA-256 비교, `src/config/auth.ts`). Google OAuth는 조직 정책 이슈로 보류.
+- **접근 제어 = 역할별 비밀번호 게이트** (admin/employee/vendor, SHA-256, `src/config/auth.ts` + `auth/useRoleAuth`). 입력 비번으로 역할 판별 → 역할별 화면. Google OAuth는 조직 정책 이슈로 보류.
   - 한계: 클라이언트 측 게이트(데이터는 GAS 토큰으로 별도 보호). 더 강한 보호는 GAS 비밀번호/토큰 검증으로 업그레이드 가능.
 - **배포 완료**: GitHub `hoon2-cpu/smc-admin` → Pages `https://hoon2-cpu.github.io/smc-admin/` (GitHub Actions 자동배포, vite base `/smc-admin/`). 공용 비밀번호 게이트로 접근 제한 중.
 - **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]` 및 자산 `AST-2026-0002` 등 삭제.
@@ -197,7 +199,8 @@ src/
 > 인증은 **역할별 비밀번호**로 진행(Google OAuth는 조직 정책으로 보류). 모든 화면 **모바일 반응형**.
 
 - [x] **1) 모바일 반응형** — 관리자 레이아웃을 모바일 드로어/햄버거로 정비(1차 완료). 페이지별 추가 폴백 가능.
-- [ ] **2) 역할/라우팅 분리** — `/admin`(총무팀 전체관리) · `/request`(직원 신청폼) · `/vendor`(외부업체 수리목록) + 역할별 비밀번호 게이트
+- [x] **2) 역할/라우팅 분리** — `/admin`(총무팀) · `/request`(직원) · `/vendor`(외부업체) + 역할별 비밀번호 게이트(`useRoleAuth`). 직원/외부업체는 `RoleShell` 골격만(내용은 ③④).
+  - 비밀번호(기본): admin=`smc-admin-2026`, employee=`smc-staff-2026`, vendor=`smc-vendor-2026` (`src/config/auth.ts` 해시)
 - [ ] **3) 직원 신청 폼** surface — 자산신청 · 수리신청(기존 재사용) · 반납신청 (모바일 우선). 총무팀이 아닌 모든 부서 대상.
 - [ ] **4) 외부업체 페이지** — 총무팀 수리 상세의 **'외부업체 전달'** 클릭 → GAS에 외부전달 표시 → `/vendor`에서 해당 건만 조회. (A/S 외부 직원 공유용)
 
