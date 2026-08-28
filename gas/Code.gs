@@ -274,6 +274,7 @@ function buildRepairs_() {
       status: r[9] || '접수',
       assignee: r[10] || '',
       dispatched: !!r[12], // 12: 외부업체 전달 여부(총무팀만 설정)
+      attachments: r[8] || '', // 8: 첨부 사진 파일명(쉼표 구분)
     })
   }
   return out.reverse()

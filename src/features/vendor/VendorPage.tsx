@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import RoleShell from '@/components/layout/RoleShell'
 import { Badge } from '@/components/ui'
 import { getRepairStatusVariant } from '@/lib/badgeVariant'
 import { useVendorRepairs } from './useVendorRepairs'
+import VendorDetailModal from './VendorDetailModal'
+import type { RepairRow } from '@/features/repair/types'
 import './VendorPage.css'
 
 /**
@@ -12,6 +15,7 @@ import './VendorPage.css'
  */
 export default function VendorPage() {
   const { repairs, loading, usingMock } = useVendorRepairs()
+  const [selected, setSelected] = useState<RepairRow | null>(null)
 
   return (
     <RoleShell title="외부 수리업체">
@@ -25,7 +29,12 @@ export default function VendorPage() {
       <div className="vendor-list">
         {repairs.length === 0 && <p className="vendor-empty">전달된 수리 요청이 없습니다.</p>}
         {repairs.map((r) => (
-          <div key={r.ticketNumber} className="vendor-card">
+          <button
+            key={r.ticketNumber}
+            type="button"
+            className="vendor-card"
+            onClick={() => setSelected(r)}
+          >
             <div className="vendor-card-head">
               <strong>{r.ticketNumber}</strong>
               <Badge variant={getRepairStatusVariant(r.status)}>{r.status}</Badge>
@@ -36,11 +45,13 @@ export default function VendorPage() {
             <div className="vendor-card-symptom">{r.symptom}</div>
             <div className="vendor-card-meta">
               접수일 {r.receivedAt} · 우선순위 {r.priority}
-              {r.assignee && ` · 담당 ${r.assignee}`}
+              {r.attachments ? ` · 사진 ${r.attachments.split(',').length}장` : ''}
             </div>
-          </div>
+          </button>
         ))}
       </div>
+
+      {selected && <VendorDetailModal repair={selected} onClose={() => setSelected(null)} />}
     </RoleShell>
   )
 }

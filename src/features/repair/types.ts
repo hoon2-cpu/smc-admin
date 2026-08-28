@@ -24,6 +24,8 @@ export interface RepairRow {
   assignee: string
   /** 외부 수리업체 전달 여부(총무팀만 설정). */
   dispatched: boolean
+  /** 첨부 사진 파일명(쉼표 구분). 실제 이미지 표시는 Drive 업로드 후 가능. */
+  attachments: string
 }
 
 /** 수리 상태별 요약. */
