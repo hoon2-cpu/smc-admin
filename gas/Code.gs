@@ -32,6 +32,7 @@ var SHEET_ASSET = '2_자산등록기록'
 var SHEET_LOG = '3_변경로그'
 var SHEET_USER = '5_사용자목록'
 var SHEET_REQUEST = '6_신청기록'
+var SHEET_CONSUMABLE = '7_소모품목록' // 열: 소모품명 / 현재고 / 적정재고 / 단위 (IT 소모품)
 
 // ===== 진입점 =====
 
@@ -61,6 +62,7 @@ function doPost(e) {
     if (type === 'userUpdate') return jsonOutput_(handleUserUpdate_(payload))
     if (type === 'assetRequest') return jsonOutput_(handleAssetRequest_(payload))
     if (type === 'returnRequest') return jsonOutput_(handleReturnRequest_(payload))
+    if (type === 'consumableRequest') return jsonOutput_(handleConsumableRequest_(payload))
     return jsonOutput_({ ok: false, message: '알 수 없는 요청 유형: ' + type })
   } catch (err) {
     return jsonOutput_({ ok: false, message: String(err) })
@@ -115,7 +117,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v12-rental',
+    version: 'v13-consumable',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -223,6 +225,29 @@ function handleReturnRequest_(p) {
     '접수',
   ])
   notifySlack_('📦 *반납 신청* ' + (p.requester || '') + ' / ' + (p.assetNumber || ''))
+  return { ok: true }
+}
+
+/**
+ * 소모품 신청(직원)을 신청기록 시트에 저장합니다.
+ * 열: 신청일시 / 종류 / 신청자 / 부서 / (자산번호=빈칸) / 소모품명 / 사유 / 수량 / 상태
+ * @param {Object} p - { requester, department, item, qty, reason }
+ * @return {Object} 처리 결과
+ */
+function handleConsumableRequest_(p) {
+  var now = new Date()
+  appendRow_(SHEET_REQUEST, [
+    now,
+    '소모품신청',
+    p.requester,
+    p.department,
+    '',
+    p.item,
+    p.reason,
+    '수량 ' + (p.qty || ''),
+    '접수',
+  ])
+  notifySlack_('🧴 *소모품 신청* ' + (p.requester || '') + ' / ' + (p.item || '') + ' ' + (p.qty || ''))
   return { ok: true }
 }
 
@@ -343,6 +368,18 @@ function buildDashboard_() {
   var rentalByCompany = []
   for (var c in rentalMap) rentalByCompany.push({ company: c, count: rentalMap[c] })
 
+  // 소모품 재고 부족(7_소모품목록: 0소모품명 1현재고 2적정재고 3단위) — 현재고 < 적정재고
+  var lowStock = []
+  var crows = getSheet_(SHEET_CONSUMABLE).getDataRange().getValues()
+  for (var j = 1; j < crows.length; j++) {
+    var cr = crows[j]
+    if (!cr[0]) continue
+    var cur = Number(cr[1]) || 0
+    var th = Number(cr[2]) || 0
+    if (cur < th) lowStock.push({ name: cr[0], currentStock: cur, threshold: th, unit: cr[3] || '개' })
+  }
+  stats.lowStockCount = lowStock.length
+
   return {
     stats: stats,
     categories: categories,
@@ -350,7 +387,7 @@ function buildDashboard_() {
     rentalByCompany: rentalByCompany,
     recentAssets: recent.slice(-5).reverse(), // 최근 5건
     requests: [],
-    lowStock: [],
+    lowStock: lowStock,
     disposals: [],
   }
 }

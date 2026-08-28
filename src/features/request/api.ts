@@ -20,6 +20,15 @@ export interface ReturnRequestValues {
   note: string
 }
 
+/** 소모품 신청 폼 값. */
+export interface ConsumableRequestValues {
+  requester: string
+  department: string
+  item: string
+  qty: string
+  reason: string
+}
+
 /**
  * 자산 신청을 백엔드로 전송합니다.
  * @param values - 자산 신청 값
@@ -36,4 +45,13 @@ export function submitAssetRequest(values: AssetRequestValues): Promise<GasResul
  */
 export function submitReturnRequest(values: ReturnRequestValues): Promise<GasResult> {
   return submitToGas('returnRequest', values)
+}
+
+/**
+ * 소모품 신청을 백엔드로 전송합니다.
+ * @param values - 소모품 신청 값
+ * @returns 서버 응답
+ */
+export function submitConsumableRequest(values: ConsumableRequestValues): Promise<GasResult> {
+  return submitToGas('consumableRequest', values)
 }

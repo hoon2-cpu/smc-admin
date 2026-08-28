@@ -3,10 +3,11 @@ import RoleShell from '@/components/layout/RoleShell'
 import RepairRequestPage from '@/features/repair/RepairRequestPage'
 import AssetRequestForm from './AssetRequestForm'
 import ReturnRequestForm from './ReturnRequestForm'
+import ConsumableRequestForm from './ConsumableRequestForm'
 import './RequestPage.css'
 
 /** 신청 탭 종류. */
-const TABS = ['자산신청', '수리신청', '반납신청'] as const
+const TABS = ['자산신청', '소모품신청', '수리신청', '반납신청'] as const
 type RequestTab = (typeof TABS)[number]
 
 /**
@@ -34,6 +35,7 @@ export default function RequestPage() {
       </div>
 
       {tab === '자산신청' && <AssetRequestForm />}
+      {tab === '소모품신청' && <ConsumableRequestForm />}
       {tab === '수리신청' && <RepairRequestPage />}
       {tab === '반납신청' && <ReturnRequestForm />}
     </RoleShell>
