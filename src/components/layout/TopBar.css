@@ -30,10 +30,45 @@
   gap: 20px;
 }
 
+.topbar-bell-wrap {
+  position: relative;
+  display: flex;
+}
 .topbar-bell {
   position: relative;
   color: var(--color-text-sub);
   display: flex;
+}
+
+/* 알림 드롭다운 */
+.topbar-pop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+.topbar-pop {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 240px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  z-index: 41;
+  overflow: hidden;
+}
+.topbar-pop-head {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--color-border);
+}
+.topbar-pop-empty {
+  padding: 22px 14px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+  text-align: center;
 }
 
 .topbar-badge {

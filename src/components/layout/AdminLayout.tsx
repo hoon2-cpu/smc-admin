@@ -34,7 +34,6 @@ export default function AdminLayout() {
       <div className="admin-main">
         <TopBar
           title={activeModule?.title ?? 'The SMC Admin'}
-          notificationCount={12}
           onMenuClick={() => setDrawerOpen((prev) => !prev)}
         />
         <main className="admin-content">

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Bell, User, LogOut, Menu } from 'lucide-react'
 import { useAuth } from '@/auth/AuthContext'
 import './TopBar.css'
@@ -20,6 +21,7 @@ interface TopBarProps {
  */
 export default function TopBar({ title, notificationCount = 0, onMenuClick }: TopBarProps) {
   const { role, signOut } = useAuth()
+  const [bellOpen, setBellOpen] = useState(false)
 
   return (
     <header className="topbar">
@@ -29,10 +31,26 @@ export default function TopBar({ title, notificationCount = 0, onMenuClick }: To
       <h1 className="topbar-title">{title}</h1>
 
       <div className="topbar-right">
-        <button type="button" className="topbar-bell" aria-label="알림">
-          <Bell size={20} />
-          {notificationCount > 0 && <span className="topbar-badge">{notificationCount}</span>}
-        </button>
+        <div className="topbar-bell-wrap">
+          <button
+            type="button"
+            className="topbar-bell"
+            aria-label="알림"
+            onClick={() => setBellOpen((o) => !o)}
+          >
+            <Bell size={20} />
+            {notificationCount > 0 && <span className="topbar-badge">{notificationCount}</span>}
+          </button>
+          {bellOpen && (
+            <>
+              <div className="topbar-pop-backdrop" onClick={() => setBellOpen(false)} />
+              <div className="topbar-pop" role="dialog">
+                <div className="topbar-pop-head">알림</div>
+                <div className="topbar-pop-empty">새 알림이 없습니다.</div>
+              </div>
+            </>
+          )}
+        </div>
 
         <div className="topbar-user">
           <span className="topbar-avatar">
