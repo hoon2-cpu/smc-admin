@@ -115,7 +115,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v11-vendor',
+    version: 'v12-rental',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -303,9 +303,11 @@ function buildDashboard_() {
   var rows = getSheet_(SHEET_ASSET).getDataRange().getValues()
   var categoryMap = {}
   var stats = { totalAssets: 0, inUseAssets: 0, repairingAssets: 0, disposalPlannedAssets: 0, lowStockCount: 0 }
+  var acquisition = { purchase: 0, rental: 0 }
+  var rentalMap = {}
   var recent = []
 
-  // 열 순서: 0등록일시 1자산번호 2자산명 3자산구분 4제조사 ... 9사용자 10위치 11상태
+  // 열: 0등록일시 1자산번호 2자산명 3구분 ... 9사용자 10위치 11상태 ... 15취득구분 16렌탈사
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i]
     if (!r[1] && !r[2]) continue // 빈 행 스킵
@@ -316,6 +318,15 @@ function buildDashboard_() {
     if (status === '사용중') stats.inUseAssets++
     else if (status === '수리중') stats.repairingAssets++
     else if (status === '폐기예정') stats.disposalPlannedAssets++
+
+    // 취득 구분(구매/렌탈) + 렌탈사 집계
+    if (r[15] === '렌탈') {
+      acquisition.rental++
+      var company = r[16] || '기타'
+      rentalMap[company] = (rentalMap[company] || 0) + 1
+    } else {
+      acquisition.purchase++
+    }
 
     recent.push({
       assetNumber: r[1],
@@ -329,10 +340,14 @@ function buildDashboard_() {
 
   var categories = []
   for (var key in categoryMap) categories.push({ category: key, count: categoryMap[key] })
+  var rentalByCompany = []
+  for (var c in rentalMap) rentalByCompany.push({ company: c, count: rentalMap[c] })
 
   return {
     stats: stats,
     categories: categories,
+    acquisition: acquisition,
+    rentalByCompany: rentalByCompany,
     recentAssets: recent.slice(-5).reverse(), // 최근 5건
     requests: [],
     lowStock: [],

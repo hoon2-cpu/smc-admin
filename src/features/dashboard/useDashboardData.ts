@@ -43,9 +43,14 @@ function hasRealData(real: Partial<DashboardData>): boolean {
  */
 function mergeWithMock(real: Partial<DashboardData>): DashboardData {
   const statsHasData = (real.stats?.totalAssets ?? 0) > 0
+  const hasRental = !!real.acquisition && real.acquisition.purchase + real.acquisition.rental > 0
   return {
     stats: statsHasData && real.stats ? real.stats : DASHBOARD_MOCK.stats,
     categories: real.categories?.length ? real.categories : DASHBOARD_MOCK.categories,
+    acquisition: hasRental && real.acquisition ? real.acquisition : DASHBOARD_MOCK.acquisition,
+    rentalByCompany: real.rentalByCompany?.length
+      ? real.rentalByCompany
+      : DASHBOARD_MOCK.rentalByCompany,
     requests: real.requests?.length ? real.requests : DASHBOARD_MOCK.requests,
     lowStock: real.lowStock?.length ? real.lowStock : DASHBOARD_MOCK.lowStock,
     recentAssets: real.recentAssets?.length ? real.recentAssets : DASHBOARD_MOCK.recentAssets,

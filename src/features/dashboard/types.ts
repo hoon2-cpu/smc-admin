@@ -73,12 +73,32 @@ export interface DashboardStats {
   lowStockCount: number
 }
 
+/** 취득 구분(구매/렌탈) 집계. */
+export interface AcquisitionSplit {
+  /** 구매 자산 수. */
+  purchase: number
+  /** 렌탈 자산 수. */
+  rental: number
+}
+
+/** 렌탈사별 집계 1건. */
+export interface RentalCompanyDatum {
+  /** 렌탈사명. */
+  company: string
+  /** 해당 렌탈사 자산 수. */
+  count: number
+}
+
 /** 관리자 대시보드 전체 데이터 묶음. (mock 또는 GAS 응답) */
 export interface DashboardData {
   /** 상단 통계. */
   stats: DashboardStats
   /** 자산 구분별 집계. */
   categories: CategoryDatum[]
+  /** 취득 구분(구매/렌탈) 집계. */
+  acquisition: AcquisitionSplit
+  /** 렌탈사별 집계. */
+  rentalByCompany: RentalCompanyDatum[]
   /** 신청 현황. */
   requests: RequestItem[]
   /** 소모품 재고 부족. */

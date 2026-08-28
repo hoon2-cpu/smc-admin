@@ -26,7 +26,7 @@ export type AcquisitionType = (typeof ACQUISITION_TYPES)[number]
  * 렌탈사 목록. 현재 롯데렌탈·AI네트웍스와 계약.
  * (추후 시스템설정/Master에서 추가·수정 가능하게 이관 — 코드 수정 없이 확장)
  */
-export const RENTAL_COMPANIES = ['롯데렌탈', 'AI네트웍스'] as const
+export const RENTAL_COMPANIES = ['롯데렌탈', 'AJ네트웍스'] as const
 
 /** 렌탈사 유니온 타입. */
 export type RentalCompany = (typeof RENTAL_COMPANIES)[number]

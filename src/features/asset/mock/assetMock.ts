@@ -15,7 +15,7 @@ export const ASSET_MOCK: AssetRow[] = [
   {
     assetNumber: 'AST-2024-1246', name: '삼성 갤럭시북', category: '노트북', manufacturer: 'SAMSUNG',
     model: 'NT750XDA', serialNumber: 'SN-30271', managementNumber: 'AIN-30271', keyValue: 'KEY-1246',
-    acquisitionType: '렌탈', rentalCompany: 'AI네트웍스', acquiredDate: '2024-05-19', purchaseAmount: '',
+    acquisitionType: '렌탈', rentalCompany: 'AJ네트웍스', acquiredDate: '2024-05-19', purchaseAmount: '',
     vendor: '', warrantyUntil: '', user: '박영업', department: '영업팀', location: '2사옥',
     status: '수리중', manager: '이관리', note: '키보드 불량 접수', disposalDate: '',
   },

@@ -1,0 +1,52 @@
+.rental-split {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.rental-box {
+  flex: 1;
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rental-box.purchase {
+  background: #eff6ff;
+}
+.rental-box.rental {
+  background: #f5f3ff;
+}
+.rental-num {
+  font-size: 24px;
+  font-weight: 800;
+}
+.rental-label {
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+
+.rental-company-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  margin-bottom: 8px;
+}
+.rental-company-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rental-company-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border-radius: 8px;
+}
+.rental-empty {
+  color: var(--color-text-sub);
+  justify-content: center !important;
+}
