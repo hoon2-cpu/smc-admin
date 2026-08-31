@@ -55,6 +55,7 @@ function mergeWithMock(real: Partial<DashboardData>): DashboardData {
     requests: real.requests?.length ? real.requests : DASHBOARD_MOCK.requests,
     lowStock: real.lowStock?.length ? real.lowStock : DASHBOARD_MOCK.lowStock,
     recentAssets: real.recentAssets?.length ? real.recentAssets : DASHBOARD_MOCK.recentAssets,
+    recentChanges: real.recentChanges?.length ? real.recentChanges : DASHBOARD_MOCK.recentChanges,
     disposals: real.disposals?.length ? real.disposals : DASHBOARD_MOCK.disposals,
   }
 }

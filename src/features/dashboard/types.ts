@@ -91,6 +91,26 @@ export interface RentalCompanyDatum {
   cost?: number
 }
 
+/** 최근 이동/변경 이력 1건. (3_변경로그 파생) */
+export interface ChangeLogItem {
+  /** 변경 일시(yyyy-MM-dd). */
+  at: string
+  /** 구분(자산변경/자산배정/렌탈반납/수리접수). */
+  kind: string
+  /** 처리 담당자. */
+  actor: string
+  /** 대상(자산번호/접수번호). */
+  target: string
+  /** 변경 필드(상태/사용자/비용지출 등). */
+  field: string
+  /** 이전 값. */
+  before: string
+  /** 이후 값. */
+  after: string
+  /** 메모. */
+  note: string
+}
+
 /** 관리자 대시보드 전체 데이터 묶음. (mock 또는 GAS 응답) */
 export interface DashboardData {
   /** 상단 통계. */
@@ -109,6 +129,8 @@ export interface DashboardData {
   lowStock: Consumable[]
   /** 최근 등록 자산. */
   recentAssets: RecentAssetItem[]
+  /** 최근 이동/변경 이력(반납·불출·상태변경). */
+  recentChanges?: ChangeLogItem[]
   /** 폐기 예정 자산. */
   disposals: DisposalItem[]
 }

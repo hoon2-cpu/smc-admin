@@ -192,7 +192,7 @@ src/
 > 구매·정산(6~11단계)은 보류 상태. 재개하려면 [docs/PURCHASE_DOMAIN.md](docs/PURCHASE_DOMAIN.md)부터 검토.
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별(`v15-rental`이 최신 · 코드 반영됨, 재배포 필요).
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별(`v16-changelog`가 최신 · 코드 반영됨, 재배포 필요).
 
 ## 🔀 역할 기반 개편 로드맵 (진행 중)
 
@@ -218,7 +218,7 @@ src/
 - [x] **5) 소모품 실데이터** — GAS `7_소모품목록` 시트(소모품명/현재고/적정재고/단위) 집계 → 대시보드 '소모품 재고 현황'(현재고<적정재고) + `stats.lowStockCount` 실연동. `v13-consumable`.
 - [x] **6) 자산 대량 등록/폐기 + 바코드 일괄 출력** — 자산목록에 **체크박스 다중 선택**(`useAssetSelection`) + 하단 **대량 작업 바**(`AssetBulkBar`): ①라벨 일괄 인쇄(`printAssetLabels`, 라벨마다 1페이지) ②선택 폐기(`bulkDisposeAssets`, 순차 assetUpdate). **대량 등록**은 `AssetBulkRegisterModal`(편집 표, 자산명 있는 행만 `submitAssetRegisterBulk` 순차 등록). 로직은 `useAssetBulkActions` 훅으로 분리. 기존 GAS 재사용(재배포 불필요).
 - [x] **7) 렌탈 비용/반납 관리** — 자산 시트에 **22월렌탈료·23계약시작·24계약종료·25반납일** 열 추가. 등록/수정 폼에 렌탈 비용 필드(취득=렌탈일 때), 상세 모달에 렌탈 정보 표시 + **'렌탈 반납'** 버튼(`rentalReturn` → 반납일 기록 + 3_변경로그 '비용지출 종료' 이력). 대시보드 렌탈 패널에 **월 렌탈 비용 총합/렌탈사별 비용**(진행중=반납·폐기 제외). GAS `v15-rental`.
-- [ ] **8) 반납/불출 히스토리 대시보드 연동** — 3_변경로그의 상태변경(홍길동 반납/김춘향 사용중)을 대시보드 '최근 이동' 위젯으로. (설계 추천 예정)
+- [x] **8) 반납/불출 히스토리 대시보드 연동** — `handleAssetUpdate_`가 **사용자 배정 변경**도 3_변경로그에 기록(`자산배정`: 홍길동→김춘향, 정운영→(반납)). `buildRecentChanges_`(최근 6건) → 대시보드 **'최근 이동'** 위젯(`RecentChangesPanel`, 반납/불출/상태변경/렌탈반납). GAS `v16-changelog`.
 - [x] **9) 직원 소모품 신청 폼 + 총무팀 신청관리 화면** — `/request`에 소모품신청 탭(품목+기타·수량·사유) → `6_신청기록` 저장(consumableRequest). **총무팀 `/admin/requests`(신청관리)**: `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 탭 + 행 클릭 상세 모달에서 상태(접수/처리중/완료/반려)·처리방법(재고지급/구매요청/외부업체전달/기타)·메모 처리(`requestUpdate`, 시트 I~L열 갱신). GAS `v14-requests`.
 
 > 클러스터: 소모품(5+9) · 렌탈(3+7+8) · 외부업체(2) · 설정(4) · 대량처리(6).
@@ -233,7 +233,7 @@ src/
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
 - **신청관리(`/admin/requests`)** — `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 + 상세 모달 처리(`requestUpdate` → `6_신청기록` I상태/J처리방법/K메모/L처리일시 갱신). rowIndex(시트 행번호)로 대상 식별.
-- **GAS 최신 버전 `v15-rental` (코드 반영 완료 · ⚠️재배포 필요)** — 자산/수리/사용자/신청/외부업체/렌탈 엔드포인트 전부 포함.
+- **GAS 최신 버전 `v16-changelog` (코드 반영 완료 · ⚠️재배포 필요)** — 자산/수리/사용자/신청/외부업체/렌탈 엔드포인트 + 최근이동 집계 포함.
   - 엔드포인트: assets·assetRegister·assetUpdate·**rentalReturn** / repairs·repairRequest·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest / requests·requestUpdate
   - 시트: 1_수리접수기록 · 2_자산등록기록(+22월렌탈료·23계약시작·24계약종료·25반납일) · 3_변경로그(렌탈반납=비용지출 종료) · 5_사용자목록 · 6_신청기록 · 7_소모품목록
   - 직원 신청 저장, 외부업체 전달 필터, 총무팀 신청 처리, 렌탈 반납·월 비용 집계까지 구현됨. (실데이터는 v15 재배포 후 반영)

@@ -126,7 +126,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v15-rental',
+    version: 'v16-changelog',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -462,10 +462,37 @@ function buildDashboard_() {
     rentalByCompany: rentalByCompany,
     rentalMonthlyTotal: rentalMonthlyTotal,
     recentAssets: recent.slice(-5).reverse(), // 최근 5건
+    recentChanges: buildRecentChanges_(6), // 최근 이동(반납/불출/상태) 6건
     requests: [],
     lowStock: lowStock,
     disposals: [],
   }
+}
+
+/**
+ * 변경로그(3_변경로그)에서 최근 이동/변경 이력을 최신순으로 반환합니다.
+ * 열: 0일시 1구분 2담당자 3대상(자산번호) 4필드 5이전 6이후 7메모
+ * @param {number} limit - 최대 건수
+ * @return {Object[]} 최근 변경 이력
+ */
+function buildRecentChanges_(limit) {
+  var rows = getSheet_(SHEET_LOG).getDataRange().getValues()
+  var out = []
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i]
+    if (!r[1] && !r[3]) continue // 구분·대상 모두 없으면 빈 행
+    out.push({
+      at: formatDateCell_(r[0]),
+      kind: r[1] || '',
+      actor: r[2] || '',
+      target: r[3] || '',
+      field: r[4] || '',
+      before: r[5] === '' || r[5] == null ? '' : String(r[5]),
+      after: r[6] === '' || r[6] == null ? '' : String(r[6]),
+      note: r[7] || '',
+    })
+  }
+  return out.reverse().slice(0, limit)
 }
 
 /**
@@ -538,6 +565,7 @@ function handleAssetUpdate_(p) {
     if (values[i][1] !== p.assetNumber) continue
     var row = i + 1 // 시트는 1-based
     var beforeStatus = values[i][11]
+    var beforeUser = values[i][9] // 9 사용자(배정 변경 추적용)
 
     // 편집 가능한 셀만 갱신 (열 index + 1 = 1-based 위치)
     sheet.getRange(row, 10).setValue(p.user || '') //        9 사용자
@@ -562,6 +590,19 @@ function handleAssetUpdate_(p) {
         '상태',
         beforeStatus,
         p.status,
+        '',
+      ])
+    }
+    // 사용자 배정 변경(불출/반납) 추적: 홍길동 → 김춘향 / 홍길동 → (반납)
+    if (String(beforeUser || '') !== String(p.user || '')) {
+      appendRow_(SHEET_LOG, [
+        new Date(),
+        '자산배정',
+        p.manager || '',
+        p.assetNumber,
+        '사용자',
+        beforeUser || '(없음)',
+        p.user || '(반납)',
         '',
       ])
     }

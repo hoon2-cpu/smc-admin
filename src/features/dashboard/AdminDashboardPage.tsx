@@ -5,6 +5,7 @@ import LowStockPanel from './widgets/LowStockPanel'
 import RecentAssetsTable from './widgets/RecentAssetsTable'
 import DisposalScheduleTable from './widgets/DisposalScheduleTable'
 import RentalStatusPanel from './widgets/RentalStatusPanel'
+import RecentChangesPanel from './widgets/RecentChangesPanel'
 import QuickLinks from './widgets/QuickLinks'
 import { useDashboardData } from './useDashboardData'
 import './AdminDashboardPage.css'
@@ -46,6 +47,11 @@ export default function AdminDashboardPage() {
         />
         <RecentAssetsTable assets={data.recentAssets} />
         <DisposalScheduleTable items={data.disposals} />
+      </div>
+
+      {/* 최근 이동(반납/불출/상태변경) 히스토리 */}
+      <div className="dash-grid">
+        <RecentChangesPanel changes={data.recentChanges} />
       </div>
 
       <QuickLinks />

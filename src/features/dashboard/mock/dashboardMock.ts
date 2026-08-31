@@ -27,6 +27,12 @@ export const DASHBOARD_MOCK: DashboardData = {
     { company: 'AJ네트웍스', count: 168, cost: 6720000 },
   ],
   rentalMonthlyTotal: 20120000,
+  recentChanges: [
+    { at: '2026-08-31', kind: '자산배정', actor: '이관리', target: 'AST-2024-1248', field: '사용자', before: '홍길동', after: '김춘향', note: '' },
+    { at: '2026-08-30', kind: '자산배정', actor: '이관리', target: 'AST-2021-0456', field: '사용자', before: '정운영', after: '(반납)', note: '' },
+    { at: '2026-08-30', kind: '자산변경', actor: '이관리', target: 'AST-2024-1246', field: '상태', before: '사용중', after: '수리중', note: '' },
+    { at: '2026-08-29', kind: '렌탈반납', actor: '이관리', target: 'AST-2020-0087', field: '비용지출', before: '진행중', after: '종료', note: '월 41000원 / 롯데렌탈 렌탈 종료' },
+  ],
   requests: [
     { kind: '자산 신청', title: '노트북 지급 신청 (개발팀 김개발)', date: '2024-05-20', status: '승인 대기' },
     { kind: '소모품 신청', title: '토너 카트리지 신청 (총무팀 이총무)', date: '2024-05-20', status: '승인 대기' },
