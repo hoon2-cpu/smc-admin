@@ -1,0 +1,88 @@
+.req-notice {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  background: #eef2ff;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.req-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+/* 종류 필터 탭 */
+.req-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.req-tab {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text-sub);
+  cursor: pointer;
+}
+.req-tab:hover {
+  border-color: var(--color-primary);
+}
+.req-tab.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.req-table-scroll {
+  overflow-x: auto;
+}
+.req-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.req-table th,
+.req-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.req-table th {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  background: var(--color-bg);
+}
+.req-row {
+  cursor: pointer;
+}
+.req-row:hover td {
+  background: var(--color-bg);
+}
+.req-dept {
+  color: var(--color-text-sub);
+}
+.req-reason {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.req-empty {
+  text-align: center;
+  color: var(--color-text-sub);
+  padding: 28px 8px;
+}
+
+@media (max-width: 640px) {
+  .req-stat-row {
+    grid-template-columns: 1fr;
+  }
+}

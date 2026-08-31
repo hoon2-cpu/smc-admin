@@ -63,6 +63,7 @@ function doPost(e) {
     if (type === 'assetRequest') return jsonOutput_(handleAssetRequest_(payload))
     if (type === 'returnRequest') return jsonOutput_(handleReturnRequest_(payload))
     if (type === 'consumableRequest') return jsonOutput_(handleConsumableRequest_(payload))
+    if (type === 'requestUpdate') return jsonOutput_(handleRequestUpdate_(payload))
     return jsonOutput_({ ok: false, message: '알 수 없는 요청 유형: ' + type })
   } catch (err) {
     return jsonOutput_({ ok: false, message: String(err) })
@@ -106,6 +107,13 @@ function doGet(e) {
     return jsonOutput_({ ok: true, users: buildUsers_() })
   }
 
+  if (params.action === 'requests') {
+    if (API_TOKEN && params.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+    return jsonOutput_({ ok: true, requests: buildRequests_() })
+  }
+
   if (params.action === 'vendorRepairs') {
     if (API_TOKEN && params.token !== API_TOKEN) {
       return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
@@ -117,7 +125,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v13-consumable',
+    version: 'v14-requests',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -248,6 +256,57 @@ function handleConsumableRequest_(p) {
     '접수',
   ])
   notifySlack_('🧴 *소모품 신청* ' + (p.requester || '') + ' / ' + (p.item || '') + ' ' + (p.qty || ''))
+  return { ok: true }
+}
+
+/**
+ * 신청기록 시트를 총무팀 신청관리 목록(RequestRow[])으로 변환합니다. (최신 신청 먼저)
+ * 열: 0신청일시 1종류 2신청자 3부서 4자산번호 5대상명 6사유 7상세 8상태
+ *     9처리방법 10처리메모 11처리일시
+ * rowIndex(시트 실제 행번호)를 함께 반환해 requestUpdate가 해당 행을 갱신합니다.
+ * @return {Object[]} 신청 목록
+ */
+function buildRequests_() {
+  var rows = getSheet_(SHEET_REQUEST).getDataRange().getValues()
+  var out = []
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i]
+    if (!r[1] && !r[2]) continue // 종류·신청자 모두 없으면 빈 행
+    out.push({
+      rowIndex: i + 1, // 시트 실제 행번호(1-based, 헤더 포함)
+      requestedAt: formatDateCell_(r[0]),
+      kind: r[1] || '',
+      requester: r[2] || '',
+      department: r[3] || '',
+      assetNumber: r[4] || '',
+      target: r[5] || '',
+      reason: r[6] || '',
+      detail: r[7] || '',
+      status: r[8] || '접수',
+      method: r[9] || '',
+      note: r[10] || '',
+      processedAt: formatDateCell_(r[11]),
+    })
+  }
+  return out.reverse()
+}
+
+/**
+ * 신청 건의 처리 상태/방법/메모를 갱신합니다. (총무팀 전용)
+ * 열 I(상태)·J(처리방법)·K(처리메모)·L(처리일시)를 씁니다.
+ * @param {Object} p - { rowIndex, status, method, note }
+ * @return {Object} 처리 결과
+ */
+function handleRequestUpdate_(p) {
+  var row = Number(p.rowIndex)
+  if (!row || row < 2) return { ok: false, message: '유효하지 않은 행 번호입니다.' }
+  var sheet = getSheet_(SHEET_REQUEST)
+  if (row > sheet.getLastRow()) return { ok: false, message: '존재하지 않는 신청입니다.' }
+  // I=9열(상태), J=10열(처리방법), K=11열(처리메모), L=12열(처리일시)
+  sheet.getRange(row, 9).setValue(p.status || '접수')
+  sheet.getRange(row, 10).setValue(p.method || '')
+  sheet.getRange(row, 11).setValue(p.note || '')
+  sheet.getRange(row, 12).setValue(new Date())
   return { ok: true }
 }
 

@@ -9,5 +9,5 @@ export const settingsModule: ModuleDef = {
   path: 'settings',
   icon: Settings,
   element: lazy(() => import('./SettingsPage')),
-  order: 8,
+  order: 9,
 }

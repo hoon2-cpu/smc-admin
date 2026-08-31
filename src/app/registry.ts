@@ -4,6 +4,7 @@ import { purchaseModule } from '@/features/purchase'
 import { assetModule } from '@/features/asset'
 import { consumableModule } from '@/features/consumable'
 import { repairModule } from '@/features/repair'
+import { requestsModule } from '@/features/requests'
 import { masterModule } from '@/features/master'
 import { usersModule } from '@/features/users'
 import { settingsModule } from '@/features/settings'
@@ -20,6 +21,7 @@ export const MODULES: ModuleDef[] = [
   assetModule,
   consumableModule,
   repairModule,
+  requestsModule,
   masterModule,
   usersModule,
   settingsModule,

@@ -1,6 +1,7 @@
 import type { BadgeVariant } from '@/components/ui'
 import type { AssetStatus } from '@/constants/asset'
 import type { RepairStatus } from '@/constants/repair'
+import type { RequestStatus } from '@/constants/request'
 
 /**
  * 자산 상태 → 뱃지 색상 매핑.
@@ -40,4 +41,21 @@ const REPAIR_STATUS_VARIANT: Record<RepairStatus, BadgeVariant> = {
  */
 export function getRepairStatusVariant(status: RepairStatus): BadgeVariant {
   return REPAIR_STATUS_VARIANT[status]
+}
+
+/** 신청 처리 상태 → 뱃지 색상 매핑. (누락 방지를 위해 Record 사용) */
+const REQUEST_STATUS_VARIANT: Record<RequestStatus, BadgeVariant> = {
+  접수: 'info',
+  처리중: 'warning',
+  완료: 'success',
+  반려: 'danger',
+}
+
+/**
+ * 신청 처리 상태에 대응하는 뱃지 색상 변형을 반환합니다.
+ * @param status - 신청 처리 상태
+ * @returns 뱃지 색상 변형
+ */
+export function getRequestStatusVariant(status: RequestStatus): BadgeVariant {
+  return REQUEST_STATUS_VARIANT[status]
 }

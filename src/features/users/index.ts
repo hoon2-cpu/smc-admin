@@ -9,5 +9,5 @@ export const usersModule: ModuleDef = {
   path: 'users',
   icon: Users,
   element: lazy(() => import('./UsersListPage')),
-  order: 7,
+  order: 8,
 }

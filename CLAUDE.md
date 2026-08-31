@@ -9,7 +9,7 @@
 
 - 하나의 웹사이트, 내부는 **Feature(Module) 단위로 완전 분리** (`features/<module>`)
 - **모듈 레지스트리**(`src/app/registry.ts`)에 등록하면 사이드바 메뉴 + 라우트가 **자동 생성** (확장 지점)
-- 현재 모듈: Dashboard / 구매·정산(purchase) / 자산(asset) / 소모품(consumable) / 수리(repair) / 코드-Master / 사용자(users) / 설정(settings)
+- 현재 모듈: Dashboard / 구매·정산(purchase) / 자산(asset) / 소모품(consumable) / 수리(repair) / 신청관리(requests) / 코드-Master / 사용자(users) / 설정(settings)
 - 향후: 차량 / 계약 / 회의실 / 방문객 / 예산 관리
 - 🗄️ **DB**: Google Sheets · **API**: Google Apps Script(REST 역할, 화면 없음) · 파일: Google Drive
 - 배포: 한 사이트(GitHub Pages), `BrowserRouter`로 `/admin/*` 경로 분리 (`#` 없음)
@@ -120,6 +120,7 @@ src/
 | `/admin/assets` | 자산관리 (기존 자산등록) |
 | `/admin/consumables` | 소모품관리 (준비중) |
 | `/admin/repair` | 수리관리 (기존 수리요청) |
+| `/admin/requests` | 신청관리 (직원 자산/반납/소모품 신청 접수·처리) |
 | `/admin/master` | 코드(Master)관리 (준비중) |
 | `/admin/users` | 사용자관리 (목록/등록/수정) |
 | `/admin/settings` | 설정 (준비중) |
@@ -191,7 +192,7 @@ src/
 > 구매·정산(6~11단계)은 보류 상태. 재개하려면 [docs/PURCHASE_DOMAIN.md](docs/PURCHASE_DOMAIN.md)부터 검토.
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별(`v8-repair-update`가 최신).
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별(`v14-requests`가 최신 · 코드 반영됨, 재배포 필요).
 
 ## 🔀 역할 기반 개편 로드맵 (진행 중)
 
@@ -218,7 +219,7 @@ src/
 - [ ] **6) 자산 대량 등록/폐기** — 여러 건 일괄 등록·폐기 → 바코드 일괄 출력.
 - [ ] **7) 렌탈 비용/반납 관리** — 렌탈 자산에 월 렌탈료·계약기간·반납일 필드, 반납 체크 시 '비용지출 종료' 히스토리.
 - [ ] **8) 반납/불출 히스토리 대시보드 연동** — 3_변경로그의 상태변경(홍길동 반납/김춘향 사용중)을 대시보드 '최근 이동' 위젯으로. (설계 추천 예정)
-- [~] **9) 직원 소모품 신청 폼** — `/request`에 소모품신청 탭 추가(품목 선택+기타, 수량, 사유) → `6_신청기록`(소모품신청) 저장(consumableRequest). ⏭️ 남음: **총무팀 신청관리 화면**에서 구매/재고지급/외부업체(카트리지) 전달 처리(신청 목록 UI 필요).
+- [x] **9) 직원 소모품 신청 폼 + 총무팀 신청관리 화면** — `/request`에 소모품신청 탭(품목+기타·수량·사유) → `6_신청기록` 저장(consumableRequest). **총무팀 `/admin/requests`(신청관리)**: `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 탭 + 행 클릭 상세 모달에서 상태(접수/처리중/완료/반려)·처리방법(재고지급/구매요청/외부업체전달/기타)·메모 처리(`requestUpdate`, 시트 I~L열 갱신). GAS `v14-requests`.
 
 > 클러스터: 소모품(5+9) · 렌탈(3+7+8) · 외부업체(2) · 설정(4) · 대량처리(6).
 
@@ -230,10 +231,11 @@ src/
 - **자산 코드 스캔 조회** — 자산 목록 '스캔'(카메라) → **Code128/QR 디코드** → 자산번호로 상세 모달 오픈. `html5-qrcode`(formatsToSupport: CODE_128+QR), `components/ui/QrScannerModal.tsx`. 카메라는 https/localhost에서만. (라벨 인쇄↔스캔 왕복 완성)
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
-- **GAS 최신 버전 `v11-vendor` (배포·검증 완료)** — 자산/수리/사용자/신청/외부업체 엔드포인트 전부 포함.
-  - 엔드포인트: assets·assetRegister·assetUpdate / repairs·repairRequest·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest
-  - 시트: 1_수리접수기록 · 2_자산등록기록 · 3_변경로그 · 5_사용자목록 · 6_신청기록(직원 자산/반납 신청, 자동생성)
-  - 직원 자산/반납 신청 저장, 외부업체 전달→vendorRepairs 필터까지 실데이터 검증됨.
+- **신청관리(`/admin/requests`)** — `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 + 상세 모달 처리(`requestUpdate` → `6_신청기록` I상태/J처리방법/K메모/L처리일시 갱신). rowIndex(시트 행번호)로 대상 식별.
+- **GAS 최신 버전 `v14-requests` (코드 반영 완료 · ⚠️재배포 필요)** — 자산/수리/사용자/신청/외부업체 엔드포인트 전부 포함.
+  - 엔드포인트: assets·assetRegister·assetUpdate / repairs·repairRequest·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest / **requests·requestUpdate**
+  - 시트: 1_수리접수기록 · 2_자산등록기록 · 3_변경로그 · 5_사용자목록 · 6_신청기록(직원 자산/반납/소모품 신청 + 처리결과) · 7_소모품목록
+  - 직원 자산/반납/소모품 신청 저장, 외부업체 전달→vendorRepairs 필터, 총무팀 신청 처리(requestUpdate)까지 구현됨. (실데이터는 v14 재배포 후 반영)
 - Google Apps Script는 정적 호스팅(GitHub Pages)이 못 하는 서버 작업(시트 저장/Slack/메일)을 담당.
 - `GAS_URL`은 `src/config/api.ts`에 설정. `.env`의 `VITE_API_TOKEN`으로 요청 검증(서버 `API_TOKEN`과 일치 필요).
 - Slack Webhook URL / Gmail 발송은 `Code.gs` 내부 설정(프론트에 미노출).

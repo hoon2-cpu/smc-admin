@@ -9,5 +9,5 @@ export const masterModule: ModuleDef = {
   path: 'master',
   icon: Database,
   element: lazy(() => import('./MasterPage')),
-  order: 6,
+  order: 7,
 }
