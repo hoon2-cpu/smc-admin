@@ -1,5 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { MODULES } from '@/app/registry'
+import { isModuleVisible } from '@/app/moduleVisibility'
+import { useModuleVisibility } from '@/hooks/useModuleVisibility'
 import './ModuleSidebar.css'
 
 /** {@link ModuleSidebar} 컴포넌트 props. */
@@ -18,6 +20,9 @@ interface ModuleSidebarProps {
  * @returns 사이드바 엘리먼트
  */
 export default function ModuleSidebar({ open = false, onNavigate }: ModuleSidebarProps) {
+  // 설정 화면에서 바꾼 표시 여부(오버라이드)를 반영. 변경 시 자동 리렌더.
+  const { overrides } = useModuleVisibility()
+
   return (
     <aside className={open ? 'module-sidebar open' : 'module-sidebar'}>
       <div className="ms-brand">
@@ -26,7 +31,7 @@ export default function ModuleSidebar({ open = false, onNavigate }: ModuleSideba
       </div>
       <nav>
         <ul>
-          {MODULES.filter((m) => m.showInSidebar !== false).map((module) => {
+          {MODULES.filter((m) => isModuleVisible(m, overrides)).map((module) => {
             const Icon = module.icon
             return (
               <li key={module.id}>

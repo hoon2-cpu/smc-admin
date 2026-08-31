@@ -123,7 +123,7 @@ src/
 | `/admin/requests` | 신청관리 (직원 자산/반납/소모품 신청 접수·처리) |
 | `/admin/master` | 코드(Master)관리 (준비중) |
 | `/admin/users` | 사용자관리 (목록/등록/수정) |
-| `/admin/settings` | 설정 (준비중) |
+| `/admin/settings` | 설정 (사이드바 메뉴 표시/숨김 토글) |
 
 ## 진행 현황 — 1차(IT 자산 시스템) 완료분
 
@@ -214,7 +214,7 @@ src/
 - [x] **1) 알림 아이콘** — 클릭 시 드롭다운(빈 상태) + 가짜 뱃지 제거. (완료)
 - [~] **2) 외부업체 요청 클릭 팝업** — `/vendor` 카드 클릭 → `VendorDetailModal`(증상·자산·첨부 등 상세). 첨부는 파일명 표시. ⏭️ 남음: **사진 실이미지 표시**는 수리신청 사진을 Google Drive에 실제 업로드(DriveService)해야 가능(현재 파일명만).
 - [x] **3) 렌탈 자산 구분** — 대시보드에 `RentalStatusPanel`(구매/렌탈 + 롯데렌탈/AJ네트웍스 집계) 추가. 상수 `AI→AJ네트웍스` 정정. GAS `buildDashboard_`에 acquisition/rentalByCompany 집계(`v12-rental`). 시트는 단일+`렌탈사` 컬럼 방식 유지(SSOT).
-- [ ] **4) 설정 모듈** — 사이드바 메뉴를 화면에서 추가/삭제(표시 토글). registry + 저장(로컬/시트).
+- [x] **4) 설정 모듈** — 사이드바 메뉴 표시/숨김 토글(`/admin/settings`). `app/moduleVisibility.ts`(localStorage 오버라이드 + 변경 이벤트) + `useModuleVisibility` 훅 → ModuleSidebar 반응. 대시보드·설정은 잠금(필수). 숨겨도 주소 접근은 가능. 서버(시트) 저장은 추후 확장 지점.
 - [x] **5) 소모품 실데이터** — GAS `7_소모품목록` 시트(소모품명/현재고/적정재고/단위) 집계 → 대시보드 '소모품 재고 현황'(현재고<적정재고) + `stats.lowStockCount` 실연동. `v13-consumable`.
 - [ ] **6) 자산 대량 등록/폐기** — 여러 건 일괄 등록·폐기 → 바코드 일괄 출력.
 - [ ] **7) 렌탈 비용/반납 관리** — 렌탈 자산에 월 렌탈료·계약기간·반납일 필드, 반납 체크 시 '비용지출 종료' 히스토리.
