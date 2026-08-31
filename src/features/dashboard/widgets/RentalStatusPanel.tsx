@@ -8,6 +8,8 @@ interface RentalStatusPanelProps {
   acquisition: AcquisitionSplit
   /** 렌탈사별 집계. */
   rentalByCompany: RentalCompanyDatum[]
+  /** 진행중 렌탈 월 비용 총합(원). */
+  rentalMonthlyTotal?: number
 }
 
 /**
@@ -17,7 +19,11 @@ interface RentalStatusPanelProps {
  * @param props - {@link RentalStatusPanelProps}
  * @returns 렌탈 현황 카드
  */
-export default function RentalStatusPanel({ acquisition, rentalByCompany }: RentalStatusPanelProps) {
+export default function RentalStatusPanel({
+  acquisition,
+  rentalByCompany,
+  rentalMonthlyTotal,
+}: RentalStatusPanelProps) {
   const total = acquisition.purchase + acquisition.rental
   const rentalPercent = total ? Math.round((acquisition.rental / total) * 100) : 0
 
@@ -34,13 +40,24 @@ export default function RentalStatusPanel({ acquisition, rentalByCompany }: Rent
         </div>
       </div>
 
+      {/* 진행중 렌탈 월 비용 총합 */}
+      {rentalMonthlyTotal != null && rentalMonthlyTotal > 0 && (
+        <div className="rental-cost-total">
+          <span>월 렌탈 비용</span>
+          <strong>{rentalMonthlyTotal.toLocaleString('ko-KR')}원/월</strong>
+        </div>
+      )}
+
       <div className="rental-company-title">렌탈사별</div>
       <ul className="rental-company-list">
         {rentalByCompany.length === 0 && <li className="rental-empty">렌탈 자산이 없습니다.</li>}
         {rentalByCompany.map((r) => (
           <li key={r.company}>
             <span>{r.company}</span>
-            <strong>{r.count.toLocaleString('ko-KR')}대</strong>
+            <strong>
+              {r.count.toLocaleString('ko-KR')}대
+              {r.cost ? <span className="rental-company-cost"> · {r.cost.toLocaleString('ko-KR')}원/월</span> : null}
+            </strong>
           </li>
         ))}
       </ul>

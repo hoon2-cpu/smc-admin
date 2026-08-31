@@ -24,6 +24,12 @@ export interface AssetRegisterFormValues {
   acquisitionType: string
   /** 렌탈사 (취득구분이 렌탈일 때). */
   rentalCompany: string
+  /** 월 렌탈료 (원, 렌탈일 때). */
+  monthlyRent: string
+  /** 렌탈 계약 시작일. */
+  contractStart: string
+  /** 렌탈 계약 종료일. */
+  contractEnd: string
   /** 구매일. */
   purchaseDate: string
   /** 구매 금액 (원). */
@@ -66,6 +72,9 @@ export const INITIAL_ASSET_FORM: AssetRegisterFormValues = {
   keyValue: '',
   acquisitionType: '',
   rentalCompany: '',
+  monthlyRent: '',
+  contractStart: '',
+  contractEnd: '',
   purchaseDate: '',
   purchaseAmount: '',
   vendor: '',

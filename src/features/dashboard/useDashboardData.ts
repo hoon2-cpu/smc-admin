@@ -51,6 +51,7 @@ function mergeWithMock(real: Partial<DashboardData>): DashboardData {
     rentalByCompany: real.rentalByCompany?.length
       ? real.rentalByCompany
       : DASHBOARD_MOCK.rentalByCompany,
+    rentalMonthlyTotal: hasRental ? real.rentalMonthlyTotal : DASHBOARD_MOCK.rentalMonthlyTotal,
     requests: real.requests?.length ? real.requests : DASHBOARD_MOCK.requests,
     lowStock: real.lowStock?.length ? real.lowStock : DASHBOARD_MOCK.lowStock,
     recentAssets: real.recentAssets?.length ? real.recentAssets : DASHBOARD_MOCK.recentAssets,

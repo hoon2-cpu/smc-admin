@@ -44,6 +44,14 @@ export interface AssetRow {
   note: string
   /** 폐기일 (폐기 처리 시). */
   disposalDate: string
+  /** 월 렌탈료(원, 렌탈 자산). 문자열. */
+  monthlyRent: string
+  /** 렌탈 계약 시작일. */
+  contractStart: string
+  /** 렌탈 계약 종료일. */
+  contractEnd: string
+  /** 렌탈 반납일(반납 시 기록 → 비용지출 종료). */
+  returnDate: string
 }
 
 /** 자산 상태별 요약. */
@@ -68,4 +76,22 @@ export interface AssetUpdatePayload {
   manager: string
   note: string
   disposalDate: string
+  /** 월 렌탈료(렌탈 자산 수정 시에만 전송 — 미포함 시 서버가 기존값 보존). */
+  monthlyRent?: string
+  /** 렌탈 계약 시작일(선택 전송). */
+  contractStart?: string
+  /** 렌탈 계약 종료일(선택 전송). */
+  contractEnd?: string
+}
+
+/** 렌탈 반납 요청 값. */
+export interface RentalReturnPayload {
+  /** 반납할 자산번호. */
+  assetNumber: string
+  /** 월 렌탈료(로그용). */
+  monthlyRent: string
+  /** 렌탈사(로그용). */
+  rentalCompany: string
+  /** 처리 담당자(로그용). */
+  manager: string
 }

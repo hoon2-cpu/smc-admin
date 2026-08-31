@@ -23,9 +23,10 @@ export const DASHBOARD_MOCK: DashboardData = {
   ],
   acquisition: { purchase: 812, rental: 436 },
   rentalByCompany: [
-    { company: '롯데렌탈', count: 268 },
-    { company: 'AJ네트웍스', count: 168 },
+    { company: '롯데렌탈', count: 268, cost: 13400000 },
+    { company: 'AJ네트웍스', count: 168, cost: 6720000 },
   ],
+  rentalMonthlyTotal: 20120000,
   requests: [
     { kind: '자산 신청', title: '노트북 지급 신청 (개발팀 김개발)', date: '2024-05-20', status: '승인 대기' },
     { kind: '소모품 신청', title: '토너 카트리지 신청 (총무팀 이총무)', date: '2024-05-20', status: '승인 대기' },

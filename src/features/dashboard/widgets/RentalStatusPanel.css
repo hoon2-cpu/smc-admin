@@ -26,11 +26,34 @@
   color: var(--color-text-sub);
 }
 
+/* 진행중 렌탈 월 비용 총합 강조 박스 */
+.rental-cost-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: #f5f3ff;
+  border: 1px solid #ede9fe;
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+.rental-cost-total strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
 .rental-company-title {
   font-size: 12px;
   font-weight: 700;
   color: var(--color-text-sub);
   margin-bottom: 8px;
+}
+.rental-company-cost {
+  font-weight: 500;
+  color: var(--color-text-sub);
 }
 .rental-company-list {
   display: flex;

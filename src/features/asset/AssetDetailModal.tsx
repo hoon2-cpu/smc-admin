@@ -5,10 +5,16 @@ import { useForm } from '@/hooks/useForm'
 import { getAssetStatusVariant } from '@/lib/badgeVariant'
 import { ASSET_STATUSES, type AssetStatus } from '@/constants/asset'
 import { DEPARTMENTS, BUILDINGS } from '@/constants/organization'
-import { updateAsset } from './api'
+import { updateAsset, returnRental } from './api'
 import { printAssetLabel } from './labelPrint'
 import type { AssetRow } from './types'
 import './AssetDetailModal.css'
+
+/** 금액 문자열(원)을 천단위 콤마로 표기. 빈 값이면 '-'. */
+function won(value: string): string {
+  const n = Number(value)
+  return value && !Number.isNaN(n) ? `${n.toLocaleString('ko-KR')}원` : '-'
+}
 
 /** {@link AssetDetailModal} 컴포넌트 props. */
 interface AssetDetailModalProps {
@@ -23,7 +29,7 @@ interface AssetDetailModalProps {
 /** 읽기 모드에서 보여줄 (라벨, 값) 목록을 만듭니다. */
 function readRows(a: AssetRow): Array<[string, string]> {
   const acquisition = a.acquisitionType === '렌탈' ? `렌탈 (${a.rentalCompany})` : '구매'
-  return [
+  const rows: Array<[string, string]> = [
     ['자산번호', a.assetNumber],
     ['취득 구분', acquisition],
     ['자산 분류', a.category],
@@ -35,6 +41,13 @@ function readRows(a: AssetRow): Array<[string, string]> {
     ['취득일', a.acquiredDate],
     ['보증기간', a.warrantyUntil],
   ]
+  // 렌탈 자산이면 비용/계약/반납 정보를 함께 노출
+  if (a.acquisitionType === '렌탈') {
+    rows.push(['월 렌탈료', won(a.monthlyRent)])
+    rows.push(['계약기간', a.contractStart || a.contractEnd ? `${a.contractStart || '?'} ~ ${a.contractEnd || '?'}` : '-'])
+    rows.push(['반납일', a.returnDate ? `${a.returnDate} (비용종료)` : '미반납(진행중)'])
+  }
+  return rows
 }
 
 /**
@@ -56,21 +69,54 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
     manager: asset?.manager ?? '',
     note: asset?.note ?? '',
     disposalDate: asset?.disposalDate ?? '',
+    monthlyRent: asset?.monthlyRent ?? '',
+    contractStart: asset?.contractStart ?? '',
+    contractEnd: asset?.contractEnd ?? '',
   })
 
   if (!asset) return null
 
+  const isRental = asset.acquisitionType === '렌탈'
+  const returned = !!asset.returnDate
+
   /** 저장 처리. GAS 수정 요청 후 성공하면 로컬 목록을 갱신합니다. */
   async function handleSave() {
     if (!asset) return
+    // 렌탈 비용 필드는 렌탈 자산일 때만 전송(구매 자산 값 덮어쓰기 방지)
+    const rentalPatch = isRental
+      ? { monthlyRent: values.monthlyRent, contractStart: values.contractStart, contractEnd: values.contractEnd }
+      : {}
     setSaving(true)
-    const result = await updateAsset({ assetNumber: asset.assetNumber, ...values })
+    const result = await updateAsset({ assetNumber: asset.assetNumber, ...values, ...rentalPatch })
     setSaving(false)
     if (result.ok) {
-      onSaved(asset.assetNumber, values)
+      onSaved(asset.assetNumber, { ...values, ...rentalPatch })
       setEditing(false)
     } else {
       window.alert(`저장 실패: ${result.message ?? '알 수 없는 오류'}`)
+    }
+  }
+
+  /** 렌탈 반납 처리. 반납일을 기록하고 '비용지출 종료' 이력을 남깁니다. */
+  async function handleRentalReturn() {
+    if (!asset) return
+    if (!window.confirm('이 렌탈 자산을 반납 처리할까요?\n반납일이 오늘로 기록되고 월 렌탈 비용 지출이 종료됩니다.')) {
+      return
+    }
+    const today = new Date().toISOString().slice(0, 10)
+    setSaving(true)
+    const result = await returnRental({
+      assetNumber: asset.assetNumber,
+      monthlyRent: asset.monthlyRent,
+      rentalCompany: asset.rentalCompany,
+      manager: asset.manager,
+    })
+    setSaving(false)
+    if (result.ok) {
+      onSaved(asset.assetNumber, { returnDate: today })
+      onClose()
+    } else {
+      window.alert(`반납 처리 실패: ${result.message ?? '알 수 없는 오류'}`)
     }
   }
 
@@ -151,6 +197,11 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
         {asset.status === '사용중' && (
           <button type="button" className="detail-btn" onClick={handleReturn} disabled={saving}>
             반납 처리
+          </button>
+        )}
+        {isRental && !returned && asset.status !== '폐기' && (
+          <button type="button" className="detail-btn" onClick={handleRentalReturn} disabled={saving}>
+            렌탈 반납
           </button>
         )}
         {asset.status !== '폐기' && (
@@ -257,6 +308,35 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
                 onChange={(v) => setField('disposalDate', v)}
               />
             </FormField>
+          )}
+          {/* 렌탈 자산이면 비용/계약 정보도 편집 */}
+          {isRental && (
+            <>
+              <FormField label="월 렌탈료 (원)" htmlFor="d-rent">
+                <TextInput
+                  id="d-rent"
+                  type="number"
+                  value={values.monthlyRent}
+                  onChange={(v) => setField('monthlyRent', v)}
+                />
+              </FormField>
+              <FormField label="계약 시작일" htmlFor="d-cstart">
+                <TextInput
+                  id="d-cstart"
+                  type="date"
+                  value={values.contractStart}
+                  onChange={(v) => setField('contractStart', v)}
+                />
+              </FormField>
+              <FormField label="계약 종료일" htmlFor="d-cend">
+                <TextInput
+                  id="d-cend"
+                  type="date"
+                  value={values.contractEnd}
+                  onChange={(v) => setField('contractEnd', v)}
+                />
+              </FormField>
+            </>
           )}
           <FormField label="비고" htmlFor="d-note" fullWidth>
             <TextInput id="d-note" value={values.note} onChange={(v) => setField('note', v)} />

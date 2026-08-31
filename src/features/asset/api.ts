@@ -1,5 +1,5 @@
 import { getFromGas, submitToGas, type GasResult } from '@/lib/gasClient'
-import type { AssetRow, AssetUpdatePayload } from './types'
+import type { AssetRow, AssetUpdatePayload, RentalReturnPayload } from './types'
 
 /** GAS `?action=assets` 응답 형식. */
 interface AssetsResponse {
@@ -31,6 +31,16 @@ export async function fetchAssets(): Promise<AssetRow[] | null> {
  */
 export function updateAsset(payload: AssetUpdatePayload): Promise<GasResult> {
   return submitToGas('assetUpdate', payload)
+}
+
+/**
+ * 렌탈 자산을 반납 처리합니다. (반납일 기록 + '비용지출 종료' 이력 기록)
+ *
+ * @param payload - 렌탈 반납 값
+ * @returns 서버 응답
+ */
+export function returnRental(payload: RentalReturnPayload): Promise<GasResult> {
+  return submitToGas('rentalReturn', payload)
 }
 
 /** 대량 폐기 결과 요약. */

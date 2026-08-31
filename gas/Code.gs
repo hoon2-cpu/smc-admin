@@ -55,6 +55,7 @@ function doPost(e) {
 
     if (type === 'assetRegister') return jsonOutput_(handleAssetRegister_(payload))
     if (type === 'assetUpdate') return jsonOutput_(handleAssetUpdate_(payload))
+    if (type === 'rentalReturn') return jsonOutput_(handleRentalReturn_(payload))
     if (type === 'repairRequest') return jsonOutput_(handleRepairRequest_(payload))
     if (type === 'repairUpdate') return jsonOutput_(handleRepairUpdate_(payload))
     if (type === 'repairDispatch') return jsonOutput_(handleRepairDispatch_(payload))
@@ -125,7 +126,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v14-requests',
+    version: 'v15-rental',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -349,6 +350,7 @@ function buildAssets_() {
   // 열: 0등록일시 1자산번호 2자산명 3구분 4제조사 5모델 6시리얼 7취득일 8금액
   //     9사용자 10위치 11상태 12비고 13관리번호 14키값 15취득구분 16렌탈사
   //     17부서 18구매처 19보증 20관리담당자 21폐기일
+  //     22월렌탈료 23계약시작 24계약종료 25반납일
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i]
     if (!r[1] && !r[2]) continue
@@ -374,6 +376,10 @@ function buildAssets_() {
       warrantyUntil: formatDateCell_(r[19]),
       manager: r[20] || '',
       disposalDate: formatDateCell_(r[21]),
+      monthlyRent: r[22] === '' || r[22] == null ? '' : String(r[22]),
+      contractStart: formatDateCell_(r[23]),
+      contractEnd: formatDateCell_(r[24]),
+      returnDate: formatDateCell_(r[25]),
     })
   }
   return out.reverse()
@@ -390,6 +396,8 @@ function buildDashboard_() {
   var stats = { totalAssets: 0, inUseAssets: 0, repairingAssets: 0, disposalPlannedAssets: 0, lowStockCount: 0 }
   var acquisition = { purchase: 0, rental: 0 }
   var rentalMap = {}
+  var rentalCostMap = {} // 렌탈사별 월 렌탈료 합계(진행중만)
+  var rentalMonthlyTotal = 0 // 진행중 렌탈 월 비용 총합
   var recent = []
 
   // 열: 0등록일시 1자산번호 2자산명 3구분 ... 9사용자 10위치 11상태 ... 15취득구분 16렌탈사
@@ -404,11 +412,18 @@ function buildDashboard_() {
     else if (status === '수리중') stats.repairingAssets++
     else if (status === '폐기예정') stats.disposalPlannedAssets++
 
-    // 취득 구분(구매/렌탈) + 렌탈사 집계
+    // 취득 구분(구매/렌탈) + 렌탈사 집계 + 월 렌탈 비용(진행중만)
     if (r[15] === '렌탈') {
       acquisition.rental++
       var company = r[16] || '기타'
       rentalMap[company] = (rentalMap[company] || 0) + 1
+      // 반납일(25)이 없고 폐기가 아니면 '진행중' → 월 렌탈료 비용 합산
+      var active = !r[25] && status !== '폐기'
+      if (active) {
+        var rent = Number(r[22]) || 0
+        rentalCostMap[company] = (rentalCostMap[company] || 0) + rent
+        rentalMonthlyTotal += rent
+      }
     } else {
       acquisition.purchase++
     }
@@ -426,7 +441,7 @@ function buildDashboard_() {
   var categories = []
   for (var key in categoryMap) categories.push({ category: key, count: categoryMap[key] })
   var rentalByCompany = []
-  for (var c in rentalMap) rentalByCompany.push({ company: c, count: rentalMap[c] })
+  for (var c in rentalMap) rentalByCompany.push({ company: c, count: rentalMap[c], cost: rentalCostMap[c] || 0 })
 
   // 소모품 재고 부족(7_소모품목록: 0소모품명 1현재고 2적정재고 3단위) — 현재고 < 적정재고
   var lowStock = []
@@ -445,6 +460,7 @@ function buildDashboard_() {
     categories: categories,
     acquisition: acquisition,
     rentalByCompany: rentalByCompany,
+    rentalMonthlyTotal: rentalMonthlyTotal,
     recentAssets: recent.slice(-5).reverse(), // 최근 5건
     requests: [],
     lowStock: lowStock,
@@ -499,6 +515,10 @@ function handleAssetRegister_(p) {
     p.warrantyUntil, //    19 보증기간
     p.manager, //          20 관리담당자
     '', //                 21 폐기일(등록 시 공란)
+    p.monthlyRent || '', //  22 월 렌탈료(렌탈)
+    p.contractStart || '', //23 계약 시작일(렌탈)
+    p.contractEnd || '', //  24 계약 종료일(렌탈)
+    '', //                 25 반납일(렌탈, 등록 시 공란)
   ])
 
   notifySlack_('🖥️ *새 자산 등록* ' + assetNumber + '\n' + p.name + ' / ' + p.manufacturer + ' / ' + p.category)
@@ -528,6 +548,11 @@ function handleAssetUpdate_(p) {
     sheet.getRange(row, 21).setValue(p.manager || '') //     20 관리담당자
     sheet.getRange(row, 22).setValue(p.disposalDate || '') //21 폐기일
 
+    // 렌탈 비용 필드는 payload에 포함된 경우에만 갱신(미포함 시 기존값 보존 — 폐기/반납 등에서 덮어쓰기 방지)
+    if (typeof p.monthlyRent !== 'undefined') sheet.getRange(row, 23).setValue(p.monthlyRent || '') // 22 월 렌탈료
+    if (typeof p.contractStart !== 'undefined') sheet.getRange(row, 24).setValue(p.contractStart || '') // 23 계약 시작일
+    if (typeof p.contractEnd !== 'undefined') sheet.getRange(row, 25).setValue(p.contractEnd || '') // 24 계약 종료일
+
     if (beforeStatus !== p.status) {
       appendRow_(SHEET_LOG, [
         new Date(),
@@ -541,6 +566,37 @@ function handleAssetUpdate_(p) {
       ])
     }
     return { ok: true }
+  }
+  return { ok: false, message: '자산번호를 찾을 수 없습니다: ' + p.assetNumber }
+}
+
+/**
+ * 렌탈 자산 반납 처리. 반납일(25열)을 오늘로 기록하고,
+ * 변경로그(3_변경로그)에 '비용지출 종료' 이력을 남깁니다. (월 렌탈료 지출 종료 추적)
+ * @param {Object} p - { assetNumber, monthlyRent, rentalCompany, manager }
+ * @return {Object} 처리 결과
+ */
+function handleRentalReturn_(p) {
+  var sheet = getSheet_(SHEET_ASSET)
+  var values = sheet.getDataRange().getValues()
+  for (var i = 1; i < values.length; i++) {
+    if (values[i][1] !== p.assetNumber) continue
+    var row = i + 1
+    var today = new Date()
+    sheet.getRange(row, 26).setValue(today) // 25 반납일 (1-based 26)
+    var rent = p.monthlyRent || values[i][22] || ''
+    var company = p.rentalCompany || values[i][16] || ''
+    appendRow_(SHEET_LOG, [
+      today,
+      '렌탈반납',
+      p.manager || '',
+      p.assetNumber,
+      '비용지출',
+      '진행중',
+      '종료',
+      '월 ' + rent + '원 / ' + company + ' 렌탈 종료',
+    ])
+    return { ok: true, returnDate: formatDateCell_(today) }
   }
   return { ok: false, message: '자산번호를 찾을 수 없습니다: ' + p.assetNumber }
 }

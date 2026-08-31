@@ -87,6 +87,8 @@ export interface RentalCompanyDatum {
   company: string
   /** 해당 렌탈사 자산 수. */
   count: number
+  /** 진행중 렌탈의 월 렌탈료 합계(원). */
+  cost?: number
 }
 
 /** 관리자 대시보드 전체 데이터 묶음. (mock 또는 GAS 응답) */
@@ -99,6 +101,8 @@ export interface DashboardData {
   acquisition: AcquisitionSplit
   /** 렌탈사별 집계. */
   rentalByCompany: RentalCompanyDatum[]
+  /** 진행중 렌탈 월 비용 총합(원). */
+  rentalMonthlyTotal?: number
   /** 신청 현황. */
   requests: RequestItem[]
   /** 소모품 재고 부족. */

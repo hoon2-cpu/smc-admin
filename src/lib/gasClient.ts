@@ -4,6 +4,7 @@ import { GAS_URL, API_TOKEN } from '@/config/api'
 export type GasRequestType =
   | 'assetRegister'
   | 'assetUpdate'
+  | 'rentalReturn'
   | 'repairRequest'
   | 'repairUpdate'
   | 'repairDispatch'

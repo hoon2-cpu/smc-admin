@@ -26,16 +26,43 @@ export default function AcquisitionInfoSection({ values, setField }: AssetFormCo
         />
       </FormField>
 
-      {/* 렌탈일 때만 렌탈사 선택 */}
+      {/* 렌탈일 때만 렌탈사 + 비용/계약 정보 */}
       {isRental && (
-        <FormField label="렌탈사" htmlFor="rentalCompany" required>
-          <SelectField
-            id="rentalCompany"
-            value={values.rentalCompany}
-            onChange={(v) => setField('rentalCompany', v)}
-            options={RENTAL_COMPANIES}
-          />
-        </FormField>
+        <>
+          <FormField label="렌탈사" htmlFor="rentalCompany" required>
+            <SelectField
+              id="rentalCompany"
+              value={values.rentalCompany}
+              onChange={(v) => setField('rentalCompany', v)}
+              options={RENTAL_COMPANIES}
+            />
+          </FormField>
+          <FormField label="월 렌탈료 (원)" htmlFor="monthlyRent">
+            <TextInput
+              id="monthlyRent"
+              type="number"
+              value={values.monthlyRent}
+              onChange={(v) => setField('monthlyRent', v)}
+              placeholder="예: 39000"
+            />
+          </FormField>
+          <FormField label="계약 시작일" htmlFor="contractStart">
+            <TextInput
+              id="contractStart"
+              type="date"
+              value={values.contractStart}
+              onChange={(v) => setField('contractStart', v)}
+            />
+          </FormField>
+          <FormField label="계약 종료일" htmlFor="contractEnd">
+            <TextInput
+              id="contractEnd"
+              type="date"
+              value={values.contractEnd}
+              onChange={(v) => setField('contractEnd', v)}
+            />
+          </FormField>
+        </>
       )}
 
       {/* 구매일은 공통(취득일 성격)으로 항상 표시 */}

@@ -39,7 +39,11 @@ export default function AdminDashboardPage() {
 
       {/* 취득구분(구매/렌탈) · 최근 등록 자산 · 폐기 예정 */}
       <div className="dash-grid dash-grid-3">
-        <RentalStatusPanel acquisition={data.acquisition} rentalByCompany={data.rentalByCompany} />
+        <RentalStatusPanel
+          acquisition={data.acquisition}
+          rentalByCompany={data.rentalByCompany}
+          rentalMonthlyTotal={data.rentalMonthlyTotal}
+        />
         <RecentAssetsTable assets={data.recentAssets} />
         <DisposalScheduleTable items={data.disposals} />
       </div>
