@@ -216,7 +216,7 @@ src/
 - [x] **3) 렌탈 자산 구분** — 대시보드에 `RentalStatusPanel`(구매/렌탈 + 롯데렌탈/AJ네트웍스 집계) 추가. 상수 `AI→AJ네트웍스` 정정. GAS `buildDashboard_`에 acquisition/rentalByCompany 집계(`v12-rental`). 시트는 단일+`렌탈사` 컬럼 방식 유지(SSOT).
 - [x] **4) 설정 모듈** — 사이드바 메뉴 표시/숨김 토글(`/admin/settings`). `app/moduleVisibility.ts`(localStorage 오버라이드 + 변경 이벤트) + `useModuleVisibility` 훅 → ModuleSidebar 반응. 대시보드·설정은 잠금(필수). 숨겨도 주소 접근은 가능. 서버(시트) 저장은 추후 확장 지점.
 - [x] **5) 소모품 실데이터** — GAS `7_소모품목록` 시트(소모품명/현재고/적정재고/단위) 집계 → 대시보드 '소모품 재고 현황'(현재고<적정재고) + `stats.lowStockCount` 실연동. `v13-consumable`.
-- [ ] **6) 자산 대량 등록/폐기** — 여러 건 일괄 등록·폐기 → 바코드 일괄 출력.
+- [x] **6) 자산 대량 등록/폐기 + 바코드 일괄 출력** — 자산목록에 **체크박스 다중 선택**(`useAssetSelection`) + 하단 **대량 작업 바**(`AssetBulkBar`): ①라벨 일괄 인쇄(`printAssetLabels`, 라벨마다 1페이지) ②선택 폐기(`bulkDisposeAssets`, 순차 assetUpdate). **대량 등록**은 `AssetBulkRegisterModal`(편집 표, 자산명 있는 행만 `submitAssetRegisterBulk` 순차 등록). 로직은 `useAssetBulkActions` 훅으로 분리. 기존 GAS 재사용(재배포 불필요).
 - [ ] **7) 렌탈 비용/반납 관리** — 렌탈 자산에 월 렌탈료·계약기간·반납일 필드, 반납 체크 시 '비용지출 종료' 히스토리.
 - [ ] **8) 반납/불출 히스토리 대시보드 연동** — 3_변경로그의 상태변경(홍길동 반납/김춘향 사용중)을 대시보드 '최근 이동' 위젯으로. (설계 추천 예정)
 - [x] **9) 직원 소모품 신청 폼 + 총무팀 신청관리 화면** — `/request`에 소모품신청 탭(품목+기타·수량·사유) → `6_신청기록` 저장(consumableRequest). **총무팀 `/admin/requests`(신청관리)**: `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 탭 + 행 클릭 상세 모달에서 상태(접수/처리중/완료/반려)·처리방법(재고지급/구매요청/외부업체전달/기타)·메모 처리(`requestUpdate`, 시트 I~L열 갱신). GAS `v14-requests`.
@@ -227,7 +227,8 @@ src/
 
 - 신청/등록 폼은 GAS로 **실제 저장**됨. 관리자 대시보드는 자산 시트를 **실집계**하고, 데이터 없는 섹션(신청/소모품/폐기)은 mock으로 폴백.
 - **자산관리(`/admin/assets`)는 실데이터 연동 완료** — `?action=assets` 조회(useAssets, mock 폴백), 등록 시 자산번호 자동부여(`AST-YYYY-####`), 구매/렌탈 통합(취득구분·렌탈사·관리번호·키값) + 필터 탭 + **검색/정렬** + **행 클릭 상세보기·수정·상태변경·폐기 처리(assetUpdate)**.
-- **자산 라벨 인쇄** — 자산 상세 모달 '라벨 인쇄' → 새 창에 **the SMC 로고(`public/logo.png`) + QR(자산번호) + 자산번호 텍스트** 라벨(**50×30mm**) 생성 후 인쇄. `qrcode`, `features/asset/labelPrint.ts`. 로고 data URL 임베드(없으면 텍스트 폴백). 클라이언트 전용. (사용자 최종 선택: QR)
+- **자산 라벨 인쇄** — 자산 상세 모달 '라벨 인쇄' → 새 창에 **the SMC 로고(`public/logo.png`) + QR(자산번호) + 자산번호 텍스트** 라벨(**50×30mm**) 생성 후 인쇄. `qrcode`, `features/asset/labelPrint.ts`(`printAssetLabels`로 단건·일괄 통합, 라벨마다 1페이지). 로고 data URL 임베드(없으면 텍스트 폴백). 클라이언트 전용. (사용자 최종 선택: QR)
+- **자산 대량 처리** — 목록 체크박스로 다중 선택 → 하단 작업 바에서 **라벨 일괄 인쇄** + **선택 폐기**(순차 assetUpdate, 이미 폐기 건 제외). **대량 등록**은 편집 표 모달(자산명 필수 행만 순차 assetRegister, 번호 자동발급). 새 등록분은 목록 새로고침 시 반영.
 - **자산 코드 스캔 조회** — 자산 목록 '스캔'(카메라) → **Code128/QR 디코드** → 자산번호로 상세 모달 오픈. `html5-qrcode`(formatsToSupport: CODE_128+QR), `components/ui/QrScannerModal.tsx`. 카메라는 https/localhost에서만. (라벨 인쇄↔스캔 왕복 완성)
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.

@@ -176,3 +176,16 @@
 .asset-table .center {
   text-align: center;
 }
+
+/* 다중 선택 체크박스 열 */
+.asset-table .check-col {
+  width: 36px;
+  text-align: center;
+  padding-left: 8px;
+  padding-right: 4px;
+}
+.asset-table .check-col input {
+  cursor: pointer;
+  width: 15px;
+  height: 15px;
+}

@@ -1,0 +1,101 @@
+.bulk-reg-desc {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+.bulk-reg-scroll {
+  overflow-x: auto;
+}
+.bulk-reg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.bulk-reg-table th,
+.bulk-reg-table td {
+  padding: 6px 6px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  white-space: nowrap;
+}
+.bulk-reg-table th {
+  font-size: 12px;
+  color: var(--color-text-sub);
+  font-weight: 600;
+}
+.bulk-reg-table th.req::after {
+  content: ' *';
+  color: #dc2626;
+}
+.bulk-reg-table input,
+.bulk-reg-table select {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  width: 100%;
+  min-width: 84px;
+  box-sizing: border-box;
+}
+.bulk-reg-table input:disabled,
+.bulk-reg-table select:disabled {
+  opacity: 0.5;
+}
+
+.bulk-reg-del {
+  display: inline-flex;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-sub);
+  cursor: pointer;
+  border-radius: 6px;
+}
+.bulk-reg-del:hover {
+  color: #dc2626;
+  background: var(--color-bg);
+}
+
+.bulk-reg-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 12px;
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 14px;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text-sub);
+  cursor: pointer;
+}
+.bulk-reg-add:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.bulk-reg-btn {
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+.bulk-reg-btn.primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.bulk-reg-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Laptop, BadgeCheck, Wrench, Trash2, Plus, Search, ArrowUpDown, ScanLine } from 'lucide-react'
+import { Laptop, BadgeCheck, Wrench, Trash2, Plus, Search, ArrowUpDown, ScanLine, Layers } from 'lucide-react'
 import { StatCard, Badge, Modal, Card, QrScannerModal } from '@/components/ui'
 import { getAssetStatusVariant } from '@/lib/badgeVariant'
 import { useAssets } from './useAssets'
+import { useAssetSelection } from './useAssetSelection'
+import { useAssetBulkActions } from './useAssetBulkActions'
 import AssetRegisterForm from './AssetRegisterForm'
+import AssetBulkRegisterModal from './AssetBulkRegisterModal'
+import AssetBulkBar from './AssetBulkBar'
 import AssetDetailModal from './AssetDetailModal'
 import type { AssetRow } from './types'
 import './AssetListPage.css'
@@ -25,12 +29,20 @@ type SortKey = 'assetNumber' | 'name' | 'category' | 'manufacturer' | 'user' | '
 export default function AssetListPage() {
   const { assets, summary, loading, usingMock, patchAsset } = useAssets()
   const [registerOpen, setRegisterOpen] = useState(false)
+  const [bulkRegOpen, setBulkRegOpen] = useState(false)
   const [scanOpen, setScanOpen] = useState(false)
   const [selected, setSelected] = useState<AssetRow | null>(null)
   const [filter, setFilter] = useState<AssetFilter>('전체')
   const [query, setQuery] = useState('')
   const [sortKey, setSortKey] = useState<SortKey | ''>('')
   const [sortAsc, setSortAsc] = useState(true)
+  // 다중 선택(대량 폐기·라벨 일괄 인쇄)
+  const selection = useAssetSelection()
+  const { bulkBusy, handleBulkPrint, handleBulkDispose } = useAssetBulkActions(
+    assets,
+    selection,
+    patchAsset,
+  )
 
   // 취득구분 필터 → 검색어 필터 → 정렬 순으로 목록을 가공합니다.
   const visibleAssets = useMemo(() => {
@@ -120,6 +132,9 @@ export default function AssetListPage() {
             <button type="button" className="asset-scan-btn" onClick={() => setScanOpen(true)}>
               <ScanLine size={16} /> 스캔
             </button>
+            <button type="button" className="asset-scan-btn" onClick={() => setBulkRegOpen(true)}>
+              <Layers size={16} /> 대량 등록
+            </button>
             <button type="button" className="asset-add-btn" onClick={() => setRegisterOpen(true)}>
               <Plus size={16} /> 자산 등록
             </button>
@@ -159,6 +174,17 @@ export default function AssetListPage() {
           <table className="asset-table">
             <thead>
               <tr>
+                <th className="check-col">
+                  <input
+                    type="checkbox"
+                    aria-label="현재 목록 전체 선택"
+                    checked={
+                      visibleAssets.length > 0 &&
+                      visibleAssets.every((a) => selection.isSelected(a.assetNumber))
+                    }
+                    onChange={() => selection.toggleAll(visibleAssets.map((a) => a.assetNumber))}
+                  />
+                </th>
                 {sortableHeader('assetNumber', '자산번호')}
                 {sortableHeader('name', '자산명')}
                 {sortableHeader('category', '구분')}
@@ -173,7 +199,7 @@ export default function AssetListPage() {
             <tbody>
               {visibleAssets.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="asset-empty">
+                  <td colSpan={10} className="asset-empty">
                     {query || filter !== '전체'
                       ? '조건에 맞는 자산이 없습니다.'
                       : '등록된 자산이 없습니다. 우측 상단 ‘자산 등록’으로 추가하세요.'}
@@ -186,6 +212,14 @@ export default function AssetListPage() {
                   className="asset-row"
                   onClick={() => setSelected(asset)}
                 >
+                  <td className="check-col" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      aria-label={`${asset.assetNumber} 선택`}
+                      checked={selection.isSelected(asset.assetNumber)}
+                      onChange={() => selection.toggle(asset.assetNumber)}
+                    />
+                  </td>
                   <td>{asset.assetNumber}</td>
                   <td>{asset.name}</td>
                   <td>{asset.category}</td>
@@ -209,6 +243,18 @@ export default function AssetListPage() {
       <Modal open={registerOpen} title="자산 등록" onClose={() => setRegisterOpen(false)}>
         <AssetRegisterForm onSuccess={() => setRegisterOpen(false)} />
       </Modal>
+
+      {bulkRegOpen && (
+        <AssetBulkRegisterModal onClose={() => setBulkRegOpen(false)} onDone={() => { /* 목록은 새로고침 시 반영 */ }} />
+      )}
+
+      <AssetBulkBar
+        count={selection.count}
+        onPrint={handleBulkPrint}
+        onDispose={handleBulkDispose}
+        onClear={selection.clear}
+        busy={bulkBusy}
+      />
 
       {scanOpen && <QrScannerModal onClose={() => setScanOpen(false)} onDetected={handleScanned} />}
 

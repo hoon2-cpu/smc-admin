@@ -42,32 +42,8 @@ function makeQrDataUrl(value: string): Promise<string> {
   return QRCode.toDataURL(value, { margin: 1, width: 200 })
 }
 
-/**
- * 자산 라벨(로고 + Code128 바코드)을 새 창에서 생성해 인쇄합니다. (TOSHIBA 라벨 등)
- * 팝업 차단을 피하려 클릭 시점에 창을 먼저 열고, 바코드 생성 후 내용을 채웁니다.
- *
- * @param asset - 인쇄할 자산
- */
-export async function printAssetLabel(asset: AssetRow): Promise<void> {
-  const win = window.open('', '_blank', 'width=460,height=520')
-  if (!win) {
-    window.alert('팝업이 차단되었습니다. 팝업을 허용한 뒤 다시 시도해주세요.')
-    return
-  }
-  win.document.write('<p style="font-family:sans-serif;padding:24px">라벨 생성 중…</p>')
-
-  try {
-    const value = asset.assetNumber || asset.name
-    const qr = await makeQrDataUrl(value)
-    const logo = await loadLogoDataUrl()
-    // 로고 파일(public/logo.png)이 있으면 이미지, 없으면 텍스트 자리표시
-    const logoHtml = logo
-      ? `<img class="logo-img" src="${logo}" alt="the SMC" />`
-      : `<div class="logo">the <b>SMC</b></div>`
-
-    const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8" />
-<title>자산 라벨 ${escapeHtml(asset.assetNumber)}</title>
-<style>
+/** 라벨 공통 스타일. 단건·일괄 인쇄가 동일 레이아웃을 쓰도록 한 곳에서 정의. */
+const LABEL_STYLE = `
   * { box-sizing: border-box; font-family: -apple-system, 'Malgun Gothic', sans-serif; }
   body { margin: 0; }
   /* 라벨 크기 기본값 — TOSHIBA 라벨지 실측(mm)에 맞게 조정 예정 */
@@ -79,21 +55,66 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
   .logo-img { height: 5mm; width: auto; object-fit: contain; }
   .qr { width: 17mm; height: 17mm; }
   .num { font-size: 8pt; font-weight: 700; letter-spacing: 0.3px; }
+  @media print {
+    /* 라벨마다 한 페이지(장)씩 인쇄. 마지막은 빈 페이지 방지. */
+    .label { page-break-after: always; }
+    .label:last-of-type { page-break-after: auto; }
+    .actions { display: none; }
+  }
   @media screen {
     body { background: #f1f5f9; padding: 24px; text-align: center; }
-    .label { background: #fff; border: 1px solid #ddd; margin: 0 auto; }
-    .actions { margin-top: 16px; }
+    .label { background: #fff; border: 1px solid #ddd; margin: 0 auto 12px; }
+    .actions { margin-top: 8px; }
     .actions button { padding: 8px 18px; font-size: 14px; font-weight: 700;
       background: #2563eb; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
   }
-  @media print { .actions { display: none; } }
-</style></head><body>
-  <div class="label">
-    ${logoHtml}
+`
+
+/**
+ * 자산 라벨(로고 + QR + 자산번호)을 새 창에서 생성해 인쇄합니다.
+ * 여러 건이면 라벨마다 한 페이지씩 이어서 인쇄합니다. (일괄 바코드 출력)
+ * 팝업 차단을 피하려 클릭 시점에 창을 먼저 열고, QR 생성 후 내용을 채웁니다.
+ *
+ * @param assets - 인쇄할 자산 목록(1건 이상)
+ */
+export async function printAssetLabels(assets: AssetRow[]): Promise<void> {
+  const printable = assets.filter((a) => a.assetNumber || a.name)
+  if (printable.length === 0) {
+    window.alert('인쇄할 자산이 없습니다.')
+    return
+  }
+
+  const win = window.open('', '_blank', 'width=460,height=620')
+  if (!win) {
+    window.alert('팝업이 차단되었습니다. 팝업을 허용한 뒤 다시 시도해주세요.')
+    return
+  }
+  win.document.write('<p style="font-family:sans-serif;padding:24px">라벨 생성 중…</p>')
+
+  try {
+    const logo = await loadLogoDataUrl()
+    // 로고 파일(public/logo.png)이 있으면 이미지, 없으면 텍스트 자리표시
+    const logoHtml = logo
+      ? `<img class="logo-img" src="${logo}" alt="the SMC" />`
+      : `<div class="logo">the <b>SMC</b></div>`
+
+    // 자산마다 QR을 만들어 라벨 조각을 생성(병렬)
+    const labels = await Promise.all(
+      printable.map(async (asset) => {
+        const qr = await makeQrDataUrl(asset.assetNumber || asset.name)
+        return `<div class="label">${logoHtml}
     <img class="qr" src="${qr}" alt="QR" />
     <div class="num">${escapeHtml(asset.assetNumber) || '-'}</div>
-  </div>
-  <div class="actions"><button onclick="window.print()">인쇄</button></div>
+  </div>`
+      }),
+    )
+
+    const title = printable.length === 1 ? `자산 라벨 ${escapeHtml(printable[0].assetNumber)}` : `자산 라벨 ${printable.length}건`
+    const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8" />
+<title>${title}</title>
+<style>${LABEL_STYLE}</style></head><body>
+  ${labels.join('\n  ')}
+  <div class="actions"><button onclick="window.print()">인쇄 (${printable.length}건)</button></div>
   <script>window.onload = function () { setTimeout(function () { window.print() }, 300) }</script>
 </body></html>`
 
@@ -105,4 +126,13 @@ export async function printAssetLabel(asset: AssetRow): Promise<void> {
     win.document.body.innerHTML =
       '<p style="font-family:sans-serif;padding:24px;color:#b91c1c">QR 생성에 실패했습니다. 자산번호를 확인해주세요.</p>'
   }
+}
+
+/**
+ * 단일 자산 라벨을 인쇄합니다. (기존 호출부 호환 — 내부적으로 일괄 인쇄 재사용)
+ *
+ * @param asset - 인쇄할 자산
+ */
+export function printAssetLabel(asset: AssetRow): Promise<void> {
+  return printAssetLabels([asset])
 }

@@ -1,0 +1,72 @@
+/* 선택 시 화면 하단 중앙에 뜨는 고정 작업 바 */
+.bulk-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--color-text);
+  color: #fff;
+  padding: 10px 14px 10px 18px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  max-width: calc(100vw - 32px);
+}
+.bulk-count {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.bulk-actions {
+  display: flex;
+  gap: 8px;
+}
+.bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bulk-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+.bulk-btn.danger {
+  background: #dc2626;
+}
+.bulk-btn.danger:hover {
+  background: #b91c1c;
+}
+.bulk-btn.ghost {
+  padding: 8px 10px;
+  background: transparent;
+}
+.bulk-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .bulk-bar {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+    left: 16px;
+    right: 16px;
+    transform: none;
+  }
+  .bulk-actions {
+    justify-content: space-between;
+  }
+}
