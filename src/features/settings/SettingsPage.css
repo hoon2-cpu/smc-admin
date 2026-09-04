@@ -1,3 +1,9 @@
+.settings-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .set-desc {
   font-size: 13px;
   color: var(--color-text-sub);

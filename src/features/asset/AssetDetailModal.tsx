@@ -4,7 +4,7 @@ import { FormField, TextInput, SelectField } from '@/components/form'
 import { useForm } from '@/hooks/useForm'
 import { getAssetStatusVariant } from '@/lib/badgeVariant'
 import { ASSET_STATUSES, type AssetStatus } from '@/constants/asset'
-import { DEPARTMENTS, BUILDINGS } from '@/constants/organization'
+import { useOrgSettings } from '@/hooks/useOrgSettings'
 import { updateAsset, returnRental } from './api'
 import { printAssetLabel } from './labelPrint'
 import type { AssetRow } from './types'
@@ -61,6 +61,7 @@ function readRows(a: AssetRow): Array<[string, string]> {
 export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetailModalProps) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const { departmentOptions, locations } = useOrgSettings()
   const { values, setField } = useForm({
     user: asset?.user ?? '',
     department: asset?.department ?? '',
@@ -276,7 +277,7 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
               id="d-dept"
               value={values.department}
               onChange={(v) => setField('department', v)}
-              options={DEPARTMENTS}
+              options={departmentOptions}
             />
           </FormField>
           <FormField label="위치" htmlFor="d-loc">
@@ -284,7 +285,7 @@ export default function AssetDetailModal({ asset, onClose, onSaved }: AssetDetai
               id="d-loc"
               value={values.location}
               onChange={(v) => setField('location', v)}
-              options={BUILDINGS}
+              options={locations}
             />
           </FormField>
           <FormField label="상태" htmlFor="d-status" required>

@@ -1,0 +1,147 @@
+.org-desc {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+.org-head-actions {
+  display: flex;
+  gap: 8px;
+}
+.org-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text-sub);
+  cursor: pointer;
+}
+.org-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.org-btn.primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* 본부 카드들 */
+.org-div-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.org-div {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: var(--color-bg);
+}
+.org-div-head {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.org-div-name {
+  flex: 1;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 7px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.org-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 10px;
+}
+.org-team {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.org-team input {
+  flex: 1;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.org-loc-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+.org-loc {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.org-loc input {
+  flex: 1;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.org-del {
+  display: inline-flex;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-sub);
+  cursor: pointer;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.org-del:hover {
+  color: #dc2626;
+  background: var(--color-surface);
+}
+
+.org-add-team,
+.org-add-div {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-sub);
+  cursor: pointer;
+}
+.org-add-team {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+.org-add-div {
+  margin-top: 12px;
+}
+.org-add-team:hover,
+.org-add-div:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}

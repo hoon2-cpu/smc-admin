@@ -126,7 +126,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v16-changelog',
+    version: 'v17-no-dup-sheet',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -137,7 +137,9 @@ function doGet(e) {
  * @return {Object[]} 사용자 목록
  */
 function buildUsers_() {
-  var rows = getSheet_(SHEET_USER).getDataRange().getValues()
+  var sheet = getSheetOrNull_(SHEET_USER)
+  if (!sheet) return [] // 시트가 없으면 생성하지 않고 빈 목록 반환(중복 생성 방지)
+  var rows = sheet.getDataRange().getValues()
   var out = []
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i]
@@ -268,7 +270,9 @@ function handleConsumableRequest_(p) {
  * @return {Object[]} 신청 목록
  */
 function buildRequests_() {
-  var rows = getSheet_(SHEET_REQUEST).getDataRange().getValues()
+  var sheet = getSheetOrNull_(SHEET_REQUEST)
+  if (!sheet) return []
+  var rows = sheet.getDataRange().getValues()
   var out = []
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i]
@@ -317,7 +321,9 @@ function handleRequestUpdate_(p) {
  * @return {Object[]} 수리 접수 목록
  */
 function buildRepairs_() {
-  var rows = getSheet_(SHEET_REPAIR).getDataRange().getValues()
+  var sheet = getSheetOrNull_(SHEET_REPAIR)
+  if (!sheet) return []
+  var rows = sheet.getDataRange().getValues()
   var out = []
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i]
@@ -345,7 +351,9 @@ function buildRepairs_() {
  * @return {Object[]} 자산 목록
  */
 function buildAssets_() {
-  var rows = getSheet_(SHEET_ASSET).getDataRange().getValues()
+  var sheet = getSheetOrNull_(SHEET_ASSET)
+  if (!sheet) return []
+  var rows = sheet.getDataRange().getValues()
   var out = []
   // 열: 0등록일시 1자산번호 2자산명 3구분 4제조사 5모델 6시리얼 7취득일 8금액
   //     9사용자 10위치 11상태 12비고 13관리번호 14키값 15취득구분 16렌탈사
@@ -391,7 +399,8 @@ function buildAssets_() {
  * @return {Object} 대시보드 데이터
  */
 function buildDashboard_() {
-  var rows = getSheet_(SHEET_ASSET).getDataRange().getValues()
+  var assetSheet = getSheetOrNull_(SHEET_ASSET)
+  var rows = assetSheet ? assetSheet.getDataRange().getValues() : []
   var categoryMap = {}
   var stats = { totalAssets: 0, inUseAssets: 0, repairingAssets: 0, disposalPlannedAssets: 0, lowStockCount: 0 }
   var acquisition = { purchase: 0, rental: 0 }
@@ -445,7 +454,8 @@ function buildDashboard_() {
 
   // 소모품 재고 부족(7_소모품목록: 0소모품명 1현재고 2적정재고 3단위) — 현재고 < 적정재고
   var lowStock = []
-  var crows = getSheet_(SHEET_CONSUMABLE).getDataRange().getValues()
+  var consumableSheet = getSheetOrNull_(SHEET_CONSUMABLE)
+  var crows = consumableSheet ? consumableSheet.getDataRange().getValues() : []
   for (var j = 1; j < crows.length; j++) {
     var cr = crows[j]
     if (!cr[0]) continue
@@ -476,7 +486,9 @@ function buildDashboard_() {
  * @return {Object[]} 최근 변경 이력
  */
 function buildRecentChanges_(limit) {
-  var rows = getSheet_(SHEET_LOG).getDataRange().getValues()
+  var sheet = getSheetOrNull_(SHEET_LOG)
+  if (!sheet) return []
+  var rows = sheet.getDataRange().getValues()
   var out = []
   for (var i = 1; i < rows.length; i++) {
     var r = rows[i]
@@ -794,14 +806,33 @@ function generateTicketNumber_(date) {
 }
 
 /**
- * 시트 탭을 가져옵니다. 없으면 새로 만듭니다.
+ * 이름으로 시트 탭을 찾습니다. (생성하지 않음)
+ * 정확 일치로 먼저 찾고, 못 찾으면 앞뒤 공백을 무시한 trim 비교로 재탐색합니다.
+ * → 이름에 실수로 공백이 섞인 시트를 '없다'고 오판해 중복 생성하는 문제를 방지.
+ * @param {string} name - 시트 탭 이름
+ * @return {GoogleAppsScript.Spreadsheet.Sheet|null} 시트 또는 null
+ */
+function getSheetOrNull_(name) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet()
+  var sheet = ss.getSheetByName(name)
+  if (sheet) return sheet
+  var all = ss.getSheets()
+  var target = String(name).trim()
+  for (var i = 0; i < all.length; i++) {
+    if (String(all[i].getName()).trim() === target) return all[i]
+  }
+  return null
+}
+
+/**
+ * 시트 탭을 가져옵니다. 없으면 새로 만듭니다. (쓰기 경로 전용)
+ * 조회(읽기) 함수는 이 함수 대신 getSheetOrNull_을 써서 빈 시트를 만들지 않습니다.
  * @param {string} name - 시트 탭 이름
  * @return {GoogleAppsScript.Spreadsheet.Sheet} 시트
  */
 function getSheet_(name) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet()
-  var sheet = ss.getSheetByName(name)
-  if (!sheet) sheet = ss.insertSheet(name)
+  var sheet = getSheetOrNull_(name)
+  if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(name)
   return sheet
 }
 
@@ -822,7 +853,9 @@ function appendRow_(sheetName, row) {
  */
 function lookupEmailByName_(name) {
   if (!name) return ''
-  var values = getSheet_(SHEET_USER).getDataRange().getValues()
+  var sheet = getSheetOrNull_(SHEET_USER)
+  if (!sheet) return ''
+  var values = sheet.getDataRange().getValues()
   for (var i = 1; i < values.length; i++) {
     if (values[i][1] === name) return values[i][4] || ''
   }

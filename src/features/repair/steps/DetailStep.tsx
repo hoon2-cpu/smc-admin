@@ -1,5 +1,5 @@
 import { FormSection, FormField, TextInput, SelectField } from '@/components/form'
-import { DEPARTMENTS } from '@/constants/organization'
+import { useOrgSettings } from '@/hooks/useOrgSettings'
 import type { RepairFormControl } from '../formConfig'
 
 /**
@@ -9,6 +9,7 @@ import type { RepairFormControl } from '../formConfig'
  * @returns 상세 정보 스텝
  */
 export default function DetailStep({ values, setField }: RepairFormControl) {
+  const { departmentOptions } = useOrgSettings()
   return (
     <FormSection title="요청자 정보">
       <FormField label="이름" htmlFor="requesterName" required>
@@ -25,7 +26,7 @@ export default function DetailStep({ values, setField }: RepairFormControl) {
           id="department"
           value={values.department}
           onChange={(v) => setField('department', v)}
-          options={DEPARTMENTS}
+          options={departmentOptions}
         />
       </FormField>
 

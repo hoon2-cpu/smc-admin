@@ -3,6 +3,7 @@ import { Card } from '@/components/ui'
 import { MODULES } from '@/app/registry'
 import { LOCKED_MODULE_IDS, isModuleVisible } from '@/app/moduleVisibility'
 import { useModuleVisibility } from '@/hooks/useModuleVisibility'
+import OrgSettingsSection from './OrgSettingsSection'
 import './SettingsPage.css'
 
 /**
@@ -16,6 +17,7 @@ export default function SettingsPage() {
   const { overrides, setVisible, reset } = useModuleVisibility()
 
   return (
+    <div className="settings-stack">
     <Card
       title="사이드바 메뉴 표시 설정"
       action={
@@ -60,5 +62,8 @@ export default function SettingsPage() {
         })}
       </ul>
     </Card>
+
+      <OrgSettingsSection />
+    </div>
   )
 }

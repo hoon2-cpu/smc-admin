@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { FormSection, FormField, TextInput, SelectField } from '@/components/form'
 import { useForm } from '@/hooks/useForm'
-import { DEPARTMENTS } from '@/constants/organization'
+import { useOrgSettings } from '@/hooks/useOrgSettings'
 import { submitReturnRequest } from './api'
 import './RequestForm.css'
 
@@ -15,6 +15,7 @@ const RETURN_REASONS = ['퇴사', '부서이동', '불용', '고장', '기타'] 
  */
 export default function ReturnRequestForm() {
   const [saving, setSaving] = useState(false)
+  const { departmentOptions } = useOrgSettings()
   const { values, setField, reset } = useForm({
     requester: '',
     department: '',
@@ -47,7 +48,7 @@ export default function ReturnRequestForm() {
           <TextInput id="rr-name" value={values.requester} onChange={(v) => setField('requester', v)} />
         </FormField>
         <FormField label="부서" htmlFor="rr-dept" required>
-          <SelectField id="rr-dept" value={values.department} onChange={(v) => setField('department', v)} options={DEPARTMENTS} />
+          <SelectField id="rr-dept" value={values.department} onChange={(v) => setField('department', v)} options={departmentOptions} />
         </FormField>
         <FormField label="자산번호" htmlFor="rr-num" required>
           <TextInput id="rr-num" value={values.assetNumber} onChange={(v) => setField('assetNumber', v)} placeholder="예: AST-2026-0001" />

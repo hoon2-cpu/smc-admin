@@ -28,24 +28,45 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   if (!role) {
     return (
       <div className="auth-screen">
-        <form className="auth-card" onSubmit={handleSubmit}>
-          <div className="auth-brand">
-            The SMC <span>Admin Platform</span>
-          </div>
-          <p className="auth-desc">비밀번호를 입력하세요. (권한에 따라 화면이 달라집니다)</p>
-          <input
-            type="password"
-            className="auth-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="비밀번호"
-            autoFocus
-          />
-          <button type="submit" className="auth-submit" disabled={busy || !password}>
-            {busy ? '확인 중…' : '로그인'}
-          </button>
-          {error && <p className="auth-error">{error}</p>}
-        </form>
+        {/* 좌측: 로그인 */}
+        <div className="auth-left">
+          <form className="auth-card" onSubmit={handleSubmit}>
+            <div className="auth-brand">
+              The SMC <span>Admin Platform</span>
+            </div>
+            <p className="auth-desc">비밀번호를 입력하세요. (권한에 따라 화면이 달라집니다)</p>
+            <input
+              type="password"
+              className="auth-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호"
+              autoFocus
+            />
+            <button type="submit" className="auth-submit" disabled={busy || !password}>
+              {busy ? '확인 중…' : '로그인'}
+            </button>
+            {error && <p className="auth-error">{error}</p>}
+          </form>
+        </div>
+
+        {/* 우측: 배경 영상 (public/videos/login_bg.mp4). 파일이 없으면 그라데이션 폴백 */}
+        <div className="auth-right">
+          <video
+            className="auth-video"
+            autoPlay
+            muted
+            loop
+            playsInline
+            // 파일이 아직 없거나 로드 실패 시 영상 요소를 숨겨 그라데이션 배경만 노출
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+            }}
+          >
+            <source src={`${import.meta.env.BASE_URL}videos/login_bg.mp4`} type="video/mp4" />
+          </video>
+          <div className="auth-video-overlay" />
+        </div>
       </div>
     )
   }

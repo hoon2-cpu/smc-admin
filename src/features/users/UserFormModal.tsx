@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Modal } from '@/components/ui'
 import { FormField, TextInput, SelectField } from '@/components/form'
 import { useForm } from '@/hooks/useForm'
-import { DEPARTMENTS } from '@/constants/organization'
+import { useOrgSettings } from '@/hooks/useOrgSettings'
 import { registerUser, updateUser } from './api'
 import type { UserRow } from './types'
 import './UserFormModal.css'
@@ -27,6 +27,7 @@ interface UserFormModalProps {
 export default function UserFormModal({ user, onClose, onSaved }: UserFormModalProps) {
   const isNew = user === null
   const [saving, setSaving] = useState(false)
+  const { departmentOptions } = useOrgSettings()
   const { values, setField } = useForm<UserRow>({
     id: user?.id ?? '',
     name: user?.name ?? '',
@@ -84,7 +85,7 @@ export default function UserFormModal({ user, onClose, onSaved }: UserFormModalP
             id="u-dept"
             value={values.department}
             onChange={(v) => setField('department', v)}
-            options={DEPARTMENTS}
+            options={departmentOptions}
           />
         </FormField>
         <FormField label="직급" htmlFor="u-pos">

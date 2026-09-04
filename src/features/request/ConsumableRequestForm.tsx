@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { FormSection, FormField, TextInput, SelectField } from '@/components/form'
 import { useForm } from '@/hooks/useForm'
-import { DEPARTMENTS } from '@/constants/organization'
+import { useOrgSettings } from '@/hooks/useOrgSettings'
 import { COMMON_CONSUMABLES } from '@/constants/consumable'
 import { submitConsumableRequest } from './api'
 import './RequestForm.css'
@@ -14,6 +14,7 @@ import './RequestForm.css'
  */
 export default function ConsumableRequestForm() {
   const [saving, setSaving] = useState(false)
+  const { departmentOptions } = useOrgSettings()
   const { values, setField, reset } = useForm({
     requester: '',
     department: '',
@@ -54,7 +55,7 @@ export default function ConsumableRequestForm() {
           <TextInput id="cr-name" value={values.requester} onChange={(v) => setField('requester', v)} />
         </FormField>
         <FormField label="부서" htmlFor="cr-dept" required>
-          <SelectField id="cr-dept" value={values.department} onChange={(v) => setField('department', v)} options={DEPARTMENTS} />
+          <SelectField id="cr-dept" value={values.department} onChange={(v) => setField('department', v)} options={departmentOptions} />
         </FormField>
         <FormField label="소모품" htmlFor="cr-item" required>
           <SelectField id="cr-item" value={values.item} onChange={(v) => setField('item', v)} options={COMMON_CONSUMABLES} />

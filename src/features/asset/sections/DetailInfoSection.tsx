@@ -1,5 +1,5 @@
 import { FormSection, FormField, TextInput, SelectField } from '@/components/form'
-import { DEPARTMENTS, BUILDINGS } from '@/constants/organization'
+import { useOrgSettings } from '@/hooks/useOrgSettings'
 import { ASSET_STATUSES } from '@/constants/asset'
 import type { AssetFormControl } from '../formConfig'
 
@@ -11,6 +11,7 @@ import type { AssetFormControl } from '../formConfig'
  * @returns 상세 정보 폼 섹션
  */
 export default function DetailInfoSection({ values, setField }: AssetFormControl) {
+  const { departmentOptions, locations } = useOrgSettings()
   return (
     <FormSection title="상세 정보">
       <FormField label="사용자" htmlFor="user">
@@ -27,7 +28,7 @@ export default function DetailInfoSection({ values, setField }: AssetFormControl
           id="department"
           value={values.department}
           onChange={(v) => setField('department', v)}
-          options={DEPARTMENTS}
+          options={departmentOptions}
         />
       </FormField>
 
@@ -36,7 +37,7 @@ export default function DetailInfoSection({ values, setField }: AssetFormControl
           id="location"
           value={values.location}
           onChange={(v) => setField('location', v)}
-          options={BUILDINGS}
+          options={locations}
         />
       </FormField>
 
