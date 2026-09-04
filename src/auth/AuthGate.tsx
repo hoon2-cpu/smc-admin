@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useRoleAuth } from './useRoleAuth'
 import { AuthContext } from './AuthContext'
 import './AuthGate.css'
@@ -15,6 +15,17 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   const { role, error, signIn, signOut } = useRoleAuth()
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  // React는 muted 속성을 DOM 프로퍼티로 항상 반영하지 않아 자동재생이 막힐 수 있습니다.
+  // ref로 muted를 직접 지정하고 play()를 호출해 배경 영상 자동재생을 보장합니다.
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    video.muted = true
+    // 자동재생 거부(사용자 상호작용 전 등)는 조용히 무시 — 폴백 배경이 보입니다.
+    void video.play().catch(() => {})
+  }, [role])
 
   /** 로그인 폼 제출. */
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -53,6 +64,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
         {/* 우측: 배경 영상 (public/videos/login_bg.mp4). 파일이 없으면 그라데이션 폴백 */}
         <div className="auth-right">
           <video
+            ref={videoRef}
             className="auth-video"
             autoPlay
             muted
