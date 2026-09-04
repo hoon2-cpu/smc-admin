@@ -181,18 +181,21 @@ src/
 
 ## 다음 진행 후보 (미완) — 현재 방향: 자산관리 시스템 완성
 
-- [ ] **GAS 토큰 복구**(미해결, 위 참고) + 시트 테스트 행 정리
+> **2026-09-04 세션 정리:** 2차 개편 백로그 9건 + 추가요청 6건 **거의 완료**. 아래만 남음.
+
+- [ ] **(마지막 백로그) #2 수리 사진 실이미지** — 현재 파일명만 표시. 실이미지는 수리신청 사진을 **Google Drive 업로드(GAS DriveService)** 후 URL 저장·표시 필요(프론트 파일 인코딩 + GAS Drive 저장 + VendorDetailModal/수리상세 표시). 인프라 커서 별도 단계.
+- [ ] **GAS 토큰 복구**(비공개 배포 시, 위 미해결 참고) + 시트 테스트 행 정리
+- [ ] **자산장부 실이관** — [docs/ASSET_LEDGER_IMPORT.md](docs/ASSET_LEDGER_IMPORT.md) 가이드대로 3개 장부를 `2_자산등록기록`에 붙여넣기(사용자 작업). 이관 후 부서/위치를 설정값과 정합화.
+- [ ] 조직/위치 설정 **서버(시트) 저장**(현재 localStorage 오버라이드만) — 여러 기기/사용자 공유 필요 시.
 - [x] GitHub push → Pages 배포 완료 (`https://hoon2-cpu.github.io/smc-admin/`)
-- [ ] 자산관리 모듈 기능 확장 (자산 이력/폐기목록 등 — 필요 시)
-- [x] 사용자관리 모듈 구현 (목록/등록/수정)
-- [ ] 설정/Master 등 남은 '준비중' 모듈 구현
-- [ ] (선택) 공통 Layout 다듬기 (Header/Breadcrumb/Footer·반응형)
-- [ ] 디자인/문구 다듬기
+- [ ] 설정/Master 등 남은 '준비중' 모듈 구현(Master)
+- [ ] (선택) 공통 Layout 다듬기 · 디자인/문구 다듬기
 
 > 구매·정산(6~11단계)은 보류 상태. 재개하려면 [docs/PURCHASE_DOMAIN.md](docs/PURCHASE_DOMAIN.md)부터 검토.
+> 로그인 영상 추가 압축/poster가 필요하면 로컬 ffmpeg로 재인코딩 가능(위 로그인 화면 메모 참고).
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별(`v17-no-dup-sheet`가 최신 · 코드 반영됨, 재배포 필요).
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **현재 배포됨: `v17-no-dup-sheet` (2026-09-04 재배포 완료).**
 
 ## 🔀 역할 기반 개편 로드맵 (진행 중)
 
@@ -233,14 +236,14 @@ src/
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
 - **신청관리(`/admin/requests`)** — `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 + 상세 모달 처리(`requestUpdate` → `6_신청기록` I상태/J처리방법/K메모/L처리일시 갱신). rowIndex(시트 행번호)로 대상 식별.
-- **GAS 최신 버전 `v17-no-dup-sheet` (코드 반영 완료 · ⚠️재배포 필요)** — 조회(읽기) 함수가 시트를 생성하지 않도록 수정(`getSheetOrNull_`, trim 매칭) → "5_사용자목록" 등 **빈 시트 반복 생성 문제 해결**. + 자산/수리/사용자/신청/외부업체/렌탈 엔드포인트 + 최근이동 집계.
+- **GAS 최신 버전 `v17-no-dup-sheet` (배포 완료, 2026-09-04)** — 조회(읽기) 함수가 시트를 생성하지 않도록 수정(`getSheetOrNull_`, trim 매칭) → "5_사용자목록" 등 **빈 시트 반복 생성 문제 해결**. + 자산/수리/사용자/신청/외부업체/렌탈 엔드포인트 + 최근이동 집계.
   - 엔드포인트: assets·assetRegister·assetUpdate·**rentalReturn** / repairs·repairRequest·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest / requests·requestUpdate
   - 시트: 1_수리접수기록 · 2_자산등록기록(+22월렌탈료·23계약시작·24계약종료·25반납일) · 3_변경로그(렌탈반납=비용지출 종료) · 5_사용자목록 · 6_신청기록 · 7_소모품목록
   - 직원 신청 저장, 외부업체 전달 필터, 총무팀 신청 처리, 렌탈 반납·월 비용 집계까지 구현됨. (실데이터는 v15 재배포 후 반영)
 - **조직 설정(부서/사용위치)** — 회사 개편이 잦아 코드가 아닌 **설정 화면에서 관리**. 기본값은 `config/orgDefaults.ts`(본부→팀 구조 + 사옥·층), 편집값은 `app/orgSettings.ts`(localStorage 오버라이드 + 이벤트) + `useOrgSettings` 훅. 모든 부서/위치 SelectField가 훅을 통해 최신값 사용(자산/사용자/수리/신청 폼). 타입은 `string`(고정 유니온 제거).
 - **소모품 품목 선택지** — `constants/consumable.ts`(복합기_카트리지/PC_키보드·마우스·HDMI·DVI+HDMI·노트북어댑터·모니터어댑터/기타). 실재고는 시트 `7_소모품목록`.
 - **자산장부 이관** — 3개 장부(롯데렌탈/AJ네트웍스/전체자산)를 `2_자산등록기록` 한 시트로 합쳐 넣음. 열 매핑·주의사항은 [docs/ASSET_LEDGER_IMPORT.md](docs/ASSET_LEDGER_IMPORT.md).
-- **로그인 화면** — 좌측 로그인 카드 / 우측 배경 영상(`public/videos/login_bg.mp4`, 없으면 그라데이션 폴백) 좌우 분할. 모바일은 세로 스택. (기존 `main_video.mp4` 삭제됨)
+- **로그인 화면** — 좌측 로그인 카드 / 우측 배경 영상(`public/videos/login_bg.mp4`) 좌우 분할, 모바일은 세로 스택. 영상은 **720p·오디오 제거·faststart로 재인코딩(2.3MB)**, `AuthGate`에서 `videoRef`로 muted 강제+`play()` 호출해 자동재생 보장(무음·반복). 파일 없으면 그라데이션 폴백. (기존 `main_video.mp4` 삭제됨) · 인코딩 도구: 로컬 ffmpeg(winget `Gyan.FFmpeg`) 설치됨.
 - Google Apps Script는 정적 호스팅(GitHub Pages)이 못 하는 서버 작업(시트 저장/Slack/메일)을 담당.
 - `GAS_URL`은 `src/config/api.ts`에 설정. `.env`의 `VITE_API_TOKEN`으로 요청 검증(서버 `API_TOKEN`과 일치 필요).
 - Slack Webhook URL / Gmail 발송은 `Code.gs` 내부 설정(프론트에 미노출).
