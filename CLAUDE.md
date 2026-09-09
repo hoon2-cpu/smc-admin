@@ -183,7 +183,7 @@ src/
 
 > **2026-09-04 세션 정리:** 2차 개편 백로그 9건 + 추가요청 6건 **거의 완료**. 아래만 남음.
 
-- [x] **(마지막 백로그) #2 수리 사진 실이미지** — 완료. 프론트에서 이미지 캔버스 축소(`lib/imageResize.ts`, 1400px·JPEG q0.7) → `submitRepairRequest`가 `images`(dataURL) 전송 → GAS `saveRepairPhotos_`가 'SMC_수리사진' Drive 폴더에 저장·링크공유 → 시트 8열에 `thumbnail?id=..&sz=w1600` URL 저장. `RepairPhotos` 컴포넌트가 URL이면 `<img>`, 아니면 파일명(과거분) 표시(VendorDetailModal·RepairDetailModal). GAS `v18-repair-photos`. ⚠️ **재배포 시 Drive 권한 재승인 필요**, Workspace가 외부(링크) 공유를 막으면 이미지가 안 보일 수 있음(도메인 정책 확인).
+- [x] **(마지막 백로그) #2 수리 사진 실이미지** — 완료. 프론트에서 이미지 캔버스 축소(`lib/imageResize.ts`, 1400px·JPEG q0.7) → `submitRepairRequest`가 `images`(dataURL) 전송 → GAS `saveRepairPhotos_`가 **사용자 공유 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`=`1SQvcRRHQusU6JaIRwF-pd1EiHAKsEYqf`)** 에 저장 → 시트 8열에 `thumbnail?id=..&sz=w1600` URL 저장. `RepairPhotos` 컴포넌트가 URL이면 `<img>`, 아니면 파일명(과거분) 표시(VendorDetailModal·RepairDetailModal). GAS `v18-repair-photos`. ⚠️ **재배포 시 Drive 권한 재승인 필요**. 폴더 공유(링크 보기)를 사용자가 지정했으므로 파일이 이를 상속 → 도메인 정책 이슈 회피.
 - [ ] **GAS 토큰 복구**(비공개 배포 시, 위 미해결 참고) + 시트 테스트 행 정리
 - [ ] **자산장부 실이관** — [docs/ASSET_LEDGER_IMPORT.md](docs/ASSET_LEDGER_IMPORT.md) 가이드대로 3개 장부를 `2_자산등록기록`에 붙여넣기(사용자 작업). 이관 후 부서/위치를 설정값과 정합화.
 - [ ] 조직/위치 설정 **서버(시트) 저장**(현재 localStorage 오버라이드만) — 여러 기기/사용자 공유 필요 시.
@@ -236,7 +236,7 @@ src/
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
 - **신청관리(`/admin/requests`)** — `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 + 상세 모달 처리(`requestUpdate` → `6_신청기록` I상태/J처리방법/K메모/L처리일시 갱신). rowIndex(시트 행번호)로 대상 식별.
-- **GAS 코드 최신 `v18-repair-photos` (⚠️재배포 필요) / 배포됨 `v17-no-dup-sheet`** — v18: 수리신청 사진을 Drive('SMC_수리사진')에 저장하고 시트 8열에 공개 URL 기록(`saveRepairPhotos_`, `getOrCreateFolder_`). 재배포 시 **Drive 권한 재승인** 필요. Workspace 외부공유 제한 시 이미지 미표시 가능. / v17: 조회 함수가 시트를 생성하지 않도록 수정(`getSheetOrNull_`, trim 매칭) → 빈 시트 반복 생성 해결. + 자산/수리/사용자/신청/외부업체/렌탈 + 최근이동.
+- **GAS 코드 최신 `v18-repair-photos` (⚠️재배포 필요) / 배포됨 `v17-no-dup-sheet`** — v18: 수리신청 사진을 **사용자 지정 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`)** 에 저장하고 시트 8열에 이미지 URL 기록(`saveRepairPhotos_`, `getRepairPhotoFolder_`). 폴더 미설정 시 'SMC_수리사진' 자동 생성. 개별 파일 공유 설정은 실패해도 무시(폴더 공유 상속). 재배포 시 **Drive 권한 재승인** 필요. / v17: 조회 함수가 시트를 생성하지 않도록 수정(`getSheetOrNull_`, trim 매칭) → 빈 시트 반복 생성 해결. + 자산/수리/사용자/신청/외부업체/렌탈 + 최근이동.
   - 엔드포인트: assets·assetRegister·assetUpdate·**rentalReturn** / repairs·repairRequest·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest / requests·requestUpdate
   - 시트: 1_수리접수기록 · 2_자산등록기록(+22월렌탈료·23계약시작·24계약종료·25반납일) · 3_변경로그(렌탈반납=비용지출 종료) · 5_사용자목록 · 6_신청기록 · 7_소모품목록
   - 직원 신청 저장, 외부업체 전달 필터, 총무팀 신청 처리, 렌탈 반납·월 비용 집계까지 구현됨. (실데이터는 v15 재배포 후 반영)

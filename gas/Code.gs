@@ -26,6 +26,14 @@ var API_TOKEN = PropertiesService.getScriptProperties().getProperty('API_TOKEN')
 /** Slack Incoming Webhook URL. 비우면 Slack 알림을 건너뜁니다. */
 var SLACK_WEBHOOK_URL = ''
 
+/**
+ * 수리 사진을 저장할 Google Drive 폴더 ID.
+ * 사용자가 직접 만들어 **공유 설정(링크가 있는 사용자 보기 등)**을 지정한 폴더를 씁니다.
+ * → 코드가 자동으로 공개 설정하지 않아도 되고, 도메인 외부공유 정책 이슈를 피할 수 있음.
+ * 비우면 'SMC_수리사진' 폴더를 자동 생성해 사용합니다.
+ */
+var REPAIR_PHOTO_FOLDER_ID = '1SQvcRRHQusU6JaIRwF-pd1EiHAKsEYqf'
+
 /** 시트 탭 이름. */
 var SHEET_REPAIR = '1_수리접수기록'
 var SHEET_ASSET = '2_자산등록기록'
@@ -814,14 +822,15 @@ function generateTicketNumber_(date) {
 }
 
 /**
- * 수리 사진(data URL 배열)을 Google Drive에 저장하고 공개 이미지 URL 배열을 반환합니다.
- * 'SMC_수리사진' 폴더에 `접수번호_n.jpg`로 저장하고, 링크가 있는 사람은 볼 수 있게 공유합니다.
+ * 수리 사진(data URL 배열)을 Google Drive에 저장하고 이미지 URL 배열을 반환합니다.
+ * 저장 위치: REPAIR_PHOTO_FOLDER_ID 폴더(사용자가 공유 설정한 폴더). 미설정 시 'SMC_수리사진' 자동 생성.
+ * 폴더가 이미 공개(링크 공유)면 파일이 그 설정을 상속하므로 별도 공개 설정은 시도만 하고 실패는 무시합니다.
  * @param {string[]} images - `data:image/...;base64,...` 형식 data URL 배열
  * @param {string} ticketNumber - 접수번호(파일명 접두어)
- * @return {string[]} 각 이미지의 공개 URL
+ * @return {string[]} 각 이미지의 이미지 URL
  */
 function saveRepairPhotos_(images, ticketNumber) {
-  var folder = getOrCreateFolder_('SMC_수리사진')
+  var folder = getRepairPhotoFolder_()
   var urls = []
   for (var i = 0; i < images.length; i++) {
     var dataUrl = images[i]
@@ -834,8 +843,12 @@ function saveRepairPhotos_(images, ticketNumber) {
       var bytes = Utilities.base64Decode(b64)
       var blob = Utilities.newBlob(bytes, contentType, ticketNumber + '_' + (i + 1) + '.jpg')
       var file = folder.createFile(blob)
-      // 링크 공유(정적 사이트에서 <img>로 표시하려면 공개 접근 필요)
-      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW)
+      // 폴더가 공개면 상속됨. 아니면 링크 공유 시도(도메인 정책상 막히면 무시 — 폴더 공유에 의존).
+      try {
+        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW)
+      } catch (shareErr) {
+        // 조직 정책으로 개별 공유가 막혀도 폴더 공유를 상속하므로 계속 진행
+      }
       urls.push('https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w1600')
     } catch (err) {
       // 개별 이미지 실패는 건너뛰고 나머지 계속 저장
@@ -845,14 +858,17 @@ function saveRepairPhotos_(images, ticketNumber) {
 }
 
 /**
- * 이름으로 Drive 폴더를 찾고 없으면 만듭니다.
- * @param {string} name - 폴더명
+ * 수리 사진 저장 폴더를 반환합니다.
+ * REPAIR_PHOTO_FOLDER_ID가 있으면 그 폴더를, 없으면 'SMC_수리사진'을 찾거나 생성합니다.
  * @return {GoogleAppsScript.Drive.Folder} 폴더
  */
-function getOrCreateFolder_(name) {
-  var it = DriveApp.getFoldersByName(name)
+function getRepairPhotoFolder_() {
+  if (REPAIR_PHOTO_FOLDER_ID) {
+    return DriveApp.getFolderById(REPAIR_PHOTO_FOLDER_ID)
+  }
+  var it = DriveApp.getFoldersByName('SMC_수리사진')
   if (it.hasNext()) return it.next()
-  return DriveApp.createFolder(name)
+  return DriveApp.createFolder('SMC_수리사진')
 }
 
 /**
