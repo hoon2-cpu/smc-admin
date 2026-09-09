@@ -858,6 +858,18 @@ function saveRepairPhotos_(images, ticketNumber) {
 }
 
 /**
+ * [일회성 권한 승인용] 편집기에서 직접 실행하는 함수.
+ * DriveApp 접근 권한(수리 사진 저장) 승인 팝업을 띄우기 위해 사용합니다.
+ * 이름 끝에 `_`가 없어야 실행 드롭다운에 표시됩니다.
+ * 실행 → 권한 허용 → 로그에 폴더명이 찍히면 성공.
+ * @return {void}
+ */
+function authorizeDrive() {
+  var folder = getRepairPhotoFolder_()
+  Logger.log('수리 사진 폴더 접근 OK: ' + folder.getName())
+}
+
+/**
  * 수리 사진 저장 폴더를 반환합니다.
  * REPAIR_PHOTO_FOLDER_ID가 있으면 그 폴더를, 없으면 'SMC_수리사진'을 찾거나 생성합니다.
  * @return {GoogleAppsScript.Drive.Folder} 폴더
