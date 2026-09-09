@@ -184,7 +184,11 @@ src/
 
 ## 다음 진행 후보 (미완) — 현재 방향: 자산관리 시스템 완성
 
-> **2026-09-04 세션 정리:** 2차 개편 백로그 9건 + 추가요청 6건 **거의 완료**. 아래만 남음.
+> **2026-09-09 세션 정리:** 실운영 마감·추가요청 대거 반영·배포 완료(GAS `v23-asset-swap`).
+> - ✅ **GAS 토큰 ON**(CI Secret 주입 + 스크립트 속성, 3곳 동일). ✅ 수리 사진 실이미지(Drive)+라이트박스. ✅ 조직/코드/로그인비번 서버저장(설정 화면 편집). ✅ 대시보드 바로가기 동작. ✅ 수리 접수확인 메일(이메일칸). ✅ 직원 **자산교체 신청 탭**(6_신청기록, 신청관리 연동).
+> - ⏳ 남은 것: **시트 테스트행 정리** · **자산장부 실이관**(docs 가이드, 사용자작업) · **UI 다듬기**(로그인 영상 poster/빈상태·로딩 통일/모바일 점검/대시보드 정돈) · (선택) 보고서 화면 · Slack 봇 알림.
+>
+> _(이전 2026-09-04: 2차 개편 백로그 9건 + 추가요청 6건 완료)_
 
 - [x] **(마지막 백로그) #2 수리 사진 실이미지 — 완료·배포·동작 확인(2026-09-09)**. 프론트 이미지 캔버스 축소(`lib/imageResize.ts`, 1400px·JPEG q0.7) → `submitRepairRequest`가 `images`(dataURL) 전송 → GAS `saveRepairPhotos_`가 **사용자 공유 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`=`1SQvcRRHQusU6JaIRwF-pd1EiHAKsEYqf`)** 에 저장 → 시트 8열에 `thumbnail?id=..&sz=w1600` URL 저장. `RepairPhotos` 컴포넌트가 URL이면 `<img>` 썸네일(클릭 시 **앱 내 라이트박스** 크게 보기·ESC/배경 닫기·새 탭 원본), 아니면 파일명(과거분) 표시(VendorDetailModal·RepairDetailModal). 응답에 `photoInfo{received,saved,errors}` 진단 포함(저장 실패 시 프론트가 사유 alert).
   - ⚠️ **Drive 권한 함정(해결됨)**: 웹앱은 재배포해도 권한창이 안 뜸 + 읽기전용만 승인되면 `createFile` 실패. → 편집기에서 **`authorizeDrive`(테스트 파일 생성)** 실행해 **Drive 쓰기 스코프**를 승인해야 함. 안 뜨면 myaccount.google.com/permissions에서 앱 권한 삭제 후 재실행. (토큰=스크립트 속성이라 유지)
@@ -199,7 +203,7 @@ src/
 > 로그인 영상 추가 압축/poster가 필요하면 로컬 ffmpeg로 재인코딩 가능(위 로그인 화면 메모 참고).
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **배포됨: `v22-auth-settings`(토큰 ON 확인) / 코드 최신: `v23-asset-swap` (⚠️ 재배포 필요 — 자산교체 신청).**
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **현재 배포됨: `v23-asset-swap` (2026-09-09, 토큰 ON·자산교체 신청까지 반영·동작 확인).**
 
 ## 🔀 역할 기반 개편 로드맵 (진행 중)
 
