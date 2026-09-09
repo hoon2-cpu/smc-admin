@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { FormSection, FormField, TextInput, SelectField } from '@/components/form'
 import { useForm } from '@/hooks/useForm'
 import { useOrgSettings } from '@/hooks/useOrgSettings'
-import { COMMON_CONSUMABLES } from '@/constants/consumable'
+import { useMasterCodes } from '@/hooks/useMasterCodes'
 import { submitConsumableRequest } from './api'
 import './RequestForm.css'
 
@@ -15,6 +15,7 @@ import './RequestForm.css'
 export default function ConsumableRequestForm() {
   const [saving, setSaving] = useState(false)
   const { departmentOptions } = useOrgSettings()
+  const { codes } = useMasterCodes()
   const { values, setField, reset } = useForm({
     requester: '',
     department: '',
@@ -58,7 +59,7 @@ export default function ConsumableRequestForm() {
           <SelectField id="cr-dept" value={values.department} onChange={(v) => setField('department', v)} options={departmentOptions} />
         </FormField>
         <FormField label="소모품" htmlFor="cr-item" required>
-          <SelectField id="cr-item" value={values.item} onChange={(v) => setField('item', v)} options={COMMON_CONSUMABLES} />
+          <SelectField id="cr-item" value={values.item} onChange={(v) => setField('item', v)} options={codes.consumables} />
         </FormField>
         {values.item === '기타' && (
           <FormField label="소모품명 직접입력" htmlFor="cr-etc" required>

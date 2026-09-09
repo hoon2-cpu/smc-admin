@@ -42,6 +42,7 @@ var SHEET_USER = '5_사용자목록'
 var SHEET_REQUEST = '6_신청기록'
 var SHEET_CONSUMABLE = '7_소모품목록' // 열: 소모품명 / 현재고 / 적정재고 / 단위 (IT 소모품)
 var SHEET_ORG = '8_조직설정' // A1 셀에 {divisions, locations} JSON 저장(부서/사용위치)
+var SHEET_MASTER = '9_코드마스터' // A1 셀에 {categories, rentalCompanies, consumables, manufacturers} JSON
 
 // ===== 진입점 =====
 
@@ -75,6 +76,7 @@ function doPost(e) {
     if (type === 'consumableRequest') return jsonOutput_(handleConsumableRequest_(payload))
     if (type === 'requestUpdate') return jsonOutput_(handleRequestUpdate_(payload))
     if (type === 'orgSettingsUpdate') return jsonOutput_(handleOrgSettingsUpdate_(payload))
+    if (type === 'masterCodesUpdate') return jsonOutput_(handleMasterCodesUpdate_(payload))
     return jsonOutput_({ ok: false, message: '알 수 없는 요청 유형: ' + type })
   } catch (err) {
     return jsonOutput_({ ok: false, message: String(err) })
@@ -140,10 +142,17 @@ function doGet(e) {
     return jsonOutput_({ ok: true, org: buildOrgSettings_() })
   }
 
+  if (params.action === 'masterCodes') {
+    if (API_TOKEN && params.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+    return jsonOutput_({ ok: true, codes: buildMasterCodes_() })
+  }
+
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v19-org-settings',
+    version: 'v20-master-codes',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -357,6 +366,39 @@ function buildOrgSettings_() {
 function handleOrgSettingsUpdate_(p) {
   var sheet = getSheet_(SHEET_ORG)
   var payload = { divisions: p.divisions || [], locations: p.locations || [] }
+  sheet.getRange(1, 1).setValue(JSON.stringify(payload))
+  return { ok: true }
+}
+
+/**
+ * 코드(Master)를 조회합니다. `9_코드마스터` 시트 A1 셀의 JSON을 파싱합니다.
+ * @return {Object|null} { categories, rentalCompanies, consumables, manufacturers } 또는 null
+ */
+function buildMasterCodes_() {
+  var sheet = getSheetOrNull_(SHEET_MASTER)
+  if (!sheet) return null
+  var raw = sheet.getRange(1, 1).getValue()
+  if (!raw) return null
+  try {
+    return JSON.parse(String(raw))
+  } catch (err) {
+    return null
+  }
+}
+
+/**
+ * 코드(Master)를 저장합니다. `9_코드마스터` A1 셀에 JSON으로 씁니다.
+ * @param {Object} p - { categories, rentalCompanies, consumables, manufacturers }
+ * @return {Object} 처리 결과
+ */
+function handleMasterCodesUpdate_(p) {
+  var sheet = getSheet_(SHEET_MASTER)
+  var payload = {
+    categories: p.categories || [],
+    rentalCompanies: p.rentalCompanies || [],
+    consumables: p.consumables || [],
+    manufacturers: p.manufacturers || [],
+  }
   sheet.getRange(1, 1).setValue(JSON.stringify(payload))
   return { ok: true }
 }

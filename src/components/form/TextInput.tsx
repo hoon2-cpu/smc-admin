@@ -17,6 +17,8 @@ interface TextInputProps {
   type?: InputType
   /** 우측 지우기(X) 버튼 표시 여부. */
   clearable?: boolean
+  /** 자동완성 제안 목록(datalist). 자유 입력은 그대로 허용. */
+  options?: readonly string[]
 }
 
 /**
@@ -33,7 +35,10 @@ export default function TextInput({
   placeholder,
   type = 'text',
   clearable = false,
+  options,
 }: TextInputProps) {
+  // datalist는 고유 id가 필요 — 입력 id 기반으로 생성(id 없으면 datalist 생략)
+  const listId = options && id ? `${id}-list` : undefined
   return (
     <div className="input-wrap">
       <input
@@ -42,8 +47,16 @@ export default function TextInput({
         type={type}
         value={value}
         placeholder={placeholder}
+        list={listId}
         onChange={(event) => onChange(event.target.value)}
       />
+      {listId && (
+        <datalist id={listId}>
+          {options!.map((opt) => (
+            <option key={opt} value={opt} />
+          ))}
+        </datalist>
+      )}
       {/* 값이 있을 때만 지우기 버튼 노출 */}
       {clearable && value && (
         <button

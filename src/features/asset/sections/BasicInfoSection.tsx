@@ -1,6 +1,5 @@
 import { FormSection, FormField, TextInput, SelectField } from '@/components/form'
-import { ASSET_CATEGORIES } from '@/constants/asset'
-import { MANUFACTURERS } from '@/constants/manufacturers'
+import { useMasterCodes } from '@/hooks/useMasterCodes'
 import type { AssetFormControl } from '../formConfig'
 
 /**
@@ -12,6 +11,7 @@ import type { AssetFormControl } from '../formConfig'
  * @returns 기본 정보 폼 섹션
  */
 export default function BasicInfoSection({ values, setField }: AssetFormControl) {
+  const { codes } = useMasterCodes()
   return (
     <FormSection title="기본 정보">
       <FormField label="자산명" htmlFor="name" required fullWidth>
@@ -29,7 +29,7 @@ export default function BasicInfoSection({ values, setField }: AssetFormControl)
           id="category"
           value={values.category}
           onChange={(v) => setField('category', v)}
-          options={ASSET_CATEGORIES}
+          options={codes.categories}
         />
       </FormField>
 
@@ -38,7 +38,7 @@ export default function BasicInfoSection({ values, setField }: AssetFormControl)
           id="manufacturer"
           value={values.manufacturer}
           onChange={(v) => setField('manufacturer', v)}
-          options={MANUFACTURERS}
+          options={codes.manufacturers}
         />
       </FormField>
 

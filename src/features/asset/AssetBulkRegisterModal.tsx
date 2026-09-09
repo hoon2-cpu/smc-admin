@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { Modal } from '@/components/ui'
-import { ASSET_CATEGORIES, ACQUISITION_TYPES, RENTAL_COMPANIES, ASSET_STATUSES } from '@/constants/asset'
+import { ACQUISITION_TYPES, ASSET_STATUSES } from '@/constants/asset'
+import { useMasterCodes } from '@/hooks/useMasterCodes'
 import { INITIAL_ASSET_FORM, type AssetRegisterFormValues } from './formConfig'
 import { submitAssetRegisterBulk } from './submit'
 import './AssetBulkRegisterModal.css'
@@ -34,6 +35,7 @@ interface AssetBulkRegisterModalProps {
  * @returns 대량 등록 모달
  */
 export default function AssetBulkRegisterModal({ onClose, onDone }: AssetBulkRegisterModalProps) {
+  const { codes } = useMasterCodes()
   const [rows, setRows] = useState<BulkRow[]>([emptyRow(), emptyRow(), emptyRow()])
   const [saving, setSaving] = useState(false)
 
@@ -107,7 +109,7 @@ export default function AssetBulkRegisterModal({ onClose, onDone }: AssetBulkReg
                 <td>
                   <select value={row.category} onChange={(e) => setCell(i, 'category', e.target.value)}>
                     <option value="">-</option>
-                    {ASSET_CATEGORIES.map((c) => (
+                    {codes.categories.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
@@ -129,7 +131,7 @@ export default function AssetBulkRegisterModal({ onClose, onDone }: AssetBulkReg
                     disabled={row.acquisitionType !== '렌탈'}
                   >
                     <option value="">-</option>
-                    {RENTAL_COMPANIES.map((c) => (
+                    {codes.rentalCompanies.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { FormSection, FormField, TextInput, SelectField } from '@/components/form'
 import { useForm } from '@/hooks/useForm'
 import { useOrgSettings } from '@/hooks/useOrgSettings'
-import { ASSET_CATEGORIES } from '@/constants/asset'
+import { useMasterCodes } from '@/hooks/useMasterCodes'
 import { submitAssetRequest } from './api'
 import './RequestForm.css'
 
@@ -14,6 +14,7 @@ import './RequestForm.css'
 export default function AssetRequestForm() {
   const [saving, setSaving] = useState(false)
   const { departmentOptions } = useOrgSettings()
+  const { codes } = useMasterCodes()
   const { values, setField, reset } = useForm({
     requester: '',
     department: '',
@@ -49,7 +50,7 @@ export default function AssetRequestForm() {
           <SelectField id="ar-dept" value={values.department} onChange={(v) => setField('department', v)} options={departmentOptions} />
         </FormField>
         <FormField label="자산 종류" htmlFor="ar-cat" required>
-          <SelectField id="ar-cat" value={values.category} onChange={(v) => setField('category', v)} options={ASSET_CATEGORIES} />
+          <SelectField id="ar-cat" value={values.category} onChange={(v) => setField('category', v)} options={codes.categories} />
         </FormField>
         <FormField label="희망 사양/모델" htmlFor="ar-spec">
           <TextInput id="ar-spec" value={values.spec} onChange={(v) => setField('spec', v)} placeholder="예: LG gram 16 / 16GB" />

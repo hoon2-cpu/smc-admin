@@ -1,5 +1,6 @@
 import { FormSection, FormField, TextInput, SelectField } from '@/components/form'
-import { ACQUISITION_TYPES, RENTAL_COMPANIES } from '@/constants/asset'
+import { ACQUISITION_TYPES } from '@/constants/asset'
+import { useMasterCodes } from '@/hooks/useMasterCodes'
 import type { AssetFormControl } from '../formConfig'
 
 /**
@@ -12,6 +13,7 @@ import type { AssetFormControl } from '../formConfig'
  * @returns 취득 정보 폼 섹션
  */
 export default function AcquisitionInfoSection({ values, setField }: AssetFormControl) {
+  const { codes } = useMasterCodes()
   const isRental = values.acquisitionType === '렌탈'
   const isPurchase = values.acquisitionType === '구매'
 
@@ -34,7 +36,7 @@ export default function AcquisitionInfoSection({ values, setField }: AssetFormCo
               id="rentalCompany"
               value={values.rentalCompany}
               onChange={(v) => setField('rentalCompany', v)}
-              options={RENTAL_COMPANIES}
+              options={codes.rentalCompanies}
             />
           </FormField>
           <FormField label="월 렌탈료 (원)" htmlFor="monthlyRent">
