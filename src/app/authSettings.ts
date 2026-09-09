@@ -87,9 +87,14 @@ export function pullAuthFromServer(): Promise<boolean> {
  * @param hash - 새 비밀번호의 SHA-256 해시
  * @returns 서버 응답
  */
-export function saveRolePasswordHash(role: Role, hash: string): Promise<GasResult> {
+export async function saveRolePasswordHash(role: Role, hash: string): Promise<GasResult> {
   const next = { ...readAuthOverrides(), [role]: hash }
-  writeAuthOverrides(next)
-  if (isMockMode()) return Promise.resolve({ ok: true })
-  return submitToGas('authSettingsUpdate', next)
+  if (isMockMode()) {
+    writeAuthOverrides(next)
+    return { ok: true }
+  }
+  // 서버 저장이 성공한 경우에만 로컬 캐시에 반영(실패 시 로컬 비번이 잘못 바뀌지 않도록)
+  const result = await submitToGas('authSettingsUpdate', next)
+  if (result.ok) writeAuthOverrides(next)
+  return result
 }
