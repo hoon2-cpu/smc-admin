@@ -170,10 +170,12 @@ src/
 
 ## ⚠️ 미해결 (다음 세션 / 비공개 배포 시 처리)
 
-- **GAS 토큰 현재 OFF (`tokenEnabled:false`)** — 실운영 시 켜기. **CI 빌드 토큰 주입은 완료**(`.github/workflows/deploy.yml` build 스텝에 `VITE_API_TOKEN: ${{ secrets.VITE_API_TOKEN }}`).
-  켜는 순서(중요 — 순서 지켜야 사이트 안 끊김): ① GitHub 저장소 **Settings→Secrets→Actions**에 `VITE_API_TOKEN` 등록(값=원하는 토큰) → ② main에 아무 커밋 push해 **Actions 재빌드**(토큰 포함된 새 배포) → ③ Apps Script **[프로젝트 설정]→[스크립트 속성]** `API_TOKEN`에 **같은 값** 저장 → ④ 새 버전 재배포. (프론트가 토큰 없이 배포된 상태에서 ③을 먼저 하면 전 요청 거부되니 ①②를 반드시 먼저)
-  - 로컬 개발은 `.env`의 `VITE_API_TOKEN` 사용(기존과 동일). 토큰은 스크립트 속성에서 읽어 코드 재붙여넣기해도 유실 안 됨.
-- 실운영 전 **토큰 재발급(rotation)** 권장 — 개발 중 값 노출됨. **Secret + 스크립트 속성 동일 새 값**으로 교체(위 순서와 동일) 후 재배포.
+- ✅ **GAS 토큰 ON 완료 (2026-09-09, `tokenEnabled:true` 검증됨)** — 토큰 없음/오류 요청 거부, 올바른 토큰만 통과 확인.
+  - CI 빌드 토큰 주입: `.github/workflows/deploy.yml` build 스텝 `VITE_API_TOKEN: ${{ secrets.VITE_API_TOKEN }}`.
+  - 값 위치: GitHub 저장소 **Actions → Repository secret** `VITE_API_TOKEN` = Apps Script **스크립트 속성** `API_TOKEN`(이름 정확히 대문자!) = 로컬 `.env` `VITE_API_TOKEN` — **세 곳이 동일해야 함**.
+  - 켜는 순서(재발급/교체 시): ① Repository secret 갱신 → ② main 재빌드(빈 커밋 push 또는 Actions 수동 실행)로 토큰 포함 배포 → ③ 스크립트 속성 같은 값 저장 → ④ 새 버전 재배포. (프론트 먼저, 서버 나중 — 순서 어기면 요청 거부됨)
+  - 함정 기록: 스크립트 속성 이름을 `vite_API_TOKEN`으로 오타 시 미적용. 반드시 `API_TOKEN`.
+- 실운영 전 **토큰 재발급(rotation)** — 현재 값은 이번 세션 대화에 노출됨. 위 순서로 새 랜덤 값 교체 권장(급하지 않으면 유지 가능).
 - **접근 제어 = 역할별 비밀번호 게이트** (admin/employee/vendor, SHA-256, `src/config/auth.ts` + `auth/useRoleAuth`). 입력 비번으로 역할 판별 → 역할별 화면. Google OAuth는 조직 정책 이슈로 보류.
   - 한계: 클라이언트 측 게이트(데이터는 GAS 토큰으로 별도 보호). 더 강한 보호는 GAS 비밀번호/토큰 검증으로 업그레이드 가능.
 - **배포 완료**: GitHub `hoon2-cpu/smc-admin` → Pages `https://hoon2-cpu.github.io/smc-admin/` (GitHub Actions 자동배포, vite base `/smc-admin/`). 공용 비밀번호 게이트로 접근 제한 중.
