@@ -1,11 +1,19 @@
 import type { UseFormReturn } from '@/hooks/useForm'
 
+/** 첨부 사진 1장. (표시용 파일명 + 업로드용 축소 data URL) */
+export interface RepairPhoto {
+  /** 원본 파일명. */
+  name: string
+  /** 축소된 JPEG data URL (GAS Drive 업로드용). */
+  dataUrl: string
+}
+
 /**
  * 수리 요청 폼 값. (이미지 ③의 입력 항목)
  */
 export interface RepairFormValues {
-  /** 첨부 사진 파일명 목록 (최대 5장). */
-  photos: string[]
+  /** 첨부 사진 목록 (최대 5장). */
+  photos: RepairPhoto[]
   /** 증상 설명. */
   symptom: string
   /** 대상 자산번호. */

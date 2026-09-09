@@ -1,36 +1,51 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Camera, X } from 'lucide-react'
+import { fileToResizedDataUrl } from '@/lib/imageResize'
+import type { RepairPhoto } from '../formConfig'
 import './PhotoUploadMulti.css'
 
 /** {@link PhotoUploadMulti} 컴포넌트 props. */
 interface PhotoUploadMultiProps {
-  /** 현재 첨부된 사진 파일명 목록. */
-  photos: string[]
+  /** 현재 첨부된 사진 목록. */
+  photos: RepairPhoto[]
   /** 목록 변경 콜백. */
-  onChange: (photos: string[]) => void
+  onChange: (photos: RepairPhoto[]) => void
   /** 최대 첨부 장수. */
   max: number
 }
 
 /**
  * 다중 사진 업로드 영역. (이미지 ③ '사진 업로드')
- * 실제 파일 업로드(스토리지 전송)는 백엔드 연동 단계에서 처리하며,
- * 지금은 선택한 파일명을 목록으로 관리하고 썸네일 자리표시를 보여줍니다.
+ * 선택한 이미지를 브라우저에서 축소(JPEG data URL)해 목록에 담고 썸네일을 보여줍니다.
+ * 실제 저장은 제출 시 GAS가 Google Drive에 업로드합니다.
  *
  * @param props - {@link PhotoUploadMultiProps}
  * @returns 사진 업로드 엘리먼트
  */
 export default function PhotoUploadMulti({ photos, onChange, max }: PhotoUploadMultiProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [working, setWorking] = useState(false)
 
   /**
-   * 파일 선택 시 파일명을 목록에 추가합니다. (max 초과분은 잘라냄)
+   * 파일 선택 시 각 이미지를 축소해 목록에 추가합니다. (max 초과분은 잘라냄)
    * @param fileList - input이 선택한 파일 목록
    */
-  function handleFiles(fileList: FileList | null) {
-    if (!fileList) return
-    const names = Array.from(fileList).map((file) => file.name)
-    onChange([...photos, ...names].slice(0, max))
+  async function handleFiles(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return
+    setWorking(true)
+    try {
+      const room = Math.max(0, max - photos.length)
+      const picked = Array.from(fileList).slice(0, room)
+      const added = await Promise.all(
+        picked.map(async (file) => ({ name: file.name, dataUrl: await fileToResizedDataUrl(file) })),
+      )
+      onChange([...photos, ...added])
+    } catch {
+      window.alert('일부 이미지를 처리하지 못했습니다. 다른 파일로 시도해주세요.')
+    } finally {
+      setWorking(false)
+      if (inputRef.current) inputRef.current.value = '' // 같은 파일 재선택 허용
+    }
   }
 
   /**
@@ -43,9 +58,14 @@ export default function PhotoUploadMulti({ photos, onChange, max }: PhotoUploadM
 
   return (
     <div className="photo-multi">
-      <button type="button" className="photo-add" onClick={() => inputRef.current?.click()}>
+      <button
+        type="button"
+        className="photo-add"
+        onClick={() => inputRef.current?.click()}
+        disabled={working || photos.length >= max}
+      >
         <Camera size={24} />
-        <strong>클릭하여 사진 업로드</strong>
+        <strong>{working ? '이미지 처리 중…' : '클릭하여 사진 업로드'}</strong>
         <span>또는 파일을 드래그 하세요</span>
       </button>
       <input
@@ -59,9 +79,9 @@ export default function PhotoUploadMulti({ photos, onChange, max }: PhotoUploadM
 
       {photos.length > 0 && (
         <ul className="photo-thumbs">
-          {photos.map((name, index) => (
-            <li key={`${name}-${index}`} className="photo-thumb">
-              <span className="photo-name">{name}</span>
+          {photos.map((photo, index) => (
+            <li key={`${photo.name}-${index}`} className="photo-thumb">
+              <img src={photo.dataUrl} alt={photo.name} />
               <button type="button" aria-label="삭제" onClick={() => removeAt(index)}>
                 <X size={14} />
               </button>
@@ -70,7 +90,7 @@ export default function PhotoUploadMulti({ photos, onChange, max }: PhotoUploadM
         </ul>
       )}
 
-      <p className="photo-hint">최대 {max}장까지 업로드 가능합니다. (JPG, PNG, HEIC)</p>
+      <p className="photo-hint">최대 {max}장까지 업로드 가능합니다. (JPG, PNG, HEIC → 자동 축소)</p>
     </div>
   )
 }

@@ -126,7 +126,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v17-no-dup-sheet',
+    version: 'v18-repair-photos',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -740,6 +740,14 @@ function handleRepairRequest_(p) {
   var now = new Date()
   var ticketNumber = generateTicketNumber_(now)
 
+  // 사진: images(data URL)가 오면 Drive에 업로드하고 공개 URL을 저장, 없으면 파일명 폴백.
+  var attachments = ''
+  if (p.images && p.images.length) {
+    attachments = saveRepairPhotos_(p.images, ticketNumber).join(', ')
+  } else if (p.photos && p.photos.length) {
+    attachments = p.photos.join(', ')
+  }
+
   appendRow_(SHEET_REPAIR, [
     now,
     ticketNumber,
@@ -749,7 +757,7 @@ function handleRepairRequest_(p) {
     p.assetName,
     p.symptom,
     p.priority,
-    (p.photos || []).join(', '),
+    attachments, // 8 첨부(Drive 공개 URL 쉼표구분, 과거분은 파일명)
     '접수',
     '', // 담당자(배정 전)
     '', // 처리완료일
@@ -803,6 +811,48 @@ function generateTicketNumber_(date) {
   var dd = ('0' + d).slice(-2)
   var seq = ('000' + todayCount).slice(-4)
   return 'R-' + y + '-' + mm + dd + '-' + seq
+}
+
+/**
+ * 수리 사진(data URL 배열)을 Google Drive에 저장하고 공개 이미지 URL 배열을 반환합니다.
+ * 'SMC_수리사진' 폴더에 `접수번호_n.jpg`로 저장하고, 링크가 있는 사람은 볼 수 있게 공유합니다.
+ * @param {string[]} images - `data:image/...;base64,...` 형식 data URL 배열
+ * @param {string} ticketNumber - 접수번호(파일명 접두어)
+ * @return {string[]} 각 이미지의 공개 URL
+ */
+function saveRepairPhotos_(images, ticketNumber) {
+  var folder = getOrCreateFolder_('SMC_수리사진')
+  var urls = []
+  for (var i = 0; i < images.length; i++) {
+    var dataUrl = images[i]
+    if (!dataUrl || String(dataUrl).indexOf('base64,') === -1) continue
+    try {
+      var comma = dataUrl.indexOf(',')
+      var meta = dataUrl.substring(0, comma) // 예: data:image/jpeg;base64
+      var b64 = dataUrl.substring(comma + 1)
+      var contentType = meta.substring(meta.indexOf(':') + 1, meta.indexOf(';')) || 'image/jpeg'
+      var bytes = Utilities.base64Decode(b64)
+      var blob = Utilities.newBlob(bytes, contentType, ticketNumber + '_' + (i + 1) + '.jpg')
+      var file = folder.createFile(blob)
+      // 링크 공유(정적 사이트에서 <img>로 표시하려면 공개 접근 필요)
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW)
+      urls.push('https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w1600')
+    } catch (err) {
+      // 개별 이미지 실패는 건너뛰고 나머지 계속 저장
+    }
+  }
+  return urls
+}
+
+/**
+ * 이름으로 Drive 폴더를 찾고 없으면 만듭니다.
+ * @param {string} name - 폴더명
+ * @return {GoogleAppsScript.Drive.Folder} 폴더
+ */
+function getOrCreateFolder_(name) {
+  var it = DriveApp.getFoldersByName(name)
+  if (it.hasNext()) return it.next()
+  return DriveApp.createFolder(name)
 }
 
 /**

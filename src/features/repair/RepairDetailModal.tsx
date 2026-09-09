@@ -5,6 +5,7 @@ import { useForm } from '@/hooks/useForm'
 import { getRepairStatusVariant } from '@/lib/badgeVariant'
 import { REPAIR_STATUSES, type RepairStatus } from '@/constants/repair'
 import { updateRepair, dispatchRepair } from './api'
+import RepairPhotos from './components/RepairPhotos'
 import type { RepairRow } from './types'
 import './RepairDetailModal.css'
 
@@ -120,6 +121,12 @@ export default function RepairDetailModal({ repair, onClose, onSaved }: RepairDe
         <div className="rd-full">
           <dt>증상</dt>
           <dd>{repair.symptom}</dd>
+        </div>
+        <div className="rd-full">
+          <dt>첨부 사진</dt>
+          <dd>
+            <RepairPhotos attachments={repair.attachments} />
+          </dd>
         </div>
         <div>
           <dt>현재 상태</dt>

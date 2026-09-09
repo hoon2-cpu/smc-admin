@@ -1,5 +1,6 @@
 import { Modal, Badge } from '@/components/ui'
 import { getRepairStatusVariant } from '@/lib/badgeVariant'
+import RepairPhotos from '@/features/repair/components/RepairPhotos'
 import type { RepairRow } from '@/features/repair/types'
 import './VendorDetailModal.css'
 
@@ -21,9 +22,9 @@ interface VendorDetailModalProps {
 export default function VendorDetailModal({ repair, onClose }: VendorDetailModalProps) {
   if (!repair) return null
 
-  const photos = repair.attachments
-    ? repair.attachments.split(',').map((s) => s.trim()).filter(Boolean)
-    : []
+  const photoCount = repair.attachments
+    ? repair.attachments.split(',').map((s) => s.trim()).filter(Boolean).length
+    : 0
 
   return (
     <Modal open title={`${repair.ticketNumber} · 수리 상세`} onClose={onClose}>
@@ -55,21 +56,8 @@ export default function VendorDetailModal({ repair, onClose }: VendorDetailModal
       </dl>
 
       <div className="vd-photos">
-        <div className="vd-photos-title">첨부 사진 ({photos.length})</div>
-        {photos.length === 0 ? (
-          <p className="vd-photos-empty">첨부된 사진이 없습니다.</p>
-        ) : (
-          <>
-            <ul className="vd-photo-list">
-              {photos.map((name) => (
-                <li key={name}>🖼️ {name}</li>
-              ))}
-            </ul>
-            <p className="vd-photos-note">
-              ※ 이미지 미리보기는 준비 중입니다(현재는 파일명 표시). 원본 전달이 필요하면 총무팀에 요청하세요.
-            </p>
-          </>
-        )}
+        <div className="vd-photos-title">첨부 사진 ({photoCount})</div>
+        <RepairPhotos attachments={repair.attachments} />
       </div>
     </Modal>
   )
