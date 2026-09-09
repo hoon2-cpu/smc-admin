@@ -75,6 +75,7 @@ function doPost(e) {
     if (type === 'assetRequest') return jsonOutput_(handleAssetRequest_(payload))
     if (type === 'returnRequest') return jsonOutput_(handleReturnRequest_(payload))
     if (type === 'consumableRequest') return jsonOutput_(handleConsumableRequest_(payload))
+    if (type === 'assetSwapRequest') return jsonOutput_(handleAssetSwapRequest_(payload))
     if (type === 'requestUpdate') return jsonOutput_(handleRequestUpdate_(payload))
     if (type === 'orgSettingsUpdate') return jsonOutput_(handleOrgSettingsUpdate_(payload))
     if (type === 'masterCodesUpdate') return jsonOutput_(handleMasterCodesUpdate_(payload))
@@ -161,7 +162,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v22-auth-settings',
+    version: 'v23-asset-swap',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -294,6 +295,32 @@ function handleConsumableRequest_(p) {
     '접수',
   ])
   notifySlack_('🧴 *소모품 신청* ' + (p.requester || '') + ' / ' + (p.item || '') + ' ' + (p.qty || ''))
+  return { ok: true }
+}
+
+/**
+ * 자산 교체 신청(직원)을 신청기록 시트에 저장합니다.
+ * 열: 신청일시 / 종류(자산교체) / 신청자 / 부서 / (기존)자산번호 / (기존)자산명 / 사유 / 상세 / 상태
+ * @param {Object} p - { requester, department, assetNumber, assetName, category, reason, note }
+ * @return {Object} 처리 결과
+ */
+function handleAssetSwapRequest_(p) {
+  var now = new Date()
+  var detail = ''
+  if (p.category) detail += '교체희망: ' + p.category
+  if (p.note) detail += (detail ? ' / ' : '') + p.note
+  appendRow_(SHEET_REQUEST, [
+    now,
+    '자산교체',
+    p.requester,
+    p.department,
+    p.assetNumber,
+    p.assetName,
+    p.reason,
+    detail,
+    '접수',
+  ])
+  notifySlack_('🔁 *자산 교체 신청* ' + (p.requester || '') + ' / ' + (p.assetNumber || '') + ' ' + (p.reason || ''))
   return { ok: true }
 }
 

@@ -13,6 +13,7 @@ export type GasRequestType =
   | 'assetRequest'
   | 'returnRequest'
   | 'consumableRequest'
+  | 'assetSwapRequest'
   | 'requestUpdate'
   | 'orgSettingsUpdate'
   | 'masterCodesUpdate'

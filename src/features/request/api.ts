@@ -29,6 +29,22 @@ export interface ConsumableRequestValues {
   reason: string
 }
 
+/** 자산 교체 신청 폼 값. */
+export interface AssetSwapValues {
+  requester: string
+  department: string
+  /** 교체 대상(기존) 자산번호. */
+  assetNumber: string
+  /** 교체 대상(기존) 자산명. */
+  assetName: string
+  /** 교체 희망 품목(구분). */
+  category: string
+  /** 교체 사유. */
+  reason: string
+  /** 비고. */
+  note: string
+}
+
 /**
  * 자산 신청을 백엔드로 전송합니다.
  * @param values - 자산 신청 값
@@ -54,4 +70,13 @@ export function submitReturnRequest(values: ReturnRequestValues): Promise<GasRes
  */
 export function submitConsumableRequest(values: ConsumableRequestValues): Promise<GasResult> {
   return submitToGas('consumableRequest', values)
+}
+
+/**
+ * 자산 교체 신청을 백엔드로 전송합니다.
+ * @param values - 자산 교체 신청 값
+ * @returns 서버 응답
+ */
+export function submitAssetSwap(values: AssetSwapValues): Promise<GasResult> {
+  return submitToGas('assetSwapRequest', values)
 }

@@ -4,10 +4,11 @@ import RepairRequestPage from '@/features/repair/RepairRequestPage'
 import AssetRequestForm from './AssetRequestForm'
 import ReturnRequestForm from './ReturnRequestForm'
 import ConsumableRequestForm from './ConsumableRequestForm'
+import AssetSwapForm from './AssetSwapForm'
 import './RequestPage.css'
 
 /** 신청 탭 종류. */
-const TABS = ['자산신청', '소모품신청', '수리신청', '반납신청'] as const
+const TABS = ['자산신청', '소모품신청', '수리신청', '반납신청', '자산교체'] as const
 type RequestTab = (typeof TABS)[number]
 
 /**
@@ -38,6 +39,7 @@ export default function RequestPage() {
       {tab === '소모품신청' && <ConsumableRequestForm />}
       {tab === '수리신청' && <RepairRequestPage />}
       {tab === '반납신청' && <ReturnRequestForm />}
+      {tab === '자산교체' && <AssetSwapForm />}
     </RoleShell>
   )
 }

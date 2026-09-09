@@ -113,7 +113,7 @@ src/
 | 경로 | 화면 |
 | --- | --- |
 | `/` | → 로그인 역할의 홈으로 리다이렉트 |
-| `/request` | 직원 신청 폼 (employee 역할) |
+| `/request` | 직원 신청 폼 (자산신청/소모품/수리/반납/자산교체 탭, employee 역할) |
 | `/vendor` | 외부업체 수리 목록 (vendor 역할) |
 | `/admin/dashboard` | 대시보드 |
 | `/admin/purchase` | 구매·정산관리 (준비중) |
@@ -199,7 +199,7 @@ src/
 > 로그인 영상 추가 압축/poster가 필요하면 로컬 ffmpeg로 재인코딩 가능(위 로그인 화면 메모 참고).
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **배포됨: `v20-master-codes` / 코드 최신: `v22-auth-settings` (⚠️ 재배포 필요 — 수리 접수메일 + 로그인 비번 서버저장).**
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **배포됨: `v22-auth-settings`(토큰 ON 확인) / 코드 최신: `v23-asset-swap` (⚠️ 재배포 필요 — 자산교체 신청).**
 
 ## 🔀 역할 기반 개편 로드맵 (진행 중)
 
@@ -239,9 +239,10 @@ src/
 - **자산 코드 스캔 조회** — 자산 목록 '스캔'(카메라) → **Code128/QR 디코드** → 자산번호로 상세 모달 오픈. `html5-qrcode`(formatsToSupport: CODE_128+QR), `components/ui/QrScannerModal.tsx`. 카메라는 https/localhost에서만. (라벨 인쇄↔스캔 왕복 완성)
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
-- **신청관리(`/admin/requests`)** — `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 + 상세 모달 처리(`requestUpdate` → `6_신청기록` I상태/J처리방법/K메모/L처리일시 갱신). rowIndex(시트 행번호)로 대상 식별.
+- **신청관리(`/admin/requests`)** — `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 + 상세 모달 처리(`requestUpdate` → `6_신청기록` I상태/J처리방법/K메모/L처리일시 갱신). rowIndex(시트 행번호)로 대상 식별. 종류: 자산신청/반납신청/소모품신청/**자산교체**(`constants/request.ts` REQUEST_KINDS — 필터 탭 자동 반영).
+- **자산교체 신청** — 직원 `/request`의 **자산교체 탭**(`AssetSwapForm`): 기존 자산번호·자산명 + 교체희망 품목(Master 코드) + 교체사유(고장/노후/사양부족 등) → `assetSwapRequest`로 `6_신청기록`(종류=자산교체) 저장. 총무팀은 신청관리에서 동일하게 처리. (교체가 잦아 이력 남김)
 - **GAS 코드 최신 `v20-master-codes` (⚠️재배포 필요) / 배포됨 `v19-org-settings`** — v20: 코드 Master(자산구분/렌탈사/소모품/제조사)를 `9_코드마스터` 시트 A1 JSON에 저장/조회(`masterCodes`, `masterCodesUpdate`, `buildMasterCodes_`, `handleMasterCodesUpdate_`). / v19: 조직 설정(부서/사용위치)을 `8_조직설정` 시트 A1 JSON에 저장/조회(`orgSettings`, `orgSettingsUpdate`, `buildOrgSettings_`, `handleOrgSettingsUpdate_`). / v18b: 수리신청 사진을 **사용자 지정 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`)** 에 저장, 시트 8열 이미지 URL(`saveRepairPhotos_`→`{urls,errors}`, `authorizeDrive`). **Drive 쓰기 권한 승인 필수(위 #2 함정).** + v17(조회 함수 시트 미생성) + 자산/수리/사용자/신청/외부업체/렌탈 + 최근이동.
-  - 엔드포인트: assets·assetRegister·assetUpdate·rentalReturn / repairs·repairRequest(+이메일 접수확인)·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest / requests·requestUpdate / orgSettings·orgSettingsUpdate / masterCodes·masterCodesUpdate / **authSettings·authSettingsUpdate**
+  - 엔드포인트: assets·assetRegister·assetUpdate·rentalReturn / repairs·repairRequest(+이메일 접수확인)·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest·**assetSwapRequest** / requests·requestUpdate / orgSettings·orgSettingsUpdate / masterCodes·masterCodesUpdate / **authSettings·authSettingsUpdate**
   - 시트: 1_수리접수기록 · 2_자산등록기록(+22월렌탈료·23계약시작·24계약종료·25반납일) · 3_변경로그(렌탈반납=비용지출 종료) · 5_사용자목록 · 6_신청기록 · 7_소모품목록 · 8_조직설정(A1=부서/위치 JSON) · 9_코드마스터(A1=코드 JSON) · 10_로그인설정(A1=비번 해시 JSON)
   - 직원 신청 저장, 외부업체 전달 필터, 총무팀 신청 처리, 렌탈 반납·월 비용 집계까지 구현됨. (실데이터는 v15 재배포 후 반영)
 - **조직 설정(부서/사용위치)** — 회사 개편이 잦아 코드가 아닌 **설정 화면에서 관리**하고 **서버(시트 `8_조직설정`)에 저장 → 여러 기기/사용자 공유**. 기본값 `config/orgDefaults.ts`(본부→팀 + 사옥·층), 동기화 `app/orgSettings.ts`(서버 pull 1회 + 저장 시 push, localStorage는 캐시/폴백, 변경 이벤트) + `useOrgSettings` 훅. 모든 부서/위치 SelectField가 훅을 통해 최신값 사용. 편집 UI는 `features/settings/OrgSettingsSection`(저장 시 서버 반영·결과 alert). 타입은 `string`.

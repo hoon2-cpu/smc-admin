@@ -5,7 +5,7 @@
  */
 
 /** 신청 종류. GAS handleXxxRequest_가 기록하는 '종류' 값과 동일해야 합니다. */
-export const REQUEST_KINDS = ['자산신청', '반납신청', '소모품신청'] as const
+export const REQUEST_KINDS = ['자산신청', '반납신청', '소모품신청', '자산교체'] as const
 
 /** 신청 종류 유니온 타입. */
 export type RequestKind = (typeof REQUEST_KINDS)[number]
