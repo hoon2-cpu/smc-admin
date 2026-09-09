@@ -40,6 +40,14 @@ export default function RepairRequestPage() {
       window.alert(`접수에 실패했습니다: ${result.message ?? '알 수 없는 오류'}`)
       return
     }
+    // 사진이 있는데 서버에서 저장이 안 된 경우 원인을 알려줍니다.(진단)
+    const pi = result.photoInfo
+    if (pi && pi.received > 0 && pi.saved < pi.received) {
+      window.alert(
+        `접수는 됐지만 사진 ${pi.received}장 중 ${pi.saved}장만 저장됐습니다.\n` +
+          (pi.errors.length ? `사유: ${pi.errors.join(' / ')}` : ''),
+      )
+    }
     setTicketNumber(result.ticketNumber ?? localTicket)
     setStep(3)
   }

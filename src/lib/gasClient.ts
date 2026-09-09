@@ -23,6 +23,8 @@ export interface GasResult {
   ticketNumber?: string
   /** 실패 시 사유 등 메시지. */
   message?: string
+  /** (수리요청) 사진 저장 진단: 받은/저장된 장수 + 에러. */
+  photoInfo?: { received: number; saved: number; errors: string[] }
 }
 
 /** GAS_URL이 설정되지 않아 mock 모드로 동작하는지 여부. */

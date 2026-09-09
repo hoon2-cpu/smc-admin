@@ -134,7 +134,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v18-repair-photos',
+    version: 'v18b-photo-debug',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -750,8 +750,13 @@ function handleRepairRequest_(p) {
 
   // 사진: images(data URL)가 오면 Drive에 업로드하고 공개 URL을 저장, 없으면 파일명 폴백.
   var attachments = ''
+  var photoInfo = { received: 0, saved: 0, errors: [] }
   if (p.images && p.images.length) {
-    attachments = saveRepairPhotos_(p.images, ticketNumber).join(', ')
+    photoInfo.received = p.images.length
+    var saved = saveRepairPhotos_(p.images, ticketNumber)
+    photoInfo.saved = saved.urls.length
+    photoInfo.errors = saved.errors
+    attachments = saved.urls.join(', ')
   } else if (p.photos && p.photos.length) {
     attachments = p.photos.join(', ')
   }
@@ -791,7 +796,7 @@ function handleRepairRequest_(p) {
     )
   }
 
-  return { ok: true, ticketNumber: ticketNumber }
+  return { ok: true, ticketNumber: ticketNumber, photoInfo: photoInfo }
 }
 
 // ===== 헬퍼 =====
@@ -830,11 +835,20 @@ function generateTicketNumber_(date) {
  * @return {string[]} 각 이미지의 이미지 URL
  */
 function saveRepairPhotos_(images, ticketNumber) {
-  var folder = getRepairPhotoFolder_()
   var urls = []
+  var errors = []
+  var folder
+  try {
+    folder = getRepairPhotoFolder_()
+  } catch (folderErr) {
+    return { urls: urls, errors: ['폴더 접근 실패: ' + String(folderErr)] }
+  }
   for (var i = 0; i < images.length; i++) {
     var dataUrl = images[i]
-    if (!dataUrl || String(dataUrl).indexOf('base64,') === -1) continue
+    if (!dataUrl || String(dataUrl).indexOf('base64,') === -1) {
+      errors.push((i + 1) + '번: data URL 형식 아님')
+      continue
+    }
     try {
       var comma = dataUrl.indexOf(',')
       var meta = dataUrl.substring(0, comma) // 예: data:image/jpeg;base64
@@ -851,10 +865,10 @@ function saveRepairPhotos_(images, ticketNumber) {
       }
       urls.push('https://drive.google.com/thumbnail?id=' + file.getId() + '&sz=w1600')
     } catch (err) {
-      // 개별 이미지 실패는 건너뛰고 나머지 계속 저장
+      errors.push((i + 1) + '번: ' + String(err))
     }
   }
-  return urls
+  return { urls: urls, errors: errors }
 }
 
 /**
