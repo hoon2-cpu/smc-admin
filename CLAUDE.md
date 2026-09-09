@@ -170,10 +170,10 @@ src/
 
 ## ⚠️ 미해결 (다음 세션 / 비공개 배포 시 처리)
 
-- **GAS 토큰 현재 OFF (`tokenEnabled:false`)** — 사용자 결정으로 **비공개 배포 단계에서 한 번에 처리**하기로 보류.
-  켜는 법(최종): ① `gas/Code.gs` 최신본(버전 `v5-token-prop`) 재붙여넣기 → ② **[프로젝트 설정]→[스크립트 속성]** 에 `API_TOKEN` = `.env`의 `VITE_API_TOKEN` 값 추가 후 **저장** → ③ 새 버전 재배포.
-  (토큰을 스크립트 속성에서 읽도록 바꿔, 이후엔 코드 재붙여넣기해도 유실 안 됨)
-- 실운영 전 **토큰 재발급(rotation)** 권장 — 개발 중 값 노출됨. `.env` + 스크립트 속성 동일 새 값 → 프론트 build.
+- **GAS 토큰 현재 OFF (`tokenEnabled:false`)** — 실운영 시 켜기. **CI 빌드 토큰 주입은 완료**(`.github/workflows/deploy.yml` build 스텝에 `VITE_API_TOKEN: ${{ secrets.VITE_API_TOKEN }}`).
+  켜는 순서(중요 — 순서 지켜야 사이트 안 끊김): ① GitHub 저장소 **Settings→Secrets→Actions**에 `VITE_API_TOKEN` 등록(값=원하는 토큰) → ② main에 아무 커밋 push해 **Actions 재빌드**(토큰 포함된 새 배포) → ③ Apps Script **[프로젝트 설정]→[스크립트 속성]** `API_TOKEN`에 **같은 값** 저장 → ④ 새 버전 재배포. (프론트가 토큰 없이 배포된 상태에서 ③을 먼저 하면 전 요청 거부되니 ①②를 반드시 먼저)
+  - 로컬 개발은 `.env`의 `VITE_API_TOKEN` 사용(기존과 동일). 토큰은 스크립트 속성에서 읽어 코드 재붙여넣기해도 유실 안 됨.
+- 실운영 전 **토큰 재발급(rotation)** 권장 — 개발 중 값 노출됨. **Secret + 스크립트 속성 동일 새 값**으로 교체(위 순서와 동일) 후 재배포.
 - **접근 제어 = 역할별 비밀번호 게이트** (admin/employee/vendor, SHA-256, `src/config/auth.ts` + `auth/useRoleAuth`). 입력 비번으로 역할 판별 → 역할별 화면. Google OAuth는 조직 정책 이슈로 보류.
   - 한계: 클라이언트 측 게이트(데이터는 GAS 토큰으로 별도 보호). 더 강한 보호는 GAS 비밀번호/토큰 검증으로 업그레이드 가능.
 - **배포 완료**: GitHub `hoon2-cpu/smc-admin` → Pages `https://hoon2-cpu.github.io/smc-admin/` (GitHub Actions 자동배포, vite base `/smc-admin/`). 공용 비밀번호 게이트로 접근 제한 중.
@@ -183,7 +183,7 @@ src/
 
 > **2026-09-04 세션 정리:** 2차 개편 백로그 9건 + 추가요청 6건 **거의 완료**. 아래만 남음.
 
-- [x] **(마지막 백로그) #2 수리 사진 실이미지 — 완료·배포·동작 확인(2026-09-09)**. 프론트 이미지 캔버스 축소(`lib/imageResize.ts`, 1400px·JPEG q0.7) → `submitRepairRequest`가 `images`(dataURL) 전송 → GAS `saveRepairPhotos_`가 **사용자 공유 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`=`1SQvcRRHQusU6JaIRwF-pd1EiHAKsEYqf`)** 에 저장 → 시트 8열에 `thumbnail?id=..&sz=w1600` URL 저장. `RepairPhotos` 컴포넌트가 URL이면 `<img>`, 아니면 파일명(과거분) 표시(VendorDetailModal·RepairDetailModal). 응답에 `photoInfo{received,saved,errors}` 진단 포함(저장 실패 시 프론트가 사유 alert).
+- [x] **(마지막 백로그) #2 수리 사진 실이미지 — 완료·배포·동작 확인(2026-09-09)**. 프론트 이미지 캔버스 축소(`lib/imageResize.ts`, 1400px·JPEG q0.7) → `submitRepairRequest`가 `images`(dataURL) 전송 → GAS `saveRepairPhotos_`가 **사용자 공유 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`=`1SQvcRRHQusU6JaIRwF-pd1EiHAKsEYqf`)** 에 저장 → 시트 8열에 `thumbnail?id=..&sz=w1600` URL 저장. `RepairPhotos` 컴포넌트가 URL이면 `<img>` 썸네일(클릭 시 **앱 내 라이트박스** 크게 보기·ESC/배경 닫기·새 탭 원본), 아니면 파일명(과거분) 표시(VendorDetailModal·RepairDetailModal). 응답에 `photoInfo{received,saved,errors}` 진단 포함(저장 실패 시 프론트가 사유 alert).
   - ⚠️ **Drive 권한 함정(해결됨)**: 웹앱은 재배포해도 권한창이 안 뜸 + 읽기전용만 승인되면 `createFile` 실패. → 편집기에서 **`authorizeDrive`(테스트 파일 생성)** 실행해 **Drive 쓰기 스코프**를 승인해야 함. 안 뜨면 myaccount.google.com/permissions에서 앱 권한 삭제 후 재실행. (토큰=스크립트 속성이라 유지)
 - [ ] **GAS 토큰 복구**(비공개 배포 시, 위 미해결 참고) + 시트 테스트 행 정리
 - [ ] **자산장부 실이관** — [docs/ASSET_LEDGER_IMPORT.md](docs/ASSET_LEDGER_IMPORT.md) 가이드대로 3개 장부를 `2_자산등록기록`에 붙여넣기(사용자 작업). 이관 후 부서/위치를 설정값과 정합화.
@@ -196,7 +196,7 @@ src/
 > 로그인 영상 추가 압축/poster가 필요하면 로컬 ffmpeg로 재인코딩 가능(위 로그인 화면 메모 참고).
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **배포됨: `v19-org-settings` / 코드 최신: `v20-master-codes` (⚠️ 재배포 필요 — 코드 Master 서버 저장).**
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **현재 배포됨: `v20-master-codes` (2026-09-09, 코드 Master 서버 저장 정상 동작 확인).**
 
 ## 🔀 역할 기반 개편 로드맵 (진행 중)
 

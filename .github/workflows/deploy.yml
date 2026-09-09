@@ -26,6 +26,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        # GAS 요청 검증 토큰을 빌드에 주입(.env는 git 제외라 CI엔 없음).
+        # GitHub 저장소 Secrets에 VITE_API_TOKEN을 등록하면 여기서 빌드로 전달됩니다.
+        # (미등록 시 빈 값 → GAS 토큰이 OFF일 때만 정상 동작)
+        env:
+          VITE_API_TOKEN: ${{ secrets.VITE_API_TOKEN }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
