@@ -123,7 +123,7 @@ src/
 | `/admin/requests` | 신청관리 (직원 자산/반납/소모품 신청 접수·처리) |
 | `/admin/master` | 코드(Master)관리 (자산구분·렌탈사·소모품·제조사 선택지 관리) |
 | `/admin/users` | 사용자관리 (목록/등록/수정) |
-| `/admin/settings` | 설정 (사이드바 메뉴 토글 + 부서(조직)·사용위치 관리) |
+| `/admin/settings` | 설정 (메뉴 토글 + 부서(조직)·사용위치 관리 + 코드/로그인 비밀번호 관리) |
 
 ## 진행 현황 — 1차(IT 자산 시스템) 완료분
 
@@ -176,7 +176,8 @@ src/
   - 켜는 순서(재발급/교체 시): ① Repository secret 갱신 → ② main 재빌드(빈 커밋 push 또는 Actions 수동 실행)로 토큰 포함 배포 → ③ 스크립트 속성 같은 값 저장 → ④ 새 버전 재배포. (프론트 먼저, 서버 나중 — 순서 어기면 요청 거부됨)
   - 함정 기록: 스크립트 속성 이름을 `vite_API_TOKEN`으로 오타 시 미적용. 반드시 `API_TOKEN`.
 - 실운영 전 **토큰 재발급(rotation)** — 현재 값은 이번 세션 대화에 노출됨. 위 순서로 새 랜덤 값 교체 권장(급하지 않으면 유지 가능).
-- **접근 제어 = 역할별 비밀번호 게이트** (admin/employee/vendor, SHA-256, `src/config/auth.ts` + `auth/useRoleAuth`). 입력 비번으로 역할 판별 → 역할별 화면. Google OAuth는 조직 정책 이슈로 보류.
+- **접근 제어 = 역할별 비밀번호 게이트** (admin/employee/vendor, SHA-256, `src/config/auth.ts` 기본해시 + `auth/useRoleAuth`). 입력 비번으로 역할 판별 → 역할별 화면. Google OAuth는 조직 정책 이슈로 보류.
+  - **비밀번호 설정 화면에서 변경 가능**(설정 → 로그인 비밀번호 관리, `AuthSettingsSection`). 평문 대신 SHA-256 해시만 서버(시트 `10_로그인설정`)에 저장 → 모든 기기 공유. `app/authSettings.ts`(기본해시+오버라이드 병합, pull 1회/push) + useRoleAuth가 유효해시로 판별. 분실 시 복구 불가(코드 기본값으로 리셋 필요).
   - 한계: 클라이언트 측 게이트(데이터는 GAS 토큰으로 별도 보호). 더 강한 보호는 GAS 비밀번호/토큰 검증으로 업그레이드 가능.
 - **배포 완료**: GitHub `hoon2-cpu/smc-admin` → Pages `https://hoon2-cpu.github.io/smc-admin/` (GitHub Actions 자동배포, vite base `/smc-admin/`). 공용 비밀번호 게이트로 접근 제한 중.
 - **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]`/`[검증]`/`[v11검증]` 및 자산 `AST-2026-0002` 등 삭제. (실운영 데이터 넣기 전)
@@ -198,7 +199,7 @@ src/
 > 로그인 영상 추가 압축/poster가 필요하면 로컬 ffmpeg로 재인코딩 가능(위 로그인 화면 메모 참고).
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **현재 배포됨: `v20-master-codes` (2026-09-09, 코드 Master 서버 저장 정상 동작 확인).**
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **배포됨: `v20-master-codes` / 코드 최신: `v22-auth-settings` (⚠️ 재배포 필요 — 수리 접수메일 + 로그인 비번 서버저장).**
 
 ## 🔀 역할 기반 개편 로드맵 (진행 중)
 
@@ -240,10 +241,12 @@ src/
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
 - **신청관리(`/admin/requests`)** — `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 + 상세 모달 처리(`requestUpdate` → `6_신청기록` I상태/J처리방법/K메모/L처리일시 갱신). rowIndex(시트 행번호)로 대상 식별.
 - **GAS 코드 최신 `v20-master-codes` (⚠️재배포 필요) / 배포됨 `v19-org-settings`** — v20: 코드 Master(자산구분/렌탈사/소모품/제조사)를 `9_코드마스터` 시트 A1 JSON에 저장/조회(`masterCodes`, `masterCodesUpdate`, `buildMasterCodes_`, `handleMasterCodesUpdate_`). / v19: 조직 설정(부서/사용위치)을 `8_조직설정` 시트 A1 JSON에 저장/조회(`orgSettings`, `orgSettingsUpdate`, `buildOrgSettings_`, `handleOrgSettingsUpdate_`). / v18b: 수리신청 사진을 **사용자 지정 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`)** 에 저장, 시트 8열 이미지 URL(`saveRepairPhotos_`→`{urls,errors}`, `authorizeDrive`). **Drive 쓰기 권한 승인 필수(위 #2 함정).** + v17(조회 함수 시트 미생성) + 자산/수리/사용자/신청/외부업체/렌탈 + 최근이동.
-  - 엔드포인트: assets·assetRegister·assetUpdate·rentalReturn / repairs·repairRequest·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest / requests·requestUpdate / orgSettings·orgSettingsUpdate / **masterCodes·masterCodesUpdate**
-  - 시트: 1_수리접수기록 · 2_자산등록기록(+22월렌탈료·23계약시작·24계약종료·25반납일) · 3_변경로그(렌탈반납=비용지출 종료) · 5_사용자목록 · 6_신청기록 · 7_소모품목록 · 8_조직설정(A1=부서/위치 JSON) · 9_코드마스터(A1=코드 JSON)
+  - 엔드포인트: assets·assetRegister·assetUpdate·rentalReturn / repairs·repairRequest(+이메일 접수확인)·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest / requests·requestUpdate / orgSettings·orgSettingsUpdate / masterCodes·masterCodesUpdate / **authSettings·authSettingsUpdate**
+  - 시트: 1_수리접수기록 · 2_자산등록기록(+22월렌탈료·23계약시작·24계약종료·25반납일) · 3_변경로그(렌탈반납=비용지출 종료) · 5_사용자목록 · 6_신청기록 · 7_소모품목록 · 8_조직설정(A1=부서/위치 JSON) · 9_코드마스터(A1=코드 JSON) · 10_로그인설정(A1=비번 해시 JSON)
   - 직원 신청 저장, 외부업체 전달 필터, 총무팀 신청 처리, 렌탈 반납·월 비용 집계까지 구현됨. (실데이터는 v15 재배포 후 반영)
 - **조직 설정(부서/사용위치)** — 회사 개편이 잦아 코드가 아닌 **설정 화면에서 관리**하고 **서버(시트 `8_조직설정`)에 저장 → 여러 기기/사용자 공유**. 기본값 `config/orgDefaults.ts`(본부→팀 + 사옥·층), 동기화 `app/orgSettings.ts`(서버 pull 1회 + 저장 시 push, localStorage는 캐시/폴백, 변경 이벤트) + `useOrgSettings` 훅. 모든 부서/위치 SelectField가 훅을 통해 최신값 사용. 편집 UI는 `features/settings/OrgSettingsSection`(저장 시 서버 반영·결과 alert). 타입은 `string`.
+- **수리 접수 확인 메일** — 수리신청 폼에 **이메일 입력칸**(DetailStep) 추가. 접수 시 GAS가 입력 이메일로 접수확인 메일 발송(입력 없으면 `5_사용자목록`에서 이름으로 조회 폴백). 추후 Slack 봇 알림 확장 예정(`SLACK_WEBHOOK_URL`).
+- **대시보드 바로가기(QuickLinks)** — 자산등록·QR출력→`/admin/assets`, 자산신청·소모품신청→`/admin/requests`, 유지보수신청→`/admin/repair`, 보고서조회→준비중(alert). `useNavigate`로 이동.
 - **코드(Master) 관리** — 자산구분·렌탈사·소모품 품목·제조사 선택지를 `/admin/master`에서 관리하고 **서버(시트 `9_코드마스터` A1 JSON)에 저장 → 여러 기기 공유**. 기본값 `config/masterDefaults.ts`(기존 `constants/`를 시드), 동기화 `app/masterCodes.ts`(pull 1회+push, localStorage 캐시) + `useMasterCodes` 훅. 폼 셀렉트(BasicInfo 자산구분·제조사 / Acquisition 렌탈사 / AssetBulkRegister / AssetRequest / ConsumableRequest)가 훅으로 최신값 사용. **자산상태·수리 우선순위/진행상태는 뱃지 Record와 묶여 코드 고정**(편집 대상 아님). `TextInput`에 datalist(`options`) 지원 추가.
 - **소모품 품목 선택지** — 기본값 `constants/consumable.ts`(복합기_카트리지/PC_키보드·마우스·HDMI·DVI+HDMI·노트북어댑터·모니터어댑터/기타). 실제 선택지는 Master(`9_코드마스터`)에서 관리, 실재고는 시트 `7_소모품목록`.
 - **자산장부 이관** — 3개 장부(롯데렌탈/AJ네트웍스/전체자산)를 `2_자산등록기록` 한 시트로 합쳐 넣음. 열 매핑·주의사항은 [docs/ASSET_LEDGER_IMPORT.md](docs/ASSET_LEDGER_IMPORT.md).

@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react'
-import { ROLE_PASSWORD_SHA256, type Role } from '@/config/auth'
+import { useCallback, useEffect, useState } from 'react'
+import { type Role } from '@/config/auth'
+import { getEffectiveHashes, pullAuthFromServer } from '@/app/authSettings'
 import { sha256Hex } from '@/lib/sha256'
 
 const STORAGE_KEY = 'smc.role'
@@ -20,7 +21,7 @@ export interface UseRoleAuthReturn {
 function loadRole(): Role | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw && raw in ROLE_PASSWORD_SHA256) return raw as Role
+    if (raw && raw in getEffectiveHashes()) return raw as Role
     return null
   } catch {
     return null
@@ -37,11 +38,15 @@ export function useRoleAuth(): UseRoleAuthReturn {
   const [role, setRole] = useState<Role | null>(loadRole)
   const [error, setError] = useState('')
 
+  // 서버에 저장된 비밀번호 오버라이드를 1회 당겨와 캐시에 반영(다른 기기에서 바꾼 비번 동기화)
+  useEffect(() => {
+    void pullAuthFromServer()
+  }, [])
+
   const signIn = useCallback(async (password: string): Promise<Role | null> => {
     const hash = await sha256Hex(password)
-    const matched = (Object.keys(ROLE_PASSWORD_SHA256) as Role[]).find(
-      (r) => ROLE_PASSWORD_SHA256[r] === hash,
-    )
+    const hashes = getEffectiveHashes()
+    const matched = (Object.keys(hashes) as Role[]).find((r) => hashes[r] === hash)
     if (matched) {
       try {
         localStorage.setItem(STORAGE_KEY, matched)

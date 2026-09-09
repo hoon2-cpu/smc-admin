@@ -28,6 +28,8 @@ export interface RepairFormValues {
   department: string
   /** 연락처. */
   contact: string
+  /** 요청자 이메일 (접수 확인 메일 발송용). */
+  email: string
 }
 
 /** 수리 요청 폼 초기값. */
@@ -40,6 +42,7 @@ export const INITIAL_REPAIR_FORM: RepairFormValues = {
   requesterName: '',
   department: '',
   contact: '',
+  email: '',
 }
 
 /** 폼 섹션/스텝 컴포넌트가 공통으로 받는 제어 객체. */

@@ -30,12 +30,21 @@ export default function DetailStep({ values, setField }: RepairFormControl) {
         />
       </FormField>
 
-      <FormField label="연락처" htmlFor="contact" fullWidth>
+      <FormField label="연락처" htmlFor="contact">
         <TextInput
           id="contact"
           value={values.contact}
           onChange={(v) => setField('contact', v)}
           placeholder="예: 010-1234-5678"
+        />
+      </FormField>
+
+      <FormField label="이메일 (접수 확인 메일)" htmlFor="email">
+        <TextInput
+          id="email"
+          value={values.email}
+          onChange={(v) => setField('email', v)}
+          placeholder="예: hong@thesmc.co.kr"
         />
       </FormField>
     </FormSection>

@@ -43,6 +43,7 @@ var SHEET_REQUEST = '6_신청기록'
 var SHEET_CONSUMABLE = '7_소모품목록' // 열: 소모품명 / 현재고 / 적정재고 / 단위 (IT 소모품)
 var SHEET_ORG = '8_조직설정' // A1 셀에 {divisions, locations} JSON 저장(부서/사용위치)
 var SHEET_MASTER = '9_코드마스터' // A1 셀에 {categories, rentalCompanies, consumables, manufacturers} JSON
+var SHEET_AUTH = '10_로그인설정' // A1 셀에 {admin, employee, vendor} 비밀번호 SHA-256 해시 JSON(오버라이드)
 
 // ===== 진입점 =====
 
@@ -77,6 +78,7 @@ function doPost(e) {
     if (type === 'requestUpdate') return jsonOutput_(handleRequestUpdate_(payload))
     if (type === 'orgSettingsUpdate') return jsonOutput_(handleOrgSettingsUpdate_(payload))
     if (type === 'masterCodesUpdate') return jsonOutput_(handleMasterCodesUpdate_(payload))
+    if (type === 'authSettingsUpdate') return jsonOutput_(handleAuthSettingsUpdate_(payload))
     return jsonOutput_({ ok: false, message: '알 수 없는 요청 유형: ' + type })
   } catch (err) {
     return jsonOutput_({ ok: false, message: String(err) })
@@ -149,10 +151,17 @@ function doGet(e) {
     return jsonOutput_({ ok: true, codes: buildMasterCodes_() })
   }
 
+  if (params.action === 'authSettings') {
+    if (API_TOKEN && params.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+    return jsonOutput_({ ok: true, auth: buildAuthSettings_() })
+  }
+
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v20-master-codes',
+    version: 'v22-auth-settings',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -399,6 +408,38 @@ function handleMasterCodesUpdate_(p) {
     consumables: p.consumables || [],
     manufacturers: p.manufacturers || [],
   }
+  sheet.getRange(1, 1).setValue(JSON.stringify(payload))
+  return { ok: true }
+}
+
+/**
+ * 로그인 비밀번호 해시(오버라이드)를 조회합니다. `10_로그인설정` A1 JSON.
+ * 평문은 저장하지 않고 SHA-256 해시만 저장합니다. (설정 안 한 역할은 프론트 기본값 사용)
+ * @return {Object|null} { admin?, employee?, vendor? } 해시맵 또는 null
+ */
+function buildAuthSettings_() {
+  var sheet = getSheetOrNull_(SHEET_AUTH)
+  if (!sheet) return null
+  var raw = sheet.getRange(1, 1).getValue()
+  if (!raw) return null
+  try {
+    return JSON.parse(String(raw))
+  } catch (err) {
+    return null
+  }
+}
+
+/**
+ * 로그인 비밀번호 해시(오버라이드)를 저장합니다. `10_로그인설정` A1 JSON.
+ * @param {Object} p - { admin?, employee?, vendor? } (각 값은 SHA-256 해시 문자열)
+ * @return {Object} 처리 결과
+ */
+function handleAuthSettingsUpdate_(p) {
+  var sheet = getSheet_(SHEET_AUTH)
+  var payload = {}
+  if (p.admin) payload.admin = p.admin
+  if (p.employee) payload.employee = p.employee
+  if (p.vendor) payload.vendor = p.vendor
   sheet.getRange(1, 1).setValue(JSON.stringify(payload))
   return { ok: true }
 }
@@ -861,8 +902,8 @@ function handleRepairRequest_(p) {
 
   notifySlack_('🛠️ *새 수리 접수* ' + ticketNumber + '\n' + p.assetNumber + ' - ' + p.symptom)
 
-  // 요청자 이메일을 사용자목록에서 찾아 자동 회신(없으면 건너뜀).
-  var email = lookupEmailByName_(p.requesterName)
+  // 요청자 이메일: 폼에 입력한 이메일 우선, 없으면 사용자목록에서 이름으로 조회(둘 다 없으면 건너뜀).
+  var email = (p.email && String(p.email).indexOf('@') !== -1) ? p.email : lookupEmailByName_(p.requesterName)
   if (email) {
     MailApp.sendEmail(
       email,

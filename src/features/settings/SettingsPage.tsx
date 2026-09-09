@@ -4,6 +4,7 @@ import { MODULES } from '@/app/registry'
 import { LOCKED_MODULE_IDS, isModuleVisible } from '@/app/moduleVisibility'
 import { useModuleVisibility } from '@/hooks/useModuleVisibility'
 import OrgSettingsSection from './OrgSettingsSection'
+import AuthSettingsSection from './AuthSettingsSection'
 import './SettingsPage.css'
 
 /**
@@ -64,6 +65,7 @@ export default function SettingsPage() {
     </Card>
 
       <OrgSettingsSection />
+      <AuthSettingsSection />
     </div>
   )
 }
