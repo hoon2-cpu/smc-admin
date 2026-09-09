@@ -41,6 +41,7 @@ var SHEET_LOG = '3_변경로그'
 var SHEET_USER = '5_사용자목록'
 var SHEET_REQUEST = '6_신청기록'
 var SHEET_CONSUMABLE = '7_소모품목록' // 열: 소모품명 / 현재고 / 적정재고 / 단위 (IT 소모품)
+var SHEET_ORG = '8_조직설정' // A1 셀에 {divisions, locations} JSON 저장(부서/사용위치)
 
 // ===== 진입점 =====
 
@@ -73,6 +74,7 @@ function doPost(e) {
     if (type === 'returnRequest') return jsonOutput_(handleReturnRequest_(payload))
     if (type === 'consumableRequest') return jsonOutput_(handleConsumableRequest_(payload))
     if (type === 'requestUpdate') return jsonOutput_(handleRequestUpdate_(payload))
+    if (type === 'orgSettingsUpdate') return jsonOutput_(handleOrgSettingsUpdate_(payload))
     return jsonOutput_({ ok: false, message: '알 수 없는 요청 유형: ' + type })
   } catch (err) {
     return jsonOutput_({ ok: false, message: String(err) })
@@ -131,10 +133,17 @@ function doGet(e) {
     return jsonOutput_({ ok: true, repairs: buildRepairs_().filter(function (r) { return r.dispatched }) })
   }
 
+  if (params.action === 'orgSettings') {
+    if (API_TOKEN && params.token !== API_TOKEN) {
+      return jsonOutput_({ ok: false, message: '인증 실패(토큰 불일치)' })
+    }
+    return jsonOutput_({ ok: true, org: buildOrgSettings_() })
+  }
+
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v18b-photo-debug',
+    version: 'v19-org-settings',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -320,6 +329,35 @@ function handleRequestUpdate_(p) {
   sheet.getRange(row, 10).setValue(p.method || '')
   sheet.getRange(row, 11).setValue(p.note || '')
   sheet.getRange(row, 12).setValue(new Date())
+  return { ok: true }
+}
+
+/**
+ * 조직 설정(부서/사용위치)을 조회합니다. `8_조직설정` 시트 A1 셀의 JSON을 파싱합니다.
+ * @return {Object|null} { divisions: [{name, teams}], locations: [] } 또는 데이터 없으면 null
+ */
+function buildOrgSettings_() {
+  var sheet = getSheetOrNull_(SHEET_ORG)
+  if (!sheet) return null
+  var raw = sheet.getRange(1, 1).getValue()
+  if (!raw) return null
+  try {
+    return JSON.parse(String(raw))
+  } catch (err) {
+    return null
+  }
+}
+
+/**
+ * 조직 설정(부서/사용위치)을 저장합니다. `8_조직설정` A1 셀에 JSON으로 씁니다.
+ * (관리자가 설정 화면에서 저장하면 모든 기기/사용자가 공유)
+ * @param {Object} p - { divisions: [{name, teams}], locations: [] }
+ * @return {Object} 처리 결과
+ */
+function handleOrgSettingsUpdate_(p) {
+  var sheet = getSheet_(SHEET_ORG)
+  var payload = { divisions: p.divisions || [], locations: p.locations || [] }
+  sheet.getRange(1, 1).setValue(JSON.stringify(payload))
   return { ok: true }
 }
 

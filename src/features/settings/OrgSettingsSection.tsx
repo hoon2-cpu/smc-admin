@@ -1,23 +1,34 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus, Trash2, RotateCcw, Save } from 'lucide-react'
 import { Card } from '@/components/ui'
-import { readDivisions, readLocations } from '@/app/orgSettings'
 import { useOrgSettings } from '@/hooks/useOrgSettings'
 import type { Division } from '@/config/orgDefaults'
 import './OrgSettingsSection.css'
 
 /**
  * 조직(부서/사용위치) 관리 섹션. (설정 화면)
- * 관리자가 본부·팀·사용위치를 추가/수정/삭제하고 '저장'하면 전체 폼 셀렉트에 반영됩니다.
- * (회사 개편이 잦아 코드 수정 없이 관리 — localStorage 저장)
+ * 관리자가 본부·팀·사용위치를 추가/수정/삭제하고 '저장'하면 서버(시트)에 반영되어
+ * 모든 기기/사용자의 폼 셀렉트에 공유됩니다.
  *
  * @returns 조직 관리 섹션
  */
 export default function OrgSettingsSection() {
-  const { setDivisions, setLocations, resetDivisionsToDefault, resetLocationsToDefault } = useOrgSettings()
-  // 편집 중 값은 로컬 초안으로 다루고, '저장' 시점에만 스토어에 반영합니다.
-  const [divisions, setDivDraft] = useState<Division[]>(() => structuredClone(readDivisions()))
-  const [locations, setLocDraft] = useState<string[]>(() => [...readLocations()])
+  const {
+    divisions: srvDivisions,
+    locations: srvLocations,
+    setDivisions,
+    setLocations,
+    resetDivisionsToDefault,
+    resetLocationsToDefault,
+  } = useOrgSettings()
+  // 편집 중 값은 로컬 초안으로 다루고, '저장' 시점에만 서버/캐시에 반영합니다.
+  const [divisions, setDivDraft] = useState<Division[]>(() => structuredClone(srvDivisions))
+  const [locations, setLocDraft] = useState<string[]>(() => [...srvLocations])
+  const [saving, setSaving] = useState(false)
+
+  // 서버 pull/외부 변경으로 최신값이 오면 초안을 다시 시드(마운트 직후 서버 동기화 반영)
+  useEffect(() => setDivDraft(structuredClone(srvDivisions)), [srvDivisions])
+  useEffect(() => setLocDraft([...srvLocations]), [srvLocations])
 
   /** 본부 이름 변경. */
   function setDivName(i: number, name: string) {
@@ -48,31 +59,44 @@ export default function OrgSettingsSection() {
     )
   }
 
-  /** 부서 구조 저장(빈 이름/팀 정리 후). */
-  function saveDivisions() {
+  /** 저장 결과를 사용자에게 알립니다. */
+  function notify(result: { ok: boolean; message?: string }, okMsg: string) {
+    window.alert(result.ok ? okMsg : `저장 실패: ${result.message ?? '서버 오류'}`)
+  }
+
+  /** 부서 구조 저장(빈 이름/팀 정리 후 서버 반영). */
+  async function saveDivisions() {
     const cleaned = divisions
       .map((d) => ({ name: d.name.trim(), teams: d.teams.map((t) => t.trim()).filter(Boolean) }))
       .filter((d) => d.name !== '')
-    setDivisions(cleaned)
-    window.alert('부서 구성을 저장했습니다.')
+    setSaving(true)
+    const result = await setDivisions(cleaned)
+    setSaving(false)
+    notify(result, '부서 구성을 저장했습니다. (모든 기기 공유)')
   }
-  /** 부서 기본값 복원. */
-  function resetDiv() {
+  /** 부서 기본값 복원(서버 반영). */
+  async function resetDiv() {
     if (!window.confirm('부서 구성을 기본값으로 되돌릴까요?')) return
-    resetDivisionsToDefault()
-    setDivDraft(structuredClone(readDivisions()))
+    setSaving(true)
+    const result = await resetDivisionsToDefault()
+    setSaving(false)
+    notify(result, '부서 구성을 기본값으로 되돌렸습니다.')
   }
 
-  /** 사용위치 저장. */
-  function saveLocations() {
-    setLocations(locations.map((l) => l.trim()).filter(Boolean))
-    window.alert('사용위치를 저장했습니다.')
+  /** 사용위치 저장(서버 반영). */
+  async function saveLocations() {
+    setSaving(true)
+    const result = await setLocations(locations.map((l) => l.trim()).filter(Boolean))
+    setSaving(false)
+    notify(result, '사용위치를 저장했습니다. (모든 기기 공유)')
   }
-  /** 사용위치 기본값 복원. */
-  function resetLoc() {
+  /** 사용위치 기본값 복원(서버 반영). */
+  async function resetLoc() {
     if (!window.confirm('사용위치를 기본값으로 되돌릴까요?')) return
-    resetLocationsToDefault()
-    setLocDraft([...readLocations()])
+    setSaving(true)
+    const result = await resetLocationsToDefault()
+    setSaving(false)
+    notify(result, '사용위치를 기본값으로 되돌렸습니다.')
   }
 
   return (
@@ -81,11 +105,11 @@ export default function OrgSettingsSection() {
         title="부서(조직) 관리"
         action={
           <div className="org-head-actions">
-            <button type="button" className="org-btn" onClick={resetDiv}>
+            <button type="button" className="org-btn" onClick={resetDiv} disabled={saving}>
               <RotateCcw size={14} /> 기본값
             </button>
-            <button type="button" className="org-btn primary" onClick={saveDivisions}>
-              <Save size={14} /> 저장
+            <button type="button" className="org-btn primary" onClick={saveDivisions} disabled={saving}>
+              <Save size={14} /> {saving ? '저장 중…' : '저장'}
             </button>
           </div>
         }
@@ -131,11 +155,11 @@ export default function OrgSettingsSection() {
         title="사용위치 관리"
         action={
           <div className="org-head-actions">
-            <button type="button" className="org-btn" onClick={resetLoc}>
+            <button type="button" className="org-btn" onClick={resetLoc} disabled={saving}>
               <RotateCcw size={14} /> 기본값
             </button>
-            <button type="button" className="org-btn primary" onClick={saveLocations}>
-              <Save size={14} /> 저장
+            <button type="button" className="org-btn primary" onClick={saveLocations} disabled={saving}>
+              <Save size={14} /> {saving ? '저장 중…' : '저장'}
             </button>
           </div>
         }

@@ -187,7 +187,7 @@ src/
   - ⚠️ **Drive 권한 함정(해결됨)**: 웹앱은 재배포해도 권한창이 안 뜸 + 읽기전용만 승인되면 `createFile` 실패. → 편집기에서 **`authorizeDrive`(테스트 파일 생성)** 실행해 **Drive 쓰기 스코프**를 승인해야 함. 안 뜨면 myaccount.google.com/permissions에서 앱 권한 삭제 후 재실행. (토큰=스크립트 속성이라 유지)
 - [ ] **GAS 토큰 복구**(비공개 배포 시, 위 미해결 참고) + 시트 테스트 행 정리
 - [ ] **자산장부 실이관** — [docs/ASSET_LEDGER_IMPORT.md](docs/ASSET_LEDGER_IMPORT.md) 가이드대로 3개 장부를 `2_자산등록기록`에 붙여넣기(사용자 작업). 이관 후 부서/위치를 설정값과 정합화.
-- [ ] 조직/위치 설정 **서버(시트) 저장**(현재 localStorage 오버라이드만) — 여러 기기/사용자 공유 필요 시.
+- [x] 조직/위치 설정 **서버(시트) 저장** — 완료(GAS `8_조직설정` A1 JSON, `orgSettings`/`orgSettingsUpdate`). localStorage는 캐시. ⚠️ GAS v19 재배포 필요.
 - [x] GitHub push → Pages 배포 완료 (`https://hoon2-cpu.github.io/smc-admin/`)
 - [ ] 설정/Master 등 남은 '준비중' 모듈 구현(Master)
 - [ ] (선택) 공통 Layout 다듬기 · 디자인/문구 다듬기
@@ -196,7 +196,7 @@ src/
 > 로그인 영상 추가 압축/poster가 필요하면 로컬 ffmpeg로 재인코딩 가능(위 로그인 화면 메모 참고).
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **현재 배포됨: `v18b-photo-debug` (2026-09-09, 수리 사진 Drive 저장 정상 동작 확인).**
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **배포됨: `v18b-photo-debug` / 코드 최신: `v19-org-settings` (⚠️ 재배포 필요 — 조직/위치 서버 저장).**
 
 ## 🔀 역할 기반 개편 로드맵 (진행 중)
 
@@ -237,11 +237,11 @@ src/
 - **수리관리(`/admin/repair`)는 접수 목록 화면** — `?action=repairs` 조회(useRepairs, mock 폴백) + 요약카드, 수리 접수는 모달(기존 폼 재사용).
 - **사용자관리(`/admin/users`)** — `?action=users` 조회(useUsers, mock 폴백) + `userRegister`/`userUpdate`. 사번(5_사용자목록 사번열) 기준 관리.
 - **신청관리(`/admin/requests`)** — `?action=requests` 조회(useRequests, mock 폴백) + 종류 필터 + 상세 모달 처리(`requestUpdate` → `6_신청기록` I상태/J처리방법/K메모/L처리일시 갱신). rowIndex(시트 행번호)로 대상 식별.
-- **GAS 최신 버전 `v18b-photo-debug` (배포 완료, 2026-09-09)** — 수리신청 사진을 **사용자 지정 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`)** 에 저장하고 시트 8열에 이미지 URL 기록(`saveRepairPhotos_`→`{urls,errors}`, `getRepairPhotoFolder_`, `authorizeDrive`). 폴더 미설정 시 'SMC_수리사진' 자동 생성. 개별 파일 공유 설정 실패는 무시(폴더 공유 상속). + v17(조회 함수 시트 미생성) + 자산/수리/사용자/신청/외부업체/렌탈 + 최근이동. **Drive 쓰기 권한 승인 필수(위 #2 함정 참고).**
-  - 엔드포인트: assets·assetRegister·assetUpdate·**rentalReturn** / repairs·repairRequest·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest / requests·requestUpdate
-  - 시트: 1_수리접수기록 · 2_자산등록기록(+22월렌탈료·23계약시작·24계약종료·25반납일) · 3_변경로그(렌탈반납=비용지출 종료) · 5_사용자목록 · 6_신청기록 · 7_소모품목록
+- **GAS 코드 최신 `v19-org-settings` (⚠️재배포 필요) / 배포됨 `v18b-photo-debug`** — v19: 조직 설정(부서/사용위치)을 `8_조직설정` 시트 A1 JSON에 저장/조회(`orgSettings`, `orgSettingsUpdate`, `buildOrgSettings_`, `handleOrgSettingsUpdate_`). / v18b: 수리신청 사진을 **사용자 지정 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`)** 에 저장, 시트 8열 이미지 URL(`saveRepairPhotos_`→`{urls,errors}`, `authorizeDrive`). **Drive 쓰기 권한 승인 필수(위 #2 함정).** + v17(조회 함수 시트 미생성) + 자산/수리/사용자/신청/외부업체/렌탈 + 최근이동.
+  - 엔드포인트: assets·assetRegister·assetUpdate·rentalReturn / repairs·repairRequest·repairUpdate·repairDispatch·vendorRepairs / users·userRegister·userUpdate / assetRequest·returnRequest·consumableRequest / requests·requestUpdate / **orgSettings·orgSettingsUpdate**
+  - 시트: 1_수리접수기록 · 2_자산등록기록(+22월렌탈료·23계약시작·24계약종료·25반납일) · 3_변경로그(렌탈반납=비용지출 종료) · 5_사용자목록 · 6_신청기록 · 7_소모품목록 · 8_조직설정(A1=부서/위치 JSON)
   - 직원 신청 저장, 외부업체 전달 필터, 총무팀 신청 처리, 렌탈 반납·월 비용 집계까지 구현됨. (실데이터는 v15 재배포 후 반영)
-- **조직 설정(부서/사용위치)** — 회사 개편이 잦아 코드가 아닌 **설정 화면에서 관리**. 기본값은 `config/orgDefaults.ts`(본부→팀 구조 + 사옥·층), 편집값은 `app/orgSettings.ts`(localStorage 오버라이드 + 이벤트) + `useOrgSettings` 훅. 모든 부서/위치 SelectField가 훅을 통해 최신값 사용(자산/사용자/수리/신청 폼). 타입은 `string`(고정 유니온 제거).
+- **조직 설정(부서/사용위치)** — 회사 개편이 잦아 코드가 아닌 **설정 화면에서 관리**하고 **서버(시트 `8_조직설정`)에 저장 → 여러 기기/사용자 공유**. 기본값 `config/orgDefaults.ts`(본부→팀 + 사옥·층), 동기화 `app/orgSettings.ts`(서버 pull 1회 + 저장 시 push, localStorage는 캐시/폴백, 변경 이벤트) + `useOrgSettings` 훅. 모든 부서/위치 SelectField가 훅을 통해 최신값 사용. 편집 UI는 `features/settings/OrgSettingsSection`(저장 시 서버 반영·결과 alert). 타입은 `string`.
 - **소모품 품목 선택지** — `constants/consumable.ts`(복합기_카트리지/PC_키보드·마우스·HDMI·DVI+HDMI·노트북어댑터·모니터어댑터/기타). 실재고는 시트 `7_소모품목록`.
 - **자산장부 이관** — 3개 장부(롯데렌탈/AJ네트웍스/전체자산)를 `2_자산등록기록` 한 시트로 합쳐 넣음. 열 매핑·주의사항은 [docs/ASSET_LEDGER_IMPORT.md](docs/ASSET_LEDGER_IMPORT.md).
 - **로그인 화면** — 좌측 로그인 카드 / 우측 배경 영상(`public/videos/login_bg.mp4`) 좌우 분할, 모바일은 세로 스택. 영상은 **720p·오디오 제거·faststart로 재인코딩(2.3MB)**, `AuthGate`에서 `videoRef`로 muted 강제+`play()` 호출해 자동재생 보장(무음·반복). 파일 없으면 그라데이션 폴백. (기존 `main_video.mp4` 삭제됨) · 인코딩 도구: 로컬 ffmpeg(winget `Gyan.FFmpeg`) 설치됨.

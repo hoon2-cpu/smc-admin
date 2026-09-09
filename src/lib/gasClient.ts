@@ -14,6 +14,7 @@ export type GasRequestType =
   | 'returnRequest'
   | 'consumableRequest'
   | 'requestUpdate'
+  | 'orgSettingsUpdate'
 
 /** 백엔드(GAS) 공통 응답 형식. */
 export interface GasResult {
