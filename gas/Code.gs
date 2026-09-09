@@ -880,7 +880,11 @@ function saveRepairPhotos_(images, ticketNumber) {
  */
 function authorizeDrive() {
   var folder = getRepairPhotoFolder_()
-  Logger.log('수리 사진 폴더 접근 OK: ' + folder.getName())
+  // 쓰기(createFile) 권한까지 승인받기 위해 실제로 테스트 파일을 만들고 즉시 휴지통으로 보냅니다.
+  // (읽기 전용만 승인되면 사진 저장이 실패하므로, 여기서 쓰기 스코프를 강제로 요구)
+  var probe = folder.createFile('__auth_probe__.txt', 'ok', 'text/plain')
+  probe.setTrashed(true)
+  Logger.log('Drive 쓰기 권한 OK: ' + folder.getName())
 }
 
 /**
