@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Users, Building2, Plus } from 'lucide-react'
 import { StatCard, Card } from '@/components/ui'
+import LoadingState from '@/components/feedback/LoadingState'
+import MockNotice from '@/components/feedback/MockNotice'
+import EmptyState from '@/components/feedback/EmptyState'
 import { useUsers } from './useUsers'
 import UserFormModal from './UserFormModal'
 import type { UserRow } from './types'
@@ -36,9 +39,9 @@ export default function UsersListPage() {
 
   return (
     <>
-      {loading && <p className="users-notice">사용자 목록 불러오는 중…</p>}
+      {loading && <LoadingState message="사용자 목록 불러오는 중…" />}
       {!loading && usingMock && (
-        <p className="users-notice">샘플(mock) 데이터 표시 중 — 구글시트 연동 후 실제 사용자가 표시됩니다.</p>
+        <MockNotice message="샘플(mock) 데이터 표시 중 — 구글시트 연동 후 실제 사용자가 표시됩니다." />
       )}
 
       <div className="users-stat-row">
@@ -68,8 +71,8 @@ export default function UsersListPage() {
             <tbody>
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="users-empty">
-                    등록된 사용자가 없습니다.
+                  <td colSpan={5}>
+                    <EmptyState icon={Users} title="등록된 사용자가 없습니다." hint="우측 상단 ‘사용자 등록’으로 추가하세요." />
                   </td>
                 </tr>
               )}

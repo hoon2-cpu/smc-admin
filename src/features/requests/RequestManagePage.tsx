@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Inbox, Clock, CheckCircle2 } from 'lucide-react'
 import { StatCard, Card, Badge } from '@/components/ui'
+import LoadingState from '@/components/feedback/LoadingState'
+import MockNotice from '@/components/feedback/MockNotice'
+import EmptyState from '@/components/feedback/EmptyState'
 import { getRequestStatusVariant } from '@/lib/badgeVariant'
 import { REQUEST_KINDS } from '@/constants/request'
 import { useRequests } from './useRequests'
@@ -44,11 +47,9 @@ export default function RequestManagePage() {
 
   return (
     <>
-      {loading && <p className="req-notice">신청 목록 불러오는 중…</p>}
+      {loading && <LoadingState message="신청 목록 불러오는 중…" />}
       {!loading && usingMock && (
-        <p className="req-notice">
-          샘플(mock) 데이터 표시 중 — GAS 재배포(v14-requests) 후 실제 신청이 표시됩니다.
-        </p>
+        <MockNotice message="샘플(mock) 데이터 표시 중 — 실제 신청이 접수되면 표시됩니다." />
       )}
 
       <div className="req-stat-row">
@@ -87,8 +88,8 @@ export default function RequestManagePage() {
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="req-empty">
-                    신청 내역이 없습니다.
+                  <td colSpan={7}>
+                    <EmptyState icon={Inbox} title="신청 내역이 없습니다." hint={tab === '전체' ? undefined : `‘${tab}’ 종류의 신청이 없습니다.`} />
                   </td>
                 </tr>
               )}

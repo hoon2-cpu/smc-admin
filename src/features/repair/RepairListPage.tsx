@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Inbox, Wrench, CheckCircle2, Plus } from 'lucide-react'
 import { StatCard, Badge, Card, Modal } from '@/components/ui'
+import LoadingState from '@/components/feedback/LoadingState'
+import MockNotice from '@/components/feedback/MockNotice'
+import EmptyState from '@/components/feedback/EmptyState'
 import { getRepairStatusVariant } from '@/lib/badgeVariant'
 import { useRepairs } from './useRepairs'
 import RepairRequestPage from './RepairRequestPage'
@@ -21,9 +24,9 @@ export default function RepairListPage() {
 
   return (
     <>
-      {loading && <p className="repair-notice">수리 목록 불러오는 중…</p>}
+      {loading && <LoadingState message="수리 목록 불러오는 중…" />}
       {!loading && usingMock && (
-        <p className="repair-notice">샘플(mock) 데이터 표시 중 — 구글시트 연동(재배포) 후 실제 접수가 표시됩니다.</p>
+        <MockNotice message="샘플(mock) 데이터 표시 중 — 구글시트 연동 후 실제 접수가 표시됩니다." />
       )}
 
       <div className="repair-stat-row">
@@ -56,8 +59,8 @@ export default function RepairListPage() {
             <tbody>
               {repairs.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="repair-empty">
-                    접수된 수리 요청이 없습니다.
+                  <td colSpan={7}>
+                    <EmptyState icon={Wrench} title="접수된 수리 요청이 없습니다." hint="우측 상단 ‘수리 접수’로 등록하세요." />
                   </td>
                 </tr>
               )}

@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Laptop, BadgeCheck, Wrench, Trash2, Plus, Search, ArrowUpDown, ScanLine, Layers } from 'lucide-react'
 import { StatCard, Badge, Modal, Card, QrScannerModal } from '@/components/ui'
+import LoadingState from '@/components/feedback/LoadingState'
+import MockNotice from '@/components/feedback/MockNotice'
+import EmptyState from '@/components/feedback/EmptyState'
 import { getAssetStatusVariant } from '@/lib/badgeVariant'
 import { useAssets } from './useAssets'
 import { useAssetSelection } from './useAssetSelection'
@@ -113,9 +116,9 @@ export default function AssetListPage() {
 
   return (
     <>
-      {loading && <p className="asset-notice">자산 목록 불러오는 중…</p>}
+      {loading && <LoadingState message="자산 목록 불러오는 중…" />}
       {!loading && usingMock && (
-        <p className="asset-notice">샘플(mock) 데이터 표시 중 — 구글시트 연동(재배포) 후 실제 자산이 표시됩니다.</p>
+        <MockNotice message="샘플(mock) 데이터 표시 중 — 구글시트 연동 후 실제 자산이 표시됩니다." />
       )}
 
       <div className="asset-stat-row">
@@ -199,10 +202,12 @@ export default function AssetListPage() {
             <tbody>
               {visibleAssets.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="asset-empty">
-                    {query || filter !== '전체'
-                      ? '조건에 맞는 자산이 없습니다.'
-                      : '등록된 자산이 없습니다. 우측 상단 ‘자산 등록’으로 추가하세요.'}
+                  <td colSpan={10}>
+                    <EmptyState
+                      icon={Laptop}
+                      title={query || filter !== '전체' ? '조건에 맞는 자산이 없습니다.' : '등록된 자산이 없습니다.'}
+                      hint={query || filter !== '전체' ? '검색어·필터를 바꿔보세요.' : '우측 상단 ‘자산 등록’으로 추가하세요.'}
+                    />
                   </td>
                 </tr>
               )}

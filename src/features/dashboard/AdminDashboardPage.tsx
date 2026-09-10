@@ -7,6 +7,8 @@ import DisposalScheduleTable from './widgets/DisposalScheduleTable'
 import RentalStatusPanel from './widgets/RentalStatusPanel'
 import RecentChangesPanel from './widgets/RecentChangesPanel'
 import QuickLinks from './widgets/QuickLinks'
+import LoadingState from '@/components/feedback/LoadingState'
+import MockNotice from '@/components/feedback/MockNotice'
 import { useDashboardData } from './useDashboardData'
 import './AdminDashboardPage.css'
 
@@ -24,9 +26,9 @@ export default function AdminDashboardPage() {
   return (
     <>
       {/* 실데이터 조회 중/샘플 데이터 여부를 알리는 배지 */}
-      {loading && <p className="dash-notice">실데이터 불러오는 중…</p>}
+      {loading && <LoadingState message="실데이터 불러오는 중…" />}
       {!loading && usingMock && (
-        <p className="dash-notice">샘플(mock) 데이터 표시 중 — 구글시트에 데이터가 쌓이면 자동 반영됩니다.</p>
+        <MockNotice message="샘플(mock) 데이터 표시 중 — 구글시트에 데이터가 쌓이면 자동 반영됩니다." />
       )}
 
       <StatCardRow stats={data.stats} />

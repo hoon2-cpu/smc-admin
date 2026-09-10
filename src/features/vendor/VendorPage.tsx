@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import RoleShell from '@/components/layout/RoleShell'
 import { Badge } from '@/components/ui'
+import LoadingState from '@/components/feedback/LoadingState'
+import MockNotice from '@/components/feedback/MockNotice'
+import EmptyState from '@/components/feedback/EmptyState'
 import { getRepairStatusVariant } from '@/lib/badgeVariant'
 import { useVendorRepairs } from './useVendorRepairs'
 import VendorDetailModal from './VendorDetailModal'
@@ -19,15 +22,15 @@ export default function VendorPage() {
 
   return (
     <RoleShell title="외부 수리업체">
-      {loading && <p className="vendor-notice">목록 불러오는 중…</p>}
+      {loading && <LoadingState message="목록 불러오는 중…" />}
       {!loading && usingMock && (
-        <p className="vendor-notice">샘플(mock) 데이터 표시 중 — 구글시트 연동(재배포) 후 실제 전달 건이 표시됩니다.</p>
+        <MockNotice message="샘플(mock) 데이터 표시 중 — 총무팀이 전달한 실제 건이 표시됩니다." />
       )}
 
       <p className="vendor-desc">총무팀이 전달한 수리 요청 목록입니다. ({repairs.length}건)</p>
 
       <div className="vendor-list">
-        {repairs.length === 0 && <p className="vendor-empty">전달된 수리 요청이 없습니다.</p>}
+        {repairs.length === 0 && <EmptyState title="전달된 수리 요청이 없습니다." hint="총무팀이 전달하면 여기에 표시됩니다." />}
         {repairs.map((r) => (
           <button
             key={r.ticketNumber}
