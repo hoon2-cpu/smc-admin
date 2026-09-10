@@ -45,7 +45,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             <div className="auth-brand">
               The SMC <span>Admin Platform</span>
             </div>
-            <p className="auth-desc">비밀번호를 입력하세요. (권한에 따라 화면이 달라집니다)</p>
+            <p className="auth-desc">비밀번호를 입력하세요.</p>
             <input
               type="password"
               className="auth-input"
@@ -70,6 +70,8 @@ export default function AuthGate({ children }: { children: ReactNode }) {
             muted
             loop
             playsInline
+            // poster: 영상 버퍼링 전 첫 프레임 이미지를 즉시 표시 → 그라데이션 깜빡임 제거
+            poster={`${import.meta.env.BASE_URL}videos/login_bg_poster.jpg`}
             // 파일이 아직 없거나 로드 실패 시 영상 요소를 숨겨 그라데이션 배경만 노출
             onError={(e) => {
               e.currentTarget.style.display = 'none'
