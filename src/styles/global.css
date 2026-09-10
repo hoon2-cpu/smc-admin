@@ -14,11 +14,34 @@
   --sidebar-w: 240px;
 }
 
+/* 박스 모델 통일 — padding이 폭을 넘겨 가로 오버플로가 생기는 것을 방지 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* 앱처럼: 화면이 좌우로 밀리지 않도록 가로 스크롤 차단 + 고무줄(overscroll) 방지 */
+html,
+body {
+  margin: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
 body {
   font-family: "Segoe UI", "Malgun Gothic", "맑은 고딕", sans-serif;
   background: var(--color-bg);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
+}
+
+/* 루트 컨테이너도 뷰포트 폭을 넘지 않게 */
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4 { font-weight: 700; line-height: 1.3; }
