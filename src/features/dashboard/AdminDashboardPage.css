@@ -1,16 +1,30 @@
 /* ===== 대시보드 레이아웃 ===== */
 
-/* 실데이터 상태 안내 배지 */
-.dash-notice {
-  font-size: 12px;
-  color: var(--color-text-sub);
-  background: #eef2ff;
-  border: 1px solid #e0e7ff;
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin-bottom: 16px;
+/* 섹션 그룹(제목 + 위젯 묶음) — 시인성 향상 */
+.dash-section {
+  margin-bottom: 24px;
 }
-
+.dash-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 12px;
+}
+/* 제목 앞 강조 바 */
+.dash-section-title::before {
+  content: '';
+  width: 3px;
+  height: 15px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+/* 섹션 안의 그리드는 아래 여백을 섹션이 담당하므로 제거 */
+.dash-section .dash-grid {
+  margin-bottom: 0;
+}
 
 /* 상단 통계 카드 5개 (좁아지면 자동 줄바꿈) */
 .stat-row {

@@ -33,29 +33,39 @@ export default function AdminDashboardPage() {
 
       <StatCardRow stats={data.stats} />
 
-      {/* 자산현황(차트) · 신청현황 · 소모품재고 3단 배치 */}
-      <div className="dash-grid dash-grid-3">
-        <AssetCategoryChart categories={data.categories} />
-        <RequestStatusPanel requests={data.requests} />
-        <LowStockPanel items={data.lowStock} />
-      </div>
+      {/* 섹션1: 현황 요약 (자산 구분 차트 · 신청 현황 · 소모품 재고) */}
+      <section className="dash-section">
+        <h2 className="dash-section-title">현황 요약</h2>
+        <div className="dash-grid dash-grid-3">
+          <AssetCategoryChart categories={data.categories} />
+          <RequestStatusPanel requests={data.requests} />
+          <LowStockPanel items={data.lowStock} />
+        </div>
+      </section>
 
-      {/* 취득구분(구매/렌탈) · 최근 등록 자산 · 폐기 예정 */}
-      <div className="dash-grid dash-grid-3">
-        <RentalStatusPanel
-          acquisition={data.acquisition}
-          rentalByCompany={data.rentalByCompany}
-          rentalMonthlyTotal={data.rentalMonthlyTotal}
-        />
-        <RecentAssetsTable assets={data.recentAssets} />
-        <DisposalScheduleTable items={data.disposals} />
-      </div>
+      {/* 섹션2: 자산 현황 (취득 구분/렌탈 · 최근 등록 · 폐기 예정) */}
+      <section className="dash-section">
+        <h2 className="dash-section-title">자산 현황</h2>
+        <div className="dash-grid dash-grid-3">
+          <RentalStatusPanel
+            acquisition={data.acquisition}
+            rentalByCompany={data.rentalByCompany}
+            rentalMonthlyTotal={data.rentalMonthlyTotal}
+          />
+          <RecentAssetsTable assets={data.recentAssets} />
+          <DisposalScheduleTable items={data.disposals} />
+        </div>
+      </section>
 
-      {/* 최근 이동(반납/불출/상태변경) 히스토리 */}
-      <div className="dash-grid">
-        <RecentChangesPanel changes={data.recentChanges} />
-      </div>
+      {/* 섹션3: 최근 이동 (반납/불출/상태변경 히스토리) */}
+      <section className="dash-section">
+        <h2 className="dash-section-title">최근 이동</h2>
+        <div className="dash-grid">
+          <RecentChangesPanel changes={data.recentChanges} />
+        </div>
+      </section>
 
+      {/* 바로가기 (카드 자체 제목이 라벨 역할) */}
       <QuickLinks />
     </>
   )
