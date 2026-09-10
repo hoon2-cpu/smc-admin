@@ -187,9 +187,10 @@ src/
 
 > **2026-09-09 세션 정리:** 실운영 마감·추가요청 대거 반영·배포 완료(GAS `v23-asset-swap`).
 > - ✅ **GAS 토큰 ON**(CI Secret 주입 + 스크립트 속성, 3곳 동일). ✅ 수리 사진 실이미지(Drive)+라이트박스. ✅ 조직/코드/로그인비번 서버저장(설정 화면 편집). ✅ 대시보드 바로가기 동작. ✅ 수리 접수확인 메일(이메일칸). ✅ 직원 **자산교체 신청 탭**(6_신청기록, 신청관리 연동).
-> - ⏳ 남은 것: **시트 테스트행 정리** · **자산장부 실이관**(docs 가이드, 사용자작업) · **UI 다듬기**(✅빈상태·로딩 통일 완료 / 로그인 영상 poster·모바일 점검·대시보드 정돈 남음) · (선택) 보고서 화면 · Slack 봇 알림.
+> - ⏳ 남은 것: **시트 테스트행 정리** · **자산장부 실이관**(docs 가이드, 사용자작업) · (선택) 모바일 상세모달/터치영역 추가점검 · 보고서 화면 · Slack 봇 알림.
 > - 🔗 배포: **thesmc 조직 이전 완료** → `https://thesmc.github.io/smc-admin/admin` (Secret/Pages 재설정 완료). GAS 토큰 ON.
 > - 🧩 공통 피드백 컴포넌트: `components/feedback/LoadingState·EmptyState·MockNotice`(목록 화면 로딩/빈상태/mock 배너 통일).
+> - ✅ **UI 다듬기(2026-09-10) 완료분**: 빈상태·로딩 통일 / 로그인 영상 **poster**(`login_bg_poster.jpg`, 깜빡임 제거) / **모바일 좌우밀림 방지**(global.css: html·body·#root `overflow-x:hidden`·`overscroll-behavior-x:none` + 전역 `box-sizing:border-box`) / **대시보드 섹션 그룹 헤딩**(`dash-section`/`dash-section-title`: 현황 요약·자산 현황·최근 이동).
 >
 > _(이전 2026-09-04: 2차 개편 백로그 9건 + 추가요청 6건 완료)_
 
