@@ -179,7 +179,8 @@ src/
 - **접근 제어 = 역할별 비밀번호 게이트** (admin/employee/vendor, SHA-256, `src/config/auth.ts` 기본해시 + `auth/useRoleAuth`). 입력 비번으로 역할 판별 → 역할별 화면. Google OAuth는 조직 정책 이슈로 보류.
   - **비밀번호 설정 화면에서 변경 가능**(설정 → 로그인 비밀번호 관리, `AuthSettingsSection`). 평문 대신 SHA-256 해시만 서버(시트 `10_로그인설정`)에 저장 → 모든 기기 공유. `app/authSettings.ts`(기본해시+오버라이드 병합, pull 1회/push) + useRoleAuth가 유효해시로 판별. 분실 시 복구 불가(코드 기본값으로 리셋 필요).
   - 한계: 클라이언트 측 게이트(데이터는 GAS 토큰으로 별도 보호). 더 강한 보호는 GAS 비밀번호/토큰 검증으로 업그레이드 가능.
-- **배포 완료**: GitHub `hoon2-cpu/smc-admin` → Pages `https://hoon2-cpu.github.io/smc-admin/` (GitHub Actions 자동배포, vite base `/smc-admin/`). 공용 비밀번호 게이트로 접근 제한 중.
+- **배포 완료**: GitHub **`thesmc/smc-admin`**(조직 이전, 2026-09-10) → Pages **`https://thesmc.github.io/smc-admin/`** (GitHub Actions 자동배포, vite base `/smc-admin/`). 공용 비밀번호 게이트로 접근 제한 중.
+  - ⚠️ 조직 이전 시 재설정 필요했던 것: **Actions Secret `VITE_API_TOKEN` 재등록**(시크릿은 이전 안 됨) + **Pages Source: GitHub Actions 재지정**. 로컬 remote는 `thesmc/smc-admin`로 갱신됨. (구 `hoon2-cpu.github.io` 주소는 중단)
 - **테스트 행 정리** — 시트의 `[테스트]`/`[토큰검증]`/`[연결테스트]`/`[검증]`/`[v11검증]` 및 자산 `AST-2026-0002` 등 삭제. (실운영 데이터 넣기 전)
 
 ## 다음 진행 후보 (미완) — 현재 방향: 자산관리 시스템 완성
@@ -195,7 +196,7 @@ src/
 - [ ] **GAS 토큰 복구**(비공개 배포 시, 위 미해결 참고) + 시트 테스트 행 정리
 - [ ] **자산장부 실이관** — [docs/ASSET_LEDGER_IMPORT.md](docs/ASSET_LEDGER_IMPORT.md) 가이드대로 3개 장부를 `2_자산등록기록`에 붙여넣기(사용자 작업). 이관 후 부서/위치를 설정값과 정합화.
 - [x] 조직/위치 설정 **서버(시트) 저장** — 완료(GAS `8_조직설정` A1 JSON, `orgSettings`/`orgSettingsUpdate`). localStorage는 캐시. ⚠️ GAS v19 재배포 필요.
-- [x] GitHub push → Pages 배포 완료 (`https://hoon2-cpu.github.io/smc-admin/`)
+- [x] GitHub push → Pages 배포 완료 (`https://thesmc.github.io/smc-admin/`, thesmc 조직 이전 완료)
 - [x] Master(코드) 모듈 구현 — 자산구분·렌탈사·소모품·제조사 선택지 서버 저장(⚠️ GAS v20 재배포 필요)
 - [ ] (선택) 공통 Layout 다듬기 · 디자인/문구 다듬기
 
