@@ -292,9 +292,10 @@ export default function AssetListPage() {
                   </td>
                 </tr>
               )}
-              {visibleAssets.map((asset: AssetRow) => (
+              {visibleAssets.map((asset: AssetRow, index) => (
                 <tr
-                  key={asset.assetNumber || asset.name}
+                  // 자산번호가 비었거나 중복인 데이터가 많아, 인덱스를 더해 key 중복(리스트 잔상) 방지
+                  key={`${asset.assetNumber || asset.name}-${index}`}
                   className="asset-row"
                   onClick={() => setSelected(asset)}
                 >
