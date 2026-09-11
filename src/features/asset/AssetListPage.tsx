@@ -5,6 +5,7 @@ import LoadingState from '@/components/feedback/LoadingState'
 import MockNotice from '@/components/feedback/MockNotice'
 import EmptyState from '@/components/feedback/EmptyState'
 import { getAssetStatusVariant } from '@/lib/badgeVariant'
+import { ASSET_STATUSES } from '@/constants/asset'
 import { useAssets } from './useAssets'
 import { useAssetSelection } from './useAssetSelection'
 import { useAssetBulkActions } from './useAssetBulkActions'
@@ -36,6 +37,8 @@ export default function AssetListPage() {
   const [scanOpen, setScanOpen] = useState(false)
   const [selected, setSelected] = useState<AssetRow | null>(null)
   const [filter, setFilter] = useState<AssetFilter>('전체')
+  const [userFilter, setUserFilter] = useState('') // 사용자 정확일치 필터('' = 전체)
+  const [statusFilter, setStatusFilter] = useState('') // 상태 필터('' = 전체)
   const [query, setQuery] = useState('')
   const [sortKey, setSortKey] = useState<SortKey | ''>('')
   const [sortAsc, setSortAsc] = useState(true)
@@ -47,10 +50,20 @@ export default function AssetListPage() {
     patchAsset,
   )
 
-  // 취득구분 필터 → 검색어 필터 → 정렬 순으로 목록을 가공합니다.
+  // 필터 드롭다운 옵션: 데이터에 존재하는 사용자 목록(중복 제거·정렬)
+  const userOptions = useMemo(
+    () => Array.from(new Set(assets.map((a) => a.user).filter(Boolean))).sort((x, y) => x.localeCompare(y, 'ko')),
+    [assets],
+  )
+
+  // 취득구분 → 사용자 → 상태 → 검색어 → 정렬 순으로 목록을 가공합니다.
   const visibleAssets = useMemo(() => {
     const keyword = query.trim().toLowerCase()
     let list = filter === '전체' ? assets : assets.filter((a) => a.acquisitionType === filter)
+
+    // 사용자/상태 정확일치 필터(선택 시)
+    if (userFilter) list = list.filter((a) => a.user === userFilter)
+    if (statusFilter) list = list.filter((a) => a.status === statusFilter)
 
     if (keyword) {
       // 숫자로 들어오는 자산번호 등도 안전하게 문자열로 변환해 검색(널/언디파인드 방어).
@@ -83,7 +96,7 @@ export default function AssetListPage() {
       })
     }
     return list
-  }, [assets, filter, query, sortKey, sortAsc])
+  }, [assets, filter, userFilter, statusFilter, query, sortKey, sortAsc])
 
   /**
    * QR 스캔 결과 처리. 디코드된 자산번호로 목록에서 자산을 찾아 상세를 엽니다.
@@ -177,6 +190,34 @@ export default function AssetListPage() {
             ))}
           </div>
 
+          {/* 정확일치 필터: 사용자 / 상태 */}
+          <select
+            className="asset-filter-select"
+            value={userFilter}
+            onChange={(e) => setUserFilter(e.target.value)}
+            aria-label="사용자 필터"
+          >
+            <option value="">사용자 전체</option>
+            {userOptions.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+          <select
+            className="asset-filter-select"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            aria-label="상태 필터"
+          >
+            <option value="">상태 전체</option>
+            {ASSET_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+
           <div className="asset-search">
             <Search size={15} />
             <input
@@ -192,10 +233,16 @@ export default function AssetListPage() {
           </div>
         </div>
 
-        {/* 검색 결과 건수 안내(한 사람 검색 시 그 사람 자산이 몇 건인지 바로 확인) */}
-        {query.trim() && (
+        {/* 검색/필터 결과 건수 안내(사용자 필터 시 그 사람 자산이 몇 건인지 바로 확인) */}
+        {(query.trim() || userFilter || statusFilter) && (
           <p className="asset-search-count">
-            ‘{query.trim()}’ 검색 결과 <strong>{visibleAssets.length}건</strong>
+            {userFilter && <>사용자 <strong>{userFilter}</strong> · </>}
+            {statusFilter && <>상태 {statusFilter} · </>}
+            {query.trim() && <>‘{query.trim()}’ · </>}
+            결과 <strong>{visibleAssets.length}건</strong>
+            <button type="button" className="asset-filter-reset" onClick={() => { setUserFilter(''); setStatusFilter(''); setQuery('') }}>
+              필터 초기화
+            </button>
           </p>
         )}
 
@@ -231,8 +278,16 @@ export default function AssetListPage() {
                   <td colSpan={10}>
                     <EmptyState
                       icon={Laptop}
-                      title={query || filter !== '전체' ? '조건에 맞는 자산이 없습니다.' : '등록된 자산이 없습니다.'}
-                      hint={query || filter !== '전체' ? '검색어·필터를 바꿔보세요.' : '우측 상단 ‘자산 등록’으로 추가하세요.'}
+                      title={
+                        query || filter !== '전체' || userFilter || statusFilter
+                          ? '조건에 맞는 자산이 없습니다.'
+                          : '등록된 자산이 없습니다.'
+                      }
+                      hint={
+                        query || filter !== '전체' || userFilter || statusFilter
+                          ? '검색어·필터를 바꿔보세요.'
+                          : '우측 상단 ‘자산 등록’으로 추가하세요.'
+                      }
                     />
                   </td>
                 </tr>
