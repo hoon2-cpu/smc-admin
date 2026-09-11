@@ -192,6 +192,8 @@ src/
 > - 🧩 공통 피드백 컴포넌트: `components/feedback/LoadingState·EmptyState·MockNotice`(목록 화면 로딩/빈상태/mock 배너 통일).
 > - ✅ **UI 다듬기(2026-09-10) 완료분**: 빈상태·로딩 통일 / 로그인 영상 **poster**(`login_bg_poster.jpg`, 깜빡임 제거) / **모바일 좌우밀림 방지**(global.css: html·body·#root `overflow-x:hidden`·`overscroll-behavior-x:none` + 전역 `box-sizing:border-box`) / **대시보드 섹션 그룹 헤딩**(`dash-section`/`dash-section-title`: 현황 요약·자산 현황·최근 이동).
 >
+> - ✅ **2026-09-11 추가요청 완료분**: 알림 벨 실신청 연동(미확인 뱃지+모두확인 읽음처리, localStorage) / 대시보드 신청현황·폐기예정 **실데이터 연동**(GAS `v24-dashboard-live`, 실모드에선 mock 미혼합) / 자산검색 보강+**사용자/상태 필터 드롭다운**+결과건수 / **목록 key 중복 잔상 버그 수정**(index 포함) / index.html **캐시 무효화 메타**(배포 즉시 반영) / 직원 신청 **다건 입력**(자산·반납·교체, `submitRequestBatch`). **수리 다건은 보류**(사진·증상이 자산별로 달라 별도 설계 필요).
+>
 > _(이전 2026-09-04: 2차 개편 백로그 9건 + 추가요청 6건 완료)_
 
 - [x] **(마지막 백로그) #2 수리 사진 실이미지 — 완료·배포·동작 확인(2026-09-09)**. 프론트 이미지 캔버스 축소(`lib/imageResize.ts`, 1400px·JPEG q0.7) → `submitRepairRequest`가 `images`(dataURL) 전송 → GAS `saveRepairPhotos_`가 **사용자 공유 Drive 폴더(`REPAIR_PHOTO_FOLDER_ID`=`1SQvcRRHQusU6JaIRwF-pd1EiHAKsEYqf`)** 에 저장 → 시트 8열에 `thumbnail?id=..&sz=w1600` URL 저장. `RepairPhotos` 컴포넌트가 URL이면 `<img>` 썸네일(클릭 시 **앱 내 라이트박스** 크게 보기·ESC/배경 닫기·새 탭 원본), 아니면 파일명(과거분) 표시(VendorDetailModal·RepairDetailModal). 응답에 `photoInfo{received,saved,errors}` 진단 포함(저장 실패 시 프론트가 사유 alert).
