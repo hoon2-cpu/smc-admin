@@ -53,12 +53,26 @@ export default function AssetListPage() {
     let list = filter === '전체' ? assets : assets.filter((a) => a.acquisitionType === filter)
 
     if (keyword) {
-      list = list.filter((a) =>
-        [a.assetNumber, a.name, a.user, a.managementNumber, a.rentalCompany, a.manufacturer]
+      // 숫자로 들어오는 자산번호 등도 안전하게 문자열로 변환해 검색(널/언디파인드 방어).
+      list = list.filter((a) => {
+        const haystack = [
+          a.assetNumber,
+          a.name,
+          a.user,
+          a.managementNumber,
+          a.rentalCompany,
+          a.manufacturer,
+          a.model,
+          a.serialNumber,
+          a.department,
+          a.category,
+          a.location,
+        ]
+          .map((v) => String(v ?? ''))
           .join(' ')
           .toLowerCase()
-          .includes(keyword),
-      )
+        return haystack.includes(keyword)
+      })
     }
 
     if (sortKey) {

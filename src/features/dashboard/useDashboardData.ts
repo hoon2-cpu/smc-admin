@@ -33,30 +33,32 @@ function hasRealData(real: Partial<DashboardData>): boolean {
 }
 
 /**
- * 실데이터(Partial)를 mock 위에 병합합니다.
- * 서버가 채우지 못한(빈) 섹션은 mock 값을 유지해, 재배포 전이나
- * 데이터가 없을 때도 화면이 비지 않도록 합니다.
- * (자산 0건이면 통계도 0이므로 mock 통계로 대체 → 도넛/통계 불일치 방지)
+ * 실데이터(Partial)를 완전한 형태로 채웁니다.
+ * **실데이터 모드에서는 mock 콘텐츠를 섞지 않습니다** — 서버가 비운 섹션은
+ * 빈 상태로 두어(예: 폐기예정 0건) 실제와 다른 가짜가 보이지 않게 합니다.
+ * (누락 필드는 타입 안전을 위해 빈 기본값으로만 채움)
  *
  * @param real - 서버가 반환한 부분 데이터
  * @returns 완전한 {@link DashboardData}
  */
-function mergeWithMock(real: Partial<DashboardData>): DashboardData {
-  const statsHasData = (real.stats?.totalAssets ?? 0) > 0
-  const hasRental = !!real.acquisition && real.acquisition.purchase + real.acquisition.rental > 0
+function fillReal(real: Partial<DashboardData>): DashboardData {
   return {
-    stats: statsHasData && real.stats ? real.stats : DASHBOARD_MOCK.stats,
-    categories: real.categories?.length ? real.categories : DASHBOARD_MOCK.categories,
-    acquisition: hasRental && real.acquisition ? real.acquisition : DASHBOARD_MOCK.acquisition,
-    rentalByCompany: real.rentalByCompany?.length
-      ? real.rentalByCompany
-      : DASHBOARD_MOCK.rentalByCompany,
-    rentalMonthlyTotal: hasRental ? real.rentalMonthlyTotal : DASHBOARD_MOCK.rentalMonthlyTotal,
-    requests: real.requests?.length ? real.requests : DASHBOARD_MOCK.requests,
-    lowStock: real.lowStock?.length ? real.lowStock : DASHBOARD_MOCK.lowStock,
-    recentAssets: real.recentAssets?.length ? real.recentAssets : DASHBOARD_MOCK.recentAssets,
-    recentChanges: real.recentChanges?.length ? real.recentChanges : DASHBOARD_MOCK.recentChanges,
-    disposals: real.disposals?.length ? real.disposals : DASHBOARD_MOCK.disposals,
+    stats: real.stats ?? {
+      totalAssets: 0,
+      inUseAssets: 0,
+      repairingAssets: 0,
+      disposalPlannedAssets: 0,
+      lowStockCount: 0,
+    },
+    categories: real.categories ?? [],
+    acquisition: real.acquisition ?? { purchase: 0, rental: 0 },
+    rentalByCompany: real.rentalByCompany ?? [],
+    rentalMonthlyTotal: real.rentalMonthlyTotal ?? 0,
+    requests: real.requests ?? [],
+    lowStock: real.lowStock ?? [],
+    recentAssets: real.recentAssets ?? [],
+    recentChanges: real.recentChanges ?? [],
+    disposals: real.disposals ?? [],
   }
 }
 
@@ -79,10 +81,14 @@ export function useDashboardData(): DashboardState {
     let alive = true
     fetchDashboard().then((real) => {
       if (!alive) return
-      if (real) {
-        setData(mergeWithMock(real))
-        // 실제 데이터가 있을 때만 mock 배지를 내립니다(빈 시트면 mock 유지).
-        setUsingMock(!hasRealData(real))
+      if (real && hasRealData(real)) {
+        // 실데이터 모드: 서버 값 그대로(빈 섹션은 빈 상태). mock 콘텐츠 섞지 않음.
+        setData(fillReal(real))
+        setUsingMock(false)
+      } else {
+        // GAS 미배포/조회 실패/빈 시트: 데모용 mock 유지
+        setData(DASHBOARD_MOCK)
+        setUsingMock(true)
       }
       setLoading(false)
     })

@@ -9,22 +9,16 @@ export interface CategoryDatum {
   count: number
 }
 
-/** 신청 종류. */
-export type RequestKind = '자산 신청' | '소모품 신청' | '유지보수 신청' | '구매 신청' | '자산 반납'
-
-/** 신청 진행 상태. */
-export type RequestStatus = '승인 대기' | '처리 중' | '승인 완료'
-
-/** 신청 현황 목록의 한 행. */
+/** 신청 현황 목록의 한 행. (실데이터 `6_신청기록`의 종류/상태 문자열을 그대로 수용) */
 export interface RequestItem {
-  /** 신청 종류. */
-  kind: RequestKind
+  /** 신청 종류(예: 자산신청/소모품신청/반납신청/자산교체). */
+  kind: string
   /** 신청 제목(요약). */
   title: string
   /** 신청일 (YYYY-MM-DD). */
   date: string
-  /** 진행 상태. */
-  status: RequestStatus
+  /** 진행 상태(접수/처리중/완료/반려 등). */
+  status: string
 }
 
 /** 최근 등록 자산 목록의 한 행. */
@@ -51,12 +45,12 @@ export interface DisposalItem {
   name: string
   /** 취득일 (YYYY-MM-DD). */
   acquiredDate: string
-  /** 내용연수(년). */
-  usefulLifeYears: number
+  /** 내용연수(년). 실데이터에 없으면 생략. */
+  usefulLifeYears?: number
   /** 폐기 예정일 (YYYY-MM-DD). */
   disposalDate: string
-  /** 폐기까지 남은 기준 일수(예: 30 → '30일 이내'). */
-  withinDays: number
+  /** 폐기까지 남은 기준 일수. 실데이터에 없으면 생략. */
+  withinDays?: number
 }
 
 /** 상단 KPI 카드용 핵심 지표. */

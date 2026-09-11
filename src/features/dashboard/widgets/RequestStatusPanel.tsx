@@ -1,63 +1,51 @@
-import { useMemo, useState } from 'react'
+import { Inbox } from 'lucide-react'
 import { Card, Badge, type BadgeVariant } from '@/components/ui'
-import type { RequestItem, RequestStatus } from '../types'
+import EmptyState from '@/components/feedback/EmptyState'
+import type { RequestItem } from '../types'
 import './RequestStatusPanel.css'
 
 /** {@link RequestStatusPanel} 컴포넌트 props. */
 interface RequestStatusPanelProps {
-  /** 신청 현황 목록. */
+  /** 신청 현황 목록(실데이터 `6_신청기록` 최신). */
   requests: RequestItem[]
 }
 
-/** 신청 진행 상태 → 뱃지 색상 매핑. (Record로 누락 방지) */
-const STATUS_VARIANT: Record<RequestStatus, BadgeVariant> = {
-  '승인 대기': 'warning',
-  '처리 중': 'info',
-  '승인 완료': 'success',
+/**
+ * 신청 상태 문자열 → 뱃지 색상. 실데이터(접수/처리중/완료/반려) 및 과거 표기 모두 수용.
+ * @param status - 상태 문자열
+ * @returns 뱃지 색상 변형
+ */
+function statusVariant(status: string): BadgeVariant {
+  if (status === '완료' || status === '승인 완료') return 'success'
+  if (status === '처리중' || status === '처리 중') return 'info'
+  if (status === '반려') return 'danger'
+  return 'warning' // 접수 / 승인 대기 등
 }
 
-/** 상단 필터 탭 목록. '전체'는 모든 신청을 의미합니다. */
-const TABS = ['전체', '자산 신청', '소모품 신청', '유지보수 신청', '구매 신청'] as const
-
 /**
- * 신청 현황 목록 위젯. 탭으로 신청 종류를 필터링합니다. (이미지 ④ '신청 현황')
+ * 신청 현황 목록 위젯. 실데이터 `6_신청기록` 최신 건을 한눈에 보여줍니다.
+ * (상세 처리는 신청관리 화면에서)
  *
+ * @param props - {@link RequestStatusPanelProps}
  * @returns 신청 현황 카드
  */
 export default function RequestStatusPanel({ requests }: RequestStatusPanelProps) {
-  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>('전체')
-
-  // 탭 또는 데이터가 바뀔 때만 재계산되도록 useMemo로 필터링 결과를 메모이즈합니다.
-  const visibleItems = useMemo(
-    () => (activeTab === '전체' ? requests : requests.filter((r) => r.kind === activeTab)),
-    [activeTab, requests],
-  )
-
   return (
     <Card title="신청 현황">
-      <div className="request-tabs">
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            className={tab === activeTab ? 'request-tab active' : 'request-tab'}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      <ul className="request-list">
-        {visibleItems.map((item) => (
-          <li key={item.title} className="request-row">
-            <span className="request-kind">{item.kind}</span>
-            <span className="request-title">{item.title}</span>
-            <span className="request-date">{item.date}</span>
-            <Badge variant={STATUS_VARIANT[item.status]}>{item.status}</Badge>
-          </li>
-        ))}
-      </ul>
+      {requests.length === 0 ? (
+        <EmptyState icon={Inbox} title="신청 내역이 없습니다." />
+      ) : (
+        <ul className="request-list">
+          {requests.map((item, i) => (
+            <li key={`${item.title}-${i}`} className="request-row">
+              <span className="request-kind">{item.kind}</span>
+              <span className="request-title">{item.title}</span>
+              <span className="request-date">{item.date}</span>
+              <Badge variant={statusVariant(item.status)}>{item.status}</Badge>
+            </li>
+          ))}
+        </ul>
+      )}
     </Card>
   )
 }

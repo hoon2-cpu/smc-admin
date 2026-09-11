@@ -162,7 +162,7 @@ function doGet(e) {
   return jsonOutput_({
     ok: true,
     message: 'IT 자산관리 백엔드 정상 동작 중',
-    version: 'v23-asset-swap',
+    version: 'v24-dashboard-live',
     tokenEnabled: !!API_TOKEN,
   })
 }
@@ -564,6 +564,7 @@ function buildDashboard_() {
   var rentalCostMap = {} // 렌탈사별 월 렌탈료 합계(진행중만)
   var rentalMonthlyTotal = 0 // 진행중 렌탈 월 비용 총합
   var recent = []
+  var disposals = [] // 폐기예정 자산
 
   // 열: 0등록일시 1자산번호 2자산명 3구분 ... 9사용자 10위치 11상태 ... 15취득구분 16렌탈사
   for (var i = 1; i < rows.length; i++) {
@@ -575,7 +576,15 @@ function buildDashboard_() {
     var status = r[11]
     if (status === '사용중') stats.inUseAssets++
     else if (status === '수리중') stats.repairingAssets++
-    else if (status === '폐기예정') stats.disposalPlannedAssets++
+    else if (status === '폐기예정') {
+      stats.disposalPlannedAssets++
+      disposals.push({
+        assetNumber: String(r[1] || ''),
+        name: r[2] || '',
+        acquiredDate: formatDateCell_(r[7]),
+        disposalDate: formatDateCell_(r[21]), // 21 폐기일(예정일)
+      })
+    }
 
     // 취득 구분(구매/렌탈) + 렌탈사 집계 + 월 렌탈 비용(진행중만)
     if (r[15] === '렌탈') {
@@ -629,10 +638,36 @@ function buildDashboard_() {
     rentalMonthlyTotal: rentalMonthlyTotal,
     recentAssets: recent.slice(-5).reverse(), // 최근 5건
     recentChanges: buildRecentChanges_(6), // 최근 이동(반납/불출/상태) 6건
-    requests: [],
+    requests: buildDashboardRequests_(6), // 신청현황(6_신청기록 최신 6건)
     lowStock: lowStock,
-    disposals: [],
+    disposals: disposals,
   }
+}
+
+/**
+ * 신청기록(6_신청기록) 최신 N건을 대시보드 '신청 현황' 형태로 반환합니다.
+ * 열: 0신청일시 1종류 2신청자 3부서 4자산번호 5대상명 6사유 7상세 8상태
+ * @param {number} limit - 최대 건수
+ * @return {Object[]} { kind, title, date, status }
+ */
+function buildDashboardRequests_(limit) {
+  var sheet = getSheetOrNull_(SHEET_REQUEST)
+  if (!sheet) return []
+  var rows = sheet.getDataRange().getValues()
+  var out = []
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i]
+    if (!r[1] && !r[2]) continue // 종류·신청자 모두 없으면 빈 행
+    var who = r[2] || ''
+    var target = r[5] || r[6] || ''
+    out.push({
+      kind: r[1] || '신청',
+      title: who + (target ? ' · ' + target : ''),
+      date: formatDateCell_(r[0]),
+      status: r[8] || '접수',
+    })
+  }
+  return out.reverse().slice(0, limit)
 }
 
 /**
