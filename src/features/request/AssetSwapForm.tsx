@@ -1,17 +1,30 @@
 import { useState, type FormEvent } from 'react'
+import { Plus, Trash2 } from 'lucide-react'
 import { FormSection, FormField, TextInput, SelectField } from '@/components/form'
 import { useForm } from '@/hooks/useForm'
 import { useOrgSettings } from '@/hooks/useOrgSettings'
 import { useMasterCodes } from '@/hooks/useMasterCodes'
-import { submitAssetSwap } from './api'
+import { submitAssetSwap, submitRequestBatch } from './api'
 import './RequestForm.css'
 
 /** 교체 사유 선택지. */
 const SWAP_REASONS = ['고장', '노후(내용연수 초과)', '사양 부족', '파손', '분실', '기타'] as const
 
+/** 교체 대상 자산 1건. */
+interface SwapItem {
+  assetNumber: string
+  assetName: string
+  category: string
+}
+
+/** 빈 교체 항목. */
+function emptyItem(): SwapItem {
+  return { assetNumber: '', assetName: '', category: '' }
+}
+
 /**
  * 자산 교체 신청 폼 (직원). 사용 중인 자산을 다른 자산으로 교체 요청합니다.
- * 교체는 자주 발생하므로 신청 이력을 `6_신청기록`(종류=자산교체)에 남깁니다.
+ * 여러 대를 한 번에 교체 신청할 수 있으며, 이력은 `6_신청기록`(종류=자산교체)에 개별 저장됩니다.
  *
  * @returns 자산 교체 신청 폼
  */
@@ -22,26 +35,45 @@ export default function AssetSwapForm() {
   const { values, setField, reset } = useForm({
     requester: '',
     department: '',
-    assetNumber: '',
-    assetName: '',
-    category: '',
     reason: '',
     note: '',
   })
+  const [items, setItems] = useState<SwapItem[]>([emptyItem()])
 
-  const canSubmit = values.requester.trim() && values.department && values.assetNumber.trim()
+  /** 특정 교체 항목의 한 필드를 갱신합니다. */
+  function setItem(index: number, key: keyof SwapItem, value: string) {
+    setItems((prev) => prev.map((it, i) => (i === index ? { ...it, [key]: value } : it)))
+  }
 
-  /** 신청 제출. */
+  const validItems = items.filter((it) => it.assetNumber.trim())
+  const canSubmit = values.requester.trim() && values.department && values.reason && validItems.length > 0
+
+  /** 신청 제출. 자산마다 개별 교체 신청으로 저장합니다. */
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (validItems.length === 0) {
+      window.alert('기존 자산번호를 입력한 항목이 없습니다.')
+      return
+    }
     setSaving(true)
-    const result = await submitAssetSwap(values)
+    const result = await submitRequestBatch(validItems, (it) =>
+      submitAssetSwap({
+        requester: values.requester,
+        department: values.department,
+        assetNumber: it.assetNumber,
+        assetName: it.assetName,
+        category: it.category,
+        reason: values.reason,
+        note: values.note,
+      }),
+    )
     setSaving(false)
-    if (result.ok) {
-      window.alert('자산 교체 신청이 접수되었습니다.')
+    if (result.failed === 0) {
+      window.alert(`자산 교체 신청 ${result.ok}건이 접수되었습니다.`)
       reset()
+      setItems([emptyItem()])
     } else {
-      window.alert(`신청 실패: ${result.message ?? '알 수 없는 오류'}`)
+      window.alert(`${result.ok}건 접수, ${result.failed}건 실패했습니다. 실패 건은 다시 시도해주세요.`)
     }
   }
 
@@ -54,15 +86,6 @@ export default function AssetSwapForm() {
         <FormField label="부서" htmlFor="sw-dept" required>
           <SelectField id="sw-dept" value={values.department} onChange={(v) => setField('department', v)} options={departmentOptions} />
         </FormField>
-        <FormField label="기존 자산번호" htmlFor="sw-num" required>
-          <TextInput id="sw-num" value={values.assetNumber} onChange={(v) => setField('assetNumber', v)} placeholder="예: AST-2026-0001" />
-        </FormField>
-        <FormField label="기존 자산명" htmlFor="sw-name2">
-          <TextInput id="sw-name2" value={values.assetName} onChange={(v) => setField('assetName', v)} placeholder="예: 노트북 (LG gram)" />
-        </FormField>
-        <FormField label="교체 희망 품목" htmlFor="sw-cat">
-          <SelectField id="sw-cat" value={values.category} onChange={(v) => setField('category', v)} options={codes.categories} />
-        </FormField>
         <FormField label="교체 사유" htmlFor="sw-reason" required>
           <SelectField id="sw-reason" value={values.reason} onChange={(v) => setField('reason', v)} options={SWAP_REASONS} />
         </FormField>
@@ -70,8 +93,37 @@ export default function AssetSwapForm() {
           <TextInput id="sw-note" value={values.note} onChange={(v) => setField('note', v)} placeholder="증상·요청사항 등" />
         </FormField>
       </FormSection>
+
+      <div className="req-items">
+        <div className="req-items-head">교체 대상 ({validItems.length})</div>
+        {items.map((it, i) => (
+          <div key={i} className="req-item-row swap">
+            <TextInput id={`sw-num-${i}`} value={it.assetNumber} onChange={(v) => setItem(i, 'assetNumber', v)} placeholder="기존 자산번호" />
+            <TextInput id={`sw-name2-${i}`} value={it.assetName} onChange={(v) => setItem(i, 'assetName', v)} placeholder="기존 자산명(선택)" />
+            <SelectField
+              id={`sw-cat-${i}`}
+              value={it.category}
+              onChange={(v) => setItem(i, 'category', v)}
+              options={codes.categories}
+              placeholder="교체 희망 품목"
+            />
+            <button
+              type="button"
+              className="req-item-del"
+              aria-label="항목 삭제"
+              onClick={() => setItems((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev))}
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ))}
+        <button type="button" className="req-item-add" onClick={() => setItems((prev) => [...prev, emptyItem()])}>
+          <Plus size={15} /> 자산 추가
+        </button>
+      </div>
+
       <button type="submit" className="request-submit" disabled={saving || !canSubmit}>
-        {saving ? '신청 중…' : '자산 교체 신청'}
+        {saving ? '신청 중…' : `자산 교체 신청 (${validItems.length}건)`}
       </button>
     </form>
   )

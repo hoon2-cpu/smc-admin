@@ -80,3 +80,33 @@ export function submitConsumableRequest(values: ConsumableRequestValues): Promis
 export function submitAssetSwap(values: AssetSwapValues): Promise<GasResult> {
   return submitToGas('assetSwapRequest', values)
 }
+
+/** 여러 건 순차 제출 결과. */
+export interface BatchResult {
+  /** 성공 건수. */
+  ok: number
+  /** 실패 건수. */
+  failed: number
+}
+
+/**
+ * 여러 신청 건을 순차로 제출합니다. (직원이 자산 2대 이상 등 한 번에 신청)
+ * 시트 순번/동시성 충돌을 피하려 하나씩 보냅니다.
+ *
+ * @param items - 제출할 값 목록
+ * @param submitOne - 개별 제출 함수
+ * @returns 성공/실패 요약 ({@link BatchResult})
+ */
+export async function submitRequestBatch<T>(
+  items: T[],
+  submitOne: (item: T) => Promise<GasResult>,
+): Promise<BatchResult> {
+  let ok = 0
+  let failed = 0
+  for (const item of items) {
+    const result = await submitOne(item)
+    if (result.ok) ok += 1
+    else failed += 1
+  }
+  return { ok, failed }
+}
