@@ -59,10 +59,36 @@
   overflow: hidden;
 }
 .topbar-pop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 700;
   border-bottom: 1px solid var(--color-border);
+}
+.topbar-notif-readall {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  background: var(--color-bg);
+  border-radius: 999px;
+  padding: 3px 9px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.topbar-notif-readall:hover {
+  color: var(--color-primary);
+}
+.topbar-notif-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  margin-right: 5px;
+  vertical-align: middle;
 }
 .topbar-pop-empty {
   padding: 22px 14px;
