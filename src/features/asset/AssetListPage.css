@@ -95,6 +95,26 @@
   width: 100%;
   color: var(--color-text);
 }
+.asset-search-clear {
+  border: none;
+  background: none;
+  color: var(--color-text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 4px;
+  flex-shrink: 0;
+}
+.asset-search-clear:hover {
+  color: var(--color-danger);
+}
+.asset-search-count {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  margin: 4px 2px 12px;
+}
+.asset-search-count strong {
+  color: var(--color-primary);
+}
 .asset-filter-tab {
   display: inline-flex;
   align-items: center;

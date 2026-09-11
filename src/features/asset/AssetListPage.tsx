@@ -182,10 +182,22 @@ export default function AssetListPage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="자산명·번호·사용자·관리번호 검색"
+              placeholder="사용자·자산명·번호 검색 (예: 홍길동 → 그 사람 자산 전부)"
             />
+            {query && (
+              <button type="button" className="asset-search-clear" aria-label="검색 지우기" onClick={() => setQuery('')}>
+                ✕
+              </button>
+            )}
           </div>
         </div>
+
+        {/* 검색 결과 건수 안내(한 사람 검색 시 그 사람 자산이 몇 건인지 바로 확인) */}
+        {query.trim() && (
+          <p className="asset-search-count">
+            ‘{query.trim()}’ 검색 결과 <strong>{visibleAssets.length}건</strong>
+          </p>
+        )}
 
         <div className="asset-table-scroll">
           <table className="asset-table">
