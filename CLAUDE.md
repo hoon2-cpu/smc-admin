@@ -207,7 +207,7 @@ src/
 > 로그인 영상 추가 압축/poster가 필요하면 로컬 ffmpeg로 재인코딩 가능(위 로그인 화면 메모 참고).
 
 > GAS 재배포로 URL이 바뀌면 `src/config/api.ts`의 `GAS_URL`도 갱신해야 함.
-> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **현재 배포됨: `v23-asset-swap` (2026-09-09, 토큰 ON·자산교체 신청까지 반영·동작 확인).**
+> 배포 반영 확인: 웹앱 GET → `version` 필드로 판별. **배포됨: `v23-asset-swap` / 코드 최신: `v24-dashboard-live` (⚠️ 재배포 필요 — 대시보드 신청현황·폐기예정 실데이터).**
 
 ## 🔀 역할 기반 개편 로드맵 (진행 중)
 
@@ -256,6 +256,9 @@ src/
 - **조직 설정(부서/사용위치)** — 회사 개편이 잦아 코드가 아닌 **설정 화면에서 관리**하고 **서버(시트 `8_조직설정`)에 저장 → 여러 기기/사용자 공유**. 기본값 `config/orgDefaults.ts`(본부→팀 + 사옥·층), 동기화 `app/orgSettings.ts`(서버 pull 1회 + 저장 시 push, localStorage는 캐시/폴백, 변경 이벤트) + `useOrgSettings` 훅. 모든 부서/위치 SelectField가 훅을 통해 최신값 사용. 편집 UI는 `features/settings/OrgSettingsSection`(저장 시 서버 반영·결과 alert). 타입은 `string`.
 - **수리 접수 확인 메일** — 수리신청 폼에 **이메일 입력칸**(DetailStep) 추가. 접수 시 GAS가 입력 이메일로 접수확인 메일 발송(입력 없으면 `5_사용자목록`에서 이름으로 조회 폴백). 추후 Slack 봇 알림 확장 예정(`SLACK_WEBHOOK_URL`).
 - **대시보드 바로가기(QuickLinks)** — 자산등록·QR출력→`/admin/assets`, 자산신청·소모품신청→`/admin/requests`, 유지보수신청→`/admin/repair`, 보고서조회→준비중(alert). `useNavigate`로 이동.
+- **대시보드 실데이터 연동(v24)** — `buildDashboard_`가 **신청현황**(6_신청기록 최신 6건, `buildDashboardRequests_`)·**폐기예정**(상태=폐기예정 자산)도 실데이터로 반환. `useDashboardData`는 **실데이터 모드에서 mock을 섞지 않고**(과거엔 빈 섹션을 mock으로 대체해 가짜가 보였음) 빈 섹션은 빈 상태 표시. `RequestStatusPanel`/`DisposalScheduleTable` 상태 뱃지 관대 처리(문자열 타입)+빈 상태.
+- **알림 벨(TopBar)** — 실제 `6_신청기록`의 '접수' 건을 뱃지·목록으로 표시(`useRequests`), 항목/‘모두 보기’ 클릭 시 `/admin/requests` 이동.
+- **자산 검색** — 자산번호(숫자 방어 String 변환)·자산명·사용자·관리번호·제조사·모델·시리얼·부서·구분·위치 대상으로 부분일치 검색.
 - **코드(Master) 관리** — 자산구분·렌탈사·소모품 품목·제조사 선택지를 `/admin/master`에서 관리하고 **서버(시트 `9_코드마스터` A1 JSON)에 저장 → 여러 기기 공유**. 기본값 `config/masterDefaults.ts`(기존 `constants/`를 시드), 동기화 `app/masterCodes.ts`(pull 1회+push, localStorage 캐시) + `useMasterCodes` 훅. 폼 셀렉트(BasicInfo 자산구분·제조사 / Acquisition 렌탈사 / AssetBulkRegister / AssetRequest / ConsumableRequest)가 훅으로 최신값 사용. **자산상태·수리 우선순위/진행상태는 뱃지 Record와 묶여 코드 고정**(편집 대상 아님). `TextInput`에 datalist(`options`) 지원 추가.
 - **소모품 품목 선택지** — 기본값 `constants/consumable.ts`(복합기_카트리지/PC_키보드·마우스·HDMI·DVI+HDMI·노트북어댑터·모니터어댑터/기타). 실제 선택지는 Master(`9_코드마스터`)에서 관리, 실재고는 시트 `7_소모품목록`.
 - **자산장부 이관** — 3개 장부(롯데렌탈/AJ네트웍스/전체자산)를 `2_자산등록기록` 한 시트로 합쳐 넣음. 열 매핑·주의사항은 [docs/ASSET_LEDGER_IMPORT.md](docs/ASSET_LEDGER_IMPORT.md).
